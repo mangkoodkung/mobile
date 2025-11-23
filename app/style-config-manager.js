@@ -1040,13 +1040,13 @@ ${
                             <button class="config-action-btn load-config" data-config-file="${
                               config.name
                             }" title="加载此配置">
-                                📥 加载
+                                📥 พับ/ขยาย
                             </button>
                             ${
                               !isDefault
                                 ? `
                                 <button class="config-action-btn delete-config" data-config-file="${config.name}" title="删除此配置">
-                                    🗑️ 删除
+                                    🗑️ ลบ
                                 </button>
                             `
                                 : ''
@@ -3112,12 +3112,12 @@ ${
                                  style="background-image: ${previewImageUrl}; background-position: ${backgroundPosition}; transform: ${previewTransform};">
                             </div>
                         </div>
-                        <div class="background-preview-label">聊天背景预览</div>
+                        <div class="background-preview-label">ตัวอย่างพื้นหลังแชท</div>
                     </div>
 
                     <div class="background-fields">
                         <div class="config-field">
-                            <label>好友ID (必填):</label>
+                            <label>รหัสเพื่อน(จำเป็น):</label>
                             <input type="text"
                                    class="config-input background-input"
                                    data-background-index="${index}"
@@ -3125,11 +3125,11 @@ ${
                                    value="${friendId}"
                                    placeholder="558778"
                                    required>
-                            <small>⚠️ <strong>必须填写好友ID才能生效</strong> - 用于匹配data-background-id属性</small>
+                            <small>⚠️ <strong>ต้องกรอกรหัสเพื่อนเพื่อให้ใช้งานได้</strong> - ใช้สำหรับจับคู่คุณสมบัติ data-background-id</small>
                             ${
                               friendId
-                                ? `<small class="field-status valid">✅ 配置有效 - CSS选择器: .message-detail-content[data-background-id="${friendId}"]</small>`
-                                : `<small class="field-status invalid">❌ 配置无效 - 请填写好友ID</small>`
+                                ? `<small class="field-status valid">✅ การตั้งค่าถูกต้อง – CSS selector: .message-detail-content[data-background-id="${friendId}"]</small>`
+                                : `<small class="field-status invalid">❌ การตั้งค่าไม่ถูกต้อง กรุณากรอกรหัสเพื่อน</small>`
                             }
                         </div>
 
