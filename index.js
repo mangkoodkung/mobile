@@ -849,31 +849,31 @@ function createSettingsUI() {
     <div id="mobile_context_settings">
         <div class="inline-drawer">
             <div class="inline-drawer-toggle inline-drawer-header">
-                <b>POPKO-Mobile</b>
+                <b>🌻POPKO-Mobile🌻</b>
                 <div class="inline-drawer-icon fa-solid fa-circle-chevron-down"></div>
             </div>
             <div class="inline-drawer-content">
                 <div class="flex-container" style='flex-wrap: wrap;flex-direction: row;'>
                     <label class="checkbox_label" for="mobile_tavern_compatibility_mode">
                         <input id="mobile_tavern_compatibility_mode" type="checkbox" />
-                        <span>Compatibility Mode</span>
+                        <span>หน้าหลัก</span>
                     </label>
                     <label class="checkbox_label" for="mobile_hide_phone">
                         <input id="mobile_hide_phone" type="checkbox" />
-                        <span>Hide Phone Button</span>
+                        <span>ซ่อนปุ่มโทรศัพท์</span>
                     </label>
                     <label class="checkbox_label" for="mobile_auto_send_enabled">
                         <input id="mobile_auto_send_enabled" type="checkbox" />
-                        <span>专一模式（一次只和一人聊天）</span>
+                        <span>โหมดเฉพาะ (คุยได้ทีละคนเท่านั้น)</span>
                     </label>
                     <label class="checkbox_label" for="mobile_disable_body_text">
                         <input id="mobile_disable_body_text" type="checkbox" />
-                        <span>禁止正文</span>
+                        <span>ปิดข้อความหลัก</span>
                     </label>
                     <div class="flex m-t-1" style='flex-wrap: wrap;'>
                         <button id="mobile_context_status_btn" class="menu_button" style='width: auto;background:#777;color:#fff;display:none'>查看状态</button>
-                        <button id="mobile_context_clear_btn" class="menu_button" style='width: auto;background:#777;color:#fff'>清除日志</button>
-                        <button id="mobile_custom_api_show_btn" class="menu_button" style='width: auto;background:#777;color:#fff'>自定义API配置</button>
+                        <button id="mobile_context_clear_btn" class="menu_button" style='width: auto;background:#777;color:#fff'>ล้าง Log</button>
+                        <button id="mobile_custom_api_show_btn" class="menu_button" style='width: auto;background:#777;color:#fff'>ตั้งค่า API แบบกำหนดเอง</button>
                         <button id="mobile_mesid_floor_status_btn" class="menu_button" style='width: auto;background:#777;color:#fff;display:none'>楼层监听器状态</button>
                     </div>
                 </div>
