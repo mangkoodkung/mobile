@@ -350,7 +350,7 @@ document.head.appendChild(forumAutoListenerScript);
 const phoneStyle = document.createElement('link');
 phoneStyle.rel = 'stylesheet';
 phoneStyle.type = 'text/css';
-phoneStyle.href = './scripts/extensions/third-party/popkomobile/mobile-phone.css';
+phoneStyle.href = './scripts/extensions/third-party/mobile/mobile-phone.css';
 phoneStyle.onload = () => {
   console.log('[Mobile Context] 手机界面样式加载完成');
 };
@@ -363,7 +363,7 @@ document.head.appendChild(phoneStyle);
 const imageConfigStyle = document.createElement('link');
 imageConfigStyle.rel = 'stylesheet';
 imageConfigStyle.type = 'text/css';
-imageConfigStyle.href = './scripts/extensions/third-party/popkomobile/app/image-config-modal.css';
+imageConfigStyle.href = './scripts/extensions/third-party/mobile/app/image-config-modal.css';
 imageConfigStyle.onload = () => {
   console.log('[Mobile Context] 图片配置弹窗样式加载完成');
 };
