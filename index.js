@@ -860,7 +860,7 @@ function createSettingsUI() {
                     </label>
                     <label class="checkbox_label" for="mobile_hide_phone">
                         <input id="mobile_hide_phone" type="checkbox" />
-                        <span>Hide Phone Button/span>
+                        <span>Hide Phone Button</span>
                     </label>
                     <label class="checkbox_label" for="mobile_auto_send_enabled">
                         <input id="mobile_auto_send_enabled" type="checkbox" />
