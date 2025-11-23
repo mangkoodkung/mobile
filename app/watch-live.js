@@ -1054,21 +1054,19 @@ if (typeof window.WatchLiveApp === 'undefined') {
         <div class="live-app">
           <div class="watch-live-container">
             <div class="watch-live-header">
-              <h2>观看直播</h2>
-              <p>选择一种方式开始观看直播吧！</p>
+              <h2>Live Center</h2>
+              <p>เลือกรูปแบบที่ต้องการเข้าชม</p>
             </div>
 
             <div class="watch-options">
               <button class="watch-option-btn" id="current-live-list">
                 <div class="option-icon">📺</div>
-                <div class="option-title">当前开播列表</div>
-                <div class="option-desc">查看正在直播的主播</div>
+                <div class="option-title">ดูไลฟ์ตอนนี้</div>
               </button>
 
               <button class="watch-option-btn" id="specific-live-room">
                 <div class="option-icon">🔍</div>
-                <div class="option-title">进入指定直播间</div>
-                <div class="option-desc">输入主播名称观看</div>
+                <div class="option-title">เข้าห้องไลฟ์ที่ระบุ</div>
               </button>
             </div>
           </div>
@@ -1090,12 +1088,12 @@ if (typeof window.WatchLiveApp === 'undefined') {
           <div class="room-info">
             <div class="room-name">${room.name}</div>
             <div class="room-details">
-              <span class="streamer-name">主播：${room.streamer}</span>
-              <span class="room-category">分类：${room.category}</span>
-              <span class="viewer-count">观看：${room.viewers}</span>
+              <span class="streamer-name">สตรีมเมอร์：${room.streamer}</span>
+              <span class="room-category">หมวดหมู่：${room.category}</span>
+              <span class="viewer-count">รับชม：${room.viewers}</span>
             </div>
           </div>
-          <button class="watch-room-btn" data-room='${JSON.stringify(room)}'>观看直播</button>
+          <button class="watch-room-btn" data-room='${JSON.stringify(room)}'>รับชมไลฟ์</button>
         </div>
       `,
         )
@@ -1109,26 +1107,28 @@ if (typeof window.WatchLiveApp === 'undefined') {
         listContent = roomsHtml;
       }
 
-      // 如果正在等待新的直播间列表，添加加载提示
+      // ถ้ายังอยู่ในขั้นตอนรอโหลดรายการไลฟ์ใหม่ ให้แสดงข้อความกำลังโหลด
       if (this.isWaitingForLiveList) {
         const loadingHtml = `
           <div class="live-loading-update">
             <div class="loading-spinner"></div>
-            <span>正在获取更多直播间...</span>
+            <span>กำลังค้นหาไลฟ์เพิ่มเติม...</span>
           </div>
         `;
-        listContent = listContent ? listContent + loadingHtml : '<div class="live-loading">正在获取直播间列表...</div>';
+        listContent = listContent
+          ? listContent + loadingHtml
+          : '<div class="live-loading">กำลังโหลดรายการไลฟ์...</div>';
       } else if (!roomsHtml) {
         // 如果没有现有数据且不在等待，显示无数据提示
-        listContent = '<div class="no-rooms">暂无直播间数据，请稍后再试</div>';
+        listContent = '<div class="no-rooms">ยังไม่มีใครไลฟ์ ลองกลับมาดูอีกทีนะ!</div>';
       }
 
       return `
         <div class="live-app">
           <div class="live-list-container">
             <div class="live-list-header">
-              <button class="back-btn" id="back-to-watch-options">← 返回</button>
-              <h2>当前开播列表</h2>
+              <button class="back-btn" id="back-to-watch-options">←กลับ</button>
+              <h2>ไลฟ์สดตอนนี้</h2>
             </div>
 
             <div class="live-rooms-list">
@@ -1177,70 +1177,70 @@ if (typeof window.WatchLiveApp === 'undefined') {
       return `
         <div class="live-app">
           <div class="live-container">
-            <!-- 视频框 -->
+            <!-- ส่วนของหน้าจอไลฟ์สด -->
             <div class="video-placeholder">
-              <p class="live-content-text">${state.liveContent || '等待直播内容...'}</p>
+              <p class="live-content-text">${state.liveContent || 'กำลังรอเนื้อหาไลฟ์...'}</p>
               <div class="live-status-bottom">
                 <div class="live-dot"></div>
                 <span>LIVE</span>
               </div>
             </div>
 
-            <!-- 观看直播互动 -->
+            <!-- พื้นที่โต้ตอบระหว่างการรับชม -->
             <div class="interaction-panel">
               <div class="interaction-header">
-                <h4>推荐弹幕：</h4>
+                <h4>แชทแนะนำ：</h4>
                 <div class="watch-actions">
                   <button class="interact-btn" id="send-danmaku-btn">
-                    <i class="fas fa-comment"></i> 发送弹幕
+                    <i class="fas fa-comment"></i> ส่งข้อความ
                   </button>
                   <button class="interact-btn" id="send-gift-btn">
-                    <i class="fas fa-gift"></i> 打赏礼物
+                    <i class="fas fa-gift"></i> ส่งของขวัญ
                   </button>
                 </div>
               </div>
               <div class="recommended-interactions">
-                ${recommendedButtons || '<p class="no-interactions">等待推荐弹幕...</p>'}
+                ${recommendedButtons || '<p class="no-interactions">กำลังรอแชทแนะนำ...</p>'}
               </div>
             </div>
 
-            <!-- 弹幕容器 -->
+            <!-- กล่องแสดงข้อความแชต -->
             <div class="danmaku-container" id="danmaku-container">
               <div class="danmaku-list" id="danmaku-list">
-                ${danmakuItems || '<div class="no-danmaku">等待弹幕...</div>'}
+                ${danmakuItems || '<div class="no-danmaku">ยังไม่มีข้อความแชท...</div>'}
               </div>
             </div>
           </div>
 
-          <!-- 发送弹幕弹窗 -->
+          <!-- หน้าต่างส่งข้อความ -->
           <div id="danmaku-modal" class="modal">
             <div class="modal-content">
               <div class="modal-header">
-                <h3>发送弹幕</h3>
+                <h3>ส่งข้อความ</h3>
                 <button class="modal-close-btn">&times;</button>
               </div>
               <form id="danmaku-form">
-                <textarea id="custom-danmaku-textarea" placeholder="输入弹幕内容..." rows="4"></textarea>
-                <button type="submit" class="submit-btn">发送弹幕</button>
+                <textarea id="custom-danmaku-textarea" placeholder="พิมพ์ข้อความของคุณ..." rows="4"></textarea>
+                <button type="submit" class="submit-btn">ส่งข้อความ</button>
               </form>
             </div>
           </div>
 
-          <!-- 打赏礼物弹窗 -->
+          <!-- รายการของขวัญ -->
           <div id="gift-send-modal" class="modal">
             <div class="gift-modal-container">
               <div class="gift-modal-header">
-                <div class="gift-modal-title">✨ 打赏礼物</div>
+                <div class="gift-modal-title">เลือกของขวัญ</div>
                 <button class="gift-modal-close" onclick="watchLiveAppHideModal('gift-send-modal')">&times;</button>
               </div>
 
               <div class="gift-modal-body">
                 <div class="gift-list-container">
-                    <!-- 所有礼物按价格排序，单列显示 -->
-                    <div class="gift-card" data-gift="应援话筒" data-price="1">
-                      <div class="gift-icon">🎤</div>
+                    <!-- ของขวัญและราคา -->
+                    <div class="gift-card" data-gift="ใจส้ม" data-price="1">
+                      <div class="gift-icon">🧡</div>
                       <div class="gift-info">
-                        <div class="gift-name">应援话筒</div>
+                        <div class="gift-name">ใจส้ม</div>
                         <div class="gift-price">¥1</div>
                       </div>
                       <div class="gift-controls">
@@ -1249,10 +1249,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
                         <button class="qty-btn plus">+</button>
                       </div>
                     </div>
-                    <div class="gift-card" data-gift="应援灯牌" data-price="3">
-                      <div class="gift-icon">💡</div>
+                    <div class="gift-card" data-gift="แมวน้อย" data-price="3">
+                      <div class="gift-icon">😺</div>
                       <div class="gift-info">
-                        <div class="gift-name">应援灯牌</div>
+                        <div class="gift-name">แมวน้อย</div>
                         <div class="gift-price">¥3</div>
                       </div>
                       <div class="gift-controls">
@@ -1261,10 +1261,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
                         <button class="qty-btn plus">+</button>
                       </div>
                     </div>
-                    <div class="gift-card" data-gift="比个心" data-price="5">
-                      <div class="gift-icon">💖</div>
+                    <div class="gift-card" data-gift="ลิงจั๊กๆ" data-price="5">
+                      <div class="gift-icon">🙉</div>
                       <div class="gift-info">
-                        <div class="gift-name">比个心</div>
+                        <div class="gift-name">ลิงจั๊กๆ</div>
                         <div class="gift-price">¥5</div>
                       </div>
                       <div class="gift-controls">
@@ -1273,10 +1273,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
                         <button class="qty-btn plus">+</button>
                       </div>
                     </div>
-                    <div class="gift-card" data-gift="入场券" data-price="6">
-                      <div class="gift-icon">🎟️</div>
+                    <div class="gift-card" data-gift="รองเท้าพื้นแดง" data-price="6">
+                      <div class="gift-icon">👠</div>
                       <div class="gift-info">
-                        <div class="gift-name">入场券</div>
+                        <div class="gift-name">รองเท้าพื้นแดง</div>
                         <div class="gift-price">¥6</div>
                       </div>
                       <div class="gift-controls">
@@ -1285,10 +1285,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
                         <button class="qty-btn plus">+</button>
                       </div>
                     </div>
-                    <div class="gift-card" data-gift="小金人" data-price="9">
-                      <div class="gift-icon">🏆</div>
+                    <div class="gift-card" data-gift="เหรียญศีลธรรม" data-price="9">
+                      <div class="gift-icon">🪙</div>
                       <div class="gift-info">
-                        <div class="gift-name">小金人</div>
+                        <div class="gift-name">เหรียญศีลธรรม</div>
                         <div class="gift-price">¥9</div>
                       </div>
                       <div class="gift-controls">
@@ -1297,10 +1297,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
                         <button class="qty-btn plus">+</button>
                       </div>
                     </div>
-                    <div class="gift-card" data-gift="庆功花束" data-price="18">
-                      <div class="gift-icon">💐</div>
+                    <div class="gift-card" data-gift="สมอง" data-price="18">
+                      <div class="gift-icon">🧠</div>
                       <div class="gift-info">
-                        <div class="gift-name">庆功花束</div>
+                        <div class="gift-name">สมอง</div>
                         <div class="gift-price">¥18</div>
                       </div>
                       <div class="gift-controls">
@@ -1309,10 +1309,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
                         <button class="qty-btn plus">+</button>
                       </div>
                     </div>
-                    <div class="gift-card" data-gift="秘密情书" data-price="28">
-                      <div class="gift-icon">💌</div>
+                    <div class="gift-card" data-gift="บิงซู" data-price="28">
+                      <div class="gift-icon">🍧</div>
                       <div class="gift-info">
-                        <div class="gift-name">秘密情书</div>
+                        <div class="gift-name">บิงซู</div>
                         <div class="gift-price">¥28</div>
                       </div>
                       <div class="gift-controls">
@@ -1321,10 +1321,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
                         <button class="qty-btn plus">+</button>
                       </div>
                     </div>
-                    <div class="gift-card" data-gift=""卡！"" data-price="38">
-                      <div class="gift-icon">🎬</div>
+                    <div class="gift-card" data-gift="อู้ววว! แซ่บ" data-price="38">
+                      <div class="gift-icon">🫦</div>
                       <div class="gift-info">
-                        <div class="gift-name">"卡！"</div>
+                        <div class="gift-name">อู้ววว! แซ่บ</div>
                         <div class="gift-price">¥38</div>
                       </div>
                       <div class="gift-controls">
@@ -1333,10 +1333,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
                         <button class="qty-btn plus">+</button>
                       </div>
                     </div>
-                    <div class="gift-card" data-gift="闪耀星星" data-price="58">
-                      <div class="gift-icon">🌟</div>
+                    <div class="gift-card" data-gift="โลมา" data-price="58">
+                      <div class="gift-icon">🐬</div>
                       <div class="gift-info">
-                        <div class="gift-name">闪耀星星</div>
+                        <div class="gift-name">โลมา</div>
                         <div class="gift-price">¥58</div>
                       </div>
                       <div class="gift-controls">
@@ -1345,10 +1345,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
                         <button class="qty-btn plus">+</button>
                       </div>
                     </div>
-                    <div class="gift-card" data-gift="璀璨钻石" data-price="88">
-                      <div class="gift-icon">💎</div>
+                    <div class="gift-card" data-gift="กระเทียมไล่ผี" data-price="88">
+                      <div class="gift-icon">🧄</div>
                       <div class="gift-info">
-                        <div class="gift-name">璀璨钻石</div>
+                        <div class="gift-name">กระเทียมไล่ผี</div>
                         <div class="gift-price">¥88</div>
                       </div>
                       <div class="gift-controls">
@@ -1357,10 +1357,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
                         <button class="qty-btn plus">+</button>
                       </div>
                     </div>
-                    <div class="gift-card" data-gift="红毯口红" data-price="128">
-                      <div class="gift-icon">💄</div>
+                    <div class="gift-card" data-gift="Skibidi" data-price="128">
+                      <div class="gift-icon">🚽</div>
                       <div class="gift-info">
-                        <div class="gift-name">红毯口红</div>
+                        <div class="gift-name">Skibidi</div>
                         <div class="gift-price">¥128</div>
                       </div>
                       <div class="gift-controls">
@@ -1369,10 +1369,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
                         <button class="qty-btn plus">+</button>
                       </div>
                     </div>
-                    <div class="gift-card" data-gift="加冕皇冠" data-price="188">
-                      <div class="gift-icon">👑</div>
+                    <div class="gift-card" data-gift="ไม่ไหวแล้วววว" data-price="188">
+                      <div class="gift-icon">💦</div>
                       <div class="gift-info">
-                        <div class="gift-name">加冕皇冠</div>
+                        <div class="gift-name">ไม่ไหวแล้วววว</div>
                         <div class="gift-price">¥188</div>
                       </div>
                       <div class="gift-controls">
@@ -1381,10 +1381,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
                         <button class="qty-btn plus">+</button>
                       </div>
                     </div>
-                    <div class="gift-card" data-gift=""菲林"" data-price="288">
-                      <div class="gift-icon">📸</div>
+                    <div class="gift-card" data-gift="เพตเห็นเพตแทงนะคะ" data-price="288">
+                      <div class="gift-icon">🔪</div>
                       <div class="gift-info">
-                        <div class="gift-name">"菲林"</div>
+                        <div class="gift-name">เพตเห็นเพตแทงนะคะ</div>
                         <div class="gift-price">¥288</div>
                       </div>
                       <div class="gift-controls">
@@ -1393,10 +1393,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
                         <button class="qty-btn plus">+</button>
                       </div>
                     </div>
-                    <div class="gift-card" data-gift="白金唱片" data-price="388">
-                      <div class="gift-icon">🎶</div>
+                    <div class="gift-card" data-gift="แคทเทอรีนยิงมัน" data-price="388">
+                      <div class="gift-icon">🔫</div>
                       <div class="gift-info">
-                        <div class="gift-name">白金唱片</div>
+                        <div class="gift-name">แคทเทอรีนยิงมัน</div>
                         <div class="gift-price">¥388</div>
                       </div>
                       <div class="gift-controls">
@@ -1846,15 +1846,15 @@ if (typeof window.WatchLiveApp === 'undefined') {
         <div class="modal-overlay" id="specific-live-modal" style="display: flex;">
           <div class="modal-content">
             <div class="modal-header">
-              <h3>进入指定直播间</h3>
+              <h3>เข้าห้องไลฟ์ที่ต้องการ</h3>
               <button class="modal-close" onclick="watchLiveAppHideModal('specific-live-modal')">&times;</button>
             </div>
             <div class="modal-body">
               <div class="input-section">
-                <label for="streamer-name-input">请输入想要观看的主播名称：</label>
-                <input type="text" id="streamer-name-input" placeholder="输入主播名称..." />
+                <label for="streamer-name-input">พิมพ์ชื่อสตรีมเมอร์ที่ต้องการรับชม：</label>
+                <input type="text" id="streamer-name-input" placeholder="พิมพ์ชื่อสตรีมเมอร์..." />
               </div>
-              <button class="watch-live-btn" id="watch-specific-live">观看直播</button>
+              <button class="watch-live-btn" id="watch-specific-live">รับชมไลฟ์</button>
             </div>
           </div>
         </div>
@@ -1874,7 +1874,7 @@ if (typeof window.WatchLiveApp === 'undefined') {
             if (streamerName) {
               this.watchSpecificLive(streamerName);
             } else {
-              this.showToast('请输入主播名称', 'warning');
+              this.showToast('พิมพ์ชื่อสตรีมเมอร์ที่ต้องการรับชม：', 'warning');
             }
           });
         }
@@ -2431,7 +2431,7 @@ if (typeof window.WatchLiveApp === 'undefined') {
               messagesToUpdate.push({
                 index: i,
                 originalContent: content,
-                convertedContent: convertedContent
+                convertedContent: convertedContent,
               });
             }
           }
@@ -2778,7 +2778,7 @@ if (typeof window.WatchLiveApp === 'undefined') {
       if (window.mobilePhone && window.mobilePhone.updateAppHeader) {
         const state = {
           app: 'watch-live', // 修复：使用正确的应用名称
-          title: this.currentView === 'live' ? '观看直播中' : '观看直播',
+          title: this.currentView === 'live' ? 'กำลังดูไลฟ์สด' : 'ดูไลฟ์สด',
           view: this.currentView,
           viewerCount: this.stateManager.currentViewerCount,
         };
