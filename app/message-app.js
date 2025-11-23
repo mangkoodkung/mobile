@@ -105,10 +105,6 @@ if (typeof window.MessageApp === 'undefined') {
       this.useIncrementalRender = true; // 默认启用增量渲染
       this.fullRenderMode = false; // 是否使用全量渲染模式
 
-      // 延迟渲染相关
-      this.delayedRenderTimer = null; // 延迟渲染定时器
-      this.delayedRenderDelay = 2000; // 延迟2秒
-
       this.init();
     }
 
@@ -729,8 +725,11 @@ if (typeof window.MessageApp === 'undefined') {
         console.log(`[Message App] ✅ 新消息: ${this.lastMessageCount} → ${currentMessageCount}`);
         this.lastMessageCount = currentMessageCount;
 
-        // 延迟2秒后触发渲染
-        this.scheduleDelayedRender('接收到消息');
+        // 刷新消息显示
+        this.refreshMessages();
+
+        // 触发其他相关更新
+        this.updateTimeDisplay();
       } catch (error) {
         console.error('[Message App] 处理消息接收事件失败:', error);
       }
@@ -1524,37 +1523,6 @@ if (typeof window.MessageApp === 'undefined') {
       return stats;
     }
 
-    /**
-     * 延迟触发渲染（2秒后）
-     * 用于消息发送和接收后的自动刷新
-     */
-    scheduleDelayedRender(reason = '未知原因') {
-      // 清除之前的定时器
-      if (this.delayedRenderTimer) {
-        clearTimeout(this.delayedRenderTimer);
-      }
-
-      console.log(`[Message App] ⏰ 计划在${this.delayedRenderDelay / 1000}秒后渲染 (原因: ${reason})`);
-
-      // 设置新的延迟渲染定时器
-      this.delayedRenderTimer = setTimeout(async () => {
-        console.log(`[Message App] 🎯 执行延迟渲染 (原因: ${reason})`);
-        await this.triggerAutoRender();
-        this.delayedRenderTimer = null;
-      }, this.delayedRenderDelay);
-    }
-
-    /**
-     * 取消延迟渲染
-     */
-    cancelDelayedRender() {
-      if (this.delayedRenderTimer) {
-        clearTimeout(this.delayedRenderTimer);
-        this.delayedRenderTimer = null;
-        console.log('[Message App] ❌ 取消延迟渲染');
-      }
-    }
-
     // 加载好友渲染器
     async loadFriendRenderer() {
       if (window.friendRenderer) {
@@ -1673,7 +1641,7 @@ if (typeof window.MessageApp === 'undefined') {
         const messageState = {
           app: 'messages',
           view: 'messageList',
-          title: '信息',
+          title: 'ข้อความ',
           showBackButton: false,
           showAddButton: true,
           addButtonIcon: 'fas fa-plus',
@@ -1739,7 +1707,7 @@ if (typeof window.MessageApp === 'undefined') {
         const circleState = {
           app: 'messages',
           view: 'friendsCircle',
-          title: '朋友圈',
+          title: 'ฟีดของเพื่อน',
           showBackButton: false,
           showAddButton: true,
           addButtonIcon: 'fas fa-camera',
@@ -1780,7 +1748,7 @@ if (typeof window.MessageApp === 'undefined') {
             <div class="loading-spinner">
               <i class="fas fa-spinner fa-spin"></i>
             </div>
-            <div class="loading-text">朋友圈加载中...</div>
+            <div class="loading-text">กำลังโหลดข้อมูล...</div>
           </div>
           ${this.renderTabSwitcher()}
         `;
@@ -1802,12 +1770,12 @@ if (typeof window.MessageApp === 'undefined') {
           <button class="tab-btn ${this.currentMainTab === 'friends' ? 'active' : ''}"
                   onclick="window.messageApp?.switchMainTab('friends')">
             <i class="fas fa-user-friends"></i>
-            <span>好友</span>
+            <span>เพื่อน</span>
           </button>
           <button class="tab-btn ${this.currentMainTab === 'circle' ? 'active' : ''}"
                   onclick="window.messageApp?.switchMainTab('circle')">
             <i class="fas fa-globe"></i>
-            <span>朋友圈</span>
+            <span>โพสต์ของเพื่อน</span>
           </button>
         </div>
       `;
@@ -1826,8 +1794,8 @@ if (typeof window.MessageApp === 'undefined') {
         friendsHtml = `
                 <div class="empty-state">
                     <div class="empty-icon">💬</div>
-                    <div class="empty-text">暂无好友</div>
-                    <div class="empty-hint">点击右上角"添加"按钮添加好友</div>
+                    <div class="empty-text">ยังไม่มีรายชื่อเพื่อน</div>
+                    <div class="empty-hint">แตะปุ่ม 'เพิ่ม' ที่มุมขวาบนเพื่อเพิ่มเพื่อน</div>
                 </div>
             `;
       }
@@ -1850,19 +1818,19 @@ if (typeof window.MessageApp === 'undefined') {
                 <div class="tab-navigation">
                     <button class="tab-btn ${this.currentTab === 'add' ? 'active' : ''}" data-tab="add">
                         <span class="tab-icon"></span>
-                        <span>添加</span>
+                        <span>เพิ่มเพื่อน</span>
                     </button>
                     <button class="tab-btn ${this.currentTab === 'delete' ? 'active' : ''}" data-tab="delete">
                         <span class="tab-icon"></span>
-                        <span>删除</span>
+                        <span>ลบเพื่อน</span>
                     </button>
                     <button class="tab-btn ${this.currentTab === 'createGroup' ? 'active' : ''}" data-tab="createGroup">
                         <span class="tab-icon"></span>
-                        <span>创群</span>
+                        <span>สร้างกลุ่ม</span>
                     </button>
                     <button class="tab-btn ${this.currentTab === 'deleteGroup' ? 'active' : ''}" data-tab="deleteGroup">
                         <span class="tab-icon"></span>
-                        <span>删群</span>
+                        <span>ลบกลุ่ม</span>
                     </button>
                 </div>
 
@@ -1895,26 +1863,26 @@ if (typeof window.MessageApp === 'undefined') {
       return `
             <div class="add-friend-form">
                 <div class="form-group">
-                    <label for="friend-name">好友名称</label>
-                    <input type="text" id="friend-name" class="form-input" placeholder="请输入好友名称">
+                    <label for="friend-name">ชื่อเพื่อน</label>
+                    <input type="text" id="friend-name" class="form-input" placeholder="เพิ่มชื่อเพื่อนที่นี่">
                 </div>
                 <div class="form-group">
-                    <label for="friend-number">数字ID</label>
-                    <input type="number" id="friend-number" class="form-input" placeholder="请输入数字ID">
+                    <label for="friend-number">รหัสเพิ่มเพื่อน</label>
+                    <input type="number" id="friend-number" class="form-input" placeholder="ใส่รหัสเพิ่มเพื่อน">
                 </div>
                 <button class="add-friend-submit" id="add-friend-submit">
                     <span class="submit-icon">✅</span>
-                    <span>添加好友</span>
+                    <span>เพิ่มเพื่อน</span>
                 </button>
             </div>
             <div class="add-friend-tips">
                 <div class="tip-item">
                     <span class="tip-icon">💡</span>
-                    <span>添加好友后，信息会自动编辑到最新楼层</span>
+                    <span>หลังจากเพิ่มเพื่อนแล้ว ข้อมูลจะอัพเดตอัตโนมัติ</span>
                 </div>
                 <div class="tip-item">
                     <span class="tip-icon">📝</span>
-                    <span>格式：[好友id|好友名字|数字ID]</span>
+                    <span>วิธีการกรอก [รหัส-ชื่อ-หมายเลขรหัส]</span>
                 </div>
             </div>
         `;
@@ -1927,11 +1895,11 @@ if (typeof window.MessageApp === 'undefined') {
                 <div class="delete-friend-header">
                     <div class="delete-info">
                         <span class="delete-icon">⚠️</span>
-                        <span>选择要删除的好友</span>
+                        <span>เลือกเพื่อนที่ต้องการลบ</span>
                     </div>
                     <button class="refresh-friend-list" id="refresh-friend-list">
                         <span class="refresh-icon">🔄</span>
-                        <span>刷新</span>
+                        <span>รีเฟรช</span>
                     </button>
                 </div>
                 <div class="delete-friend-list" id="delete-friend-list">
@@ -1940,11 +1908,11 @@ if (typeof window.MessageApp === 'undefined') {
                 <div class="delete-friend-tips">
                     <div class="tip-item">
                         <span class="tip-icon">⚠️</span>
-                        <span>删除好友会移除所有相关消息记录</span>
+                        <span>การลบเพื่อนจะลบข้อความทั้งหมดออกด้วย</span>
                     </div>
                     <div class="tip-item">
                         <span class="tip-icon">🔍</span>
-                        <span>从上下文中查找并删除所有匹配的好友信息</span>
+                        <span>ระบบจะค้นหาและลบข้อมูลที่ตรงกันออกจากระบบทั้งหมด</span>
                     </div>
                 </div>
             </div>
@@ -1957,7 +1925,7 @@ if (typeof window.MessageApp === 'undefined') {
         return `
                 <div class="loading-state">
                     <div class="loading-icon">⏳</div>
-                    <div class="loading-text">正在加载好友列表...</div>
+                    <div class="loading-text">กำลังโหลดรายชื่อเพื่อน...</div>
                 </div>
             `;
       }
@@ -1971,8 +1939,8 @@ if (typeof window.MessageApp === 'undefined') {
           return `
                     <div class="empty-state">
                         <div class="empty-icon">👥</div>
-                        <div class="empty-text">暂无好友</div>
-                        <div class="empty-hint">请先添加好友</div>
+                        <div class="empty-text">ยังไม่มีเพื่อนในรายการ</div>
+                        <div class="empty-hint">โปรดเพิ่มเพื่อนก่อน</div>
                     </div>
                 `;
         }
@@ -1989,12 +1957,12 @@ if (typeof window.MessageApp === 'undefined') {
                             <div class="friend-details">
                                 <div class="friend-name">${friend.name}</div>
                                 <div class="friend-id">ID: ${friend.number}</div>
-                                <div class="friend-time">添加时间: ${timeStr}</div>
+                                <div class="friend-time">เพิ่มเมื่อ: ${timeStr}</div>
                             </div>
                         </div>
                         <button class="delete-friend-btn" data-friend-id="${friend.number}" data-friend-name="${friend.name}">
                             <span class="delete-icon">❌</span>
-                            <span>删除</span>
+                            <span>ลบ</span>
                         </button>
                     </div>
                 `;
@@ -2007,7 +1975,7 @@ if (typeof window.MessageApp === 'undefined') {
         return `
                 <div class="error-state">
                     <div class="error-icon">⚠️</div>
-                    <div class="error-text">加载好友列表失败</div>
+                    <div class="error-text">ไม่สามารถโหลดรายชื่อเพื่อนได้</div>
                     <div class="error-details">${error.message}</div>
                 </div>
             `;
@@ -2019,19 +1987,19 @@ if (typeof window.MessageApp === 'undefined') {
       return `
             <div class="create-group-form">
                 <div class="form-group">
-                    <label for="group-name">群聊名称</label>
-                    <input type="text" id="group-name" class="form-input" placeholder="请输入群聊名称">
+                    <label for="group-name">ชื่อกลุ่มแชท</label>
+                    <input type="text" id="group-name" class="form-input" placeholder="กรอกชื่อกลุ่มแชท">
                 </div>
                 <div class="form-group">
-                    <label for="group-id">群聊ID</label>
-                    <input type="number" id="group-id" class="form-input" placeholder="请输入群聊ID">
+                    <label for="group-id">รหัสกลุ่ม</label>
+                    <input type="number" id="group-id" class="form-input" placeholder="กรอกรหัสกลุ่ม">
                 </div>
                 <div class="form-group">
-                    <label>选择群成员</label>
+                    <label>เลือกสมาชิกในกลุ่ม</label>
                     <div class="friends-selection-container">
                         <div class="friends-selection-header">
-                            <span>可选好友 (点击选择)</span>
-                            <button class="select-all-friends" id="select-all-friends">全选</button>
+                            <span>เพื่อนที่สามารถเลือกได้ (คลิกเพื่อเลือก)</span>
+                            <button class="select-all-friends" id="select-all-friends">เลือกทั้งหมด</button>
                         </div>
                         <div class="friends-selection-list" id="friends-selection-list">
                             ${this.renderFriendsSelection()}
@@ -2039,27 +2007,27 @@ if (typeof window.MessageApp === 'undefined') {
                     </div>
                 </div>
                 <div class="form-group">
-                    <label>已选成员</label>
+                    <label>สมาชิกที่เลือกแล้ว</label>
                     <div class="selected-members" id="selected-members">
                         <div class="selected-member default-member">
-                            <span class="member-name">我</span>
-                            <span class="member-type">(群主)</span>
+                            <span class="member-name">ฉัน</span>
+                            <span class="member-type">(หัวหน้ากลุ่ม)</span>
                         </div>
                     </div>
                 </div>
                 <button class="create-group-submit" id="create-group-submit">
                     <span class="submit-icon">✅</span>
-                    <span>创建群聊</span>
+                    <span>สร้างกลุ่ม</span>
                 </button>
             </div>
             <div class="create-group-tips">
                 <div class="tip-item">
                     <span class="tip-icon">💡</span>
-                    <span>创建群聊后，信息会自动编辑到最新楼层</span>
+                    <span>เมื่อสร้างกลุ่มแล้ว ข้อมูลจะถูกเพิ่มไปยังหน้าล่าสุดโดยอัตโนมัติ</span>
                 </div>
                 <div class="tip-item">
                     <span class="tip-icon">📝</span>
-                    <span>格式：[群聊|群名|群ID|群成员]</span>
+                    <span>รูปแบบ：[กลุ่มแชท | ชื่อกลุ่ม | รหัสกลุ่ม | สมาชิกกลุ่ม]</span>
                 </div>
             </div>
         `;
@@ -2072,11 +2040,11 @@ if (typeof window.MessageApp === 'undefined') {
                 <div class="delete-group-header">
                     <div class="delete-info">
                         <span class="delete-icon">⚠️</span>
-                        <span>选择要删除的群聊</span>
+                        <span>เลือกกลุ่มแชทที่ต้องการลบ</span>
                     </div>
                     <button class="refresh-group-list" id="refresh-group-list">
                         <span class="refresh-icon">🔄</span>
-                        <span>刷新</span>
+                        <span>รีเฟรช</span>
                     </button>
                 </div>
                 <div class="delete-group-list" id="delete-group-list">
@@ -2085,11 +2053,11 @@ if (typeof window.MessageApp === 'undefined') {
                 <div class="delete-group-tips">
                     <div class="tip-item">
                         <span class="tip-icon">⚠️</span>
-                        <span>删除群聊会移除所有相关消息记录</span>
+                        <span>การลบกลุ่มแชทจะลบประวัติข้อความทั้งหมด</span>
                     </div>
                     <div class="tip-item">
                         <span class="tip-icon">🔍</span>
-                        <span>从上下文中查找并删除所有匹配的群聊信息</span>
+                        <span>ระบบจะค้นหาและลบข้อมูลกลุ่มแชททั้งหมด</span>
                     </div>
                 </div>
             </div>
@@ -2104,7 +2072,7 @@ if (typeof window.MessageApp === 'undefined') {
           return `
                     <div class="loading-state">
                         <div class="loading-icon">⏳</div>
-                        <div class="loading-text">正在加载好友列表...</div>
+                        <div class="loading-text">กำลังโหลดรายชื่อเพื่อน...</div>
                     </div>
                 `;
         }
@@ -2115,8 +2083,8 @@ if (typeof window.MessageApp === 'undefined') {
           return `
                     <div class="empty-state">
                         <div class="empty-icon">👥</div>
-                        <div class="empty-text">暂无好友</div>
-                        <div class="empty-hint">请先添加好友</div>
+                        <div class="empty-text">ยังไม่มีรายชื่อเพื่อน</div>
+                        <div class="empty-hint">โปรดเพิ่มรายชื่อเพื่อนก่อน</div>
                     </div>
                 `;
         }
@@ -2125,8 +2093,8 @@ if (typeof window.MessageApp === 'undefined') {
           .map(friend => {
             try {
               const avatar = this.getRandomAvatar();
-              const friendName = friend.name || '未知好友';
-              const friendNumber = friend.number || '未知';
+              const friendName = friend.name || 'ไม่ทราบชื่อเพื่อน';
+              const friendNumber = friend.number || 'ไม่ทราบรหัส';
 
               return `
                         <div class="friend-selection-item" data-friend-id="${friendNumber}" data-friend-name="${friendName}">
@@ -2490,9 +2458,6 @@ if (typeof window.MessageApp === 'undefined') {
                 sendInput.value = '';
                 window.messageSender.adjustTextareaHeight(sendInput);
                 this.updateCharCount(sendInput);
-
-                // 发送成功后延迟2秒触发渲染
-                this.scheduleDelayedRender('发送消息');
               }
             }
           }
@@ -2581,9 +2546,6 @@ if (typeof window.MessageApp === 'undefined') {
                 detailInput.value = '';
                 window.messageSender.adjustTextareaHeight(detailInput);
                 this.updateCharCount(detailInput);
-
-                // 发送成功后延迟2秒触发渲染
-                this.scheduleDelayedRender('发送消息（详情页）');
               }
             }
           }
@@ -2893,11 +2855,14 @@ if (typeof window.MessageApp === 'undefined') {
         if (stickerDetailEntries.length === 0) {
           console.warn('[Message App] 未找到"表情包详情"世界书条目，使用默认表情包列表');
           console.log('[Message App] 搜索的条目总数:', allEntries.length);
-          console.log('[Message App] 条目示例:', allEntries.slice(0, 3).map(e => ({
-            comment: e.comment,
-            key: e.key,
-            content: e.content ? e.content.substring(0, 50) + '...' : ''
-          })));
+          console.log(
+            '[Message App] 条目示例:',
+            allEntries.slice(0, 3).map(e => ({
+              comment: e.comment,
+              key: e.key,
+              content: e.content ? e.content.substring(0, 50) + '...' : '',
+            })),
+          );
           return this.getDefaultStickerImages();
         }
 
@@ -2915,7 +2880,7 @@ if (typeof window.MessageApp === 'undefined') {
               const imagesWithSource = stickerImages.map(img => ({
                 ...img,
                 source: entry.comment,
-                world: entry.world
+                world: entry.world,
               }));
               allStickerImages.push(...imagesWithSource);
               console.log(`[Message App] 从"${entry.comment}"解析到 ${stickerImages.length} 个表情包`);
@@ -2932,9 +2897,10 @@ if (typeof window.MessageApp === 'undefined') {
           return this.getDefaultStickerImages();
         }
 
-        console.log(`[Message App] 成功从 ${stickerDetailEntries.length} 个条目解析到总共 ${allStickerImages.length} 个表情包`);
+        console.log(
+          `[Message App] 成功从 ${stickerDetailEntries.length} 个条目解析到总共 ${allStickerImages.length} 个表情包`,
+        );
         return allStickerImages;
-
       } catch (error) {
         console.error('[Message App] 读取世界书表情包详情时出错:', error);
         return this.getDefaultStickerImages();
@@ -2976,7 +2942,10 @@ if (typeof window.MessageApp === 'undefined') {
 
           // 获取所有选中的选项
           const selectedOptions = Array.from(worldInfoSelect.selectedOptions);
-          console.log(`[Message App] 找到 ${selectedOptions.length} 个选中的世界书选项:`, selectedOptions.map(opt => opt.text));
+          console.log(
+            `[Message App] 找到 ${selectedOptions.length} 个选中的世界书选项:`,
+            selectedOptions.map(opt => opt.text),
+          );
 
           for (const option of selectedOptions) {
             const worldName = option.text;
@@ -2988,7 +2957,7 @@ if (typeof window.MessageApp === 'undefined') {
               if (worldData && worldData.entries) {
                 const entries = Object.values(worldData.entries).map(entry => ({
                   ...entry,
-                  world: worldName
+                  world: worldName,
                 }));
                 allEntries.push(...entries);
                 console.log(`[Message App] 从全局世界书"${worldName}"获取到 ${entries.length} 个条目`);
@@ -3004,8 +2973,16 @@ if (typeof window.MessageApp === 'undefined') {
         }
 
         // 方法2：从 selected_world_info 变量获取（备用）
-        if (allEntries.length === 0 && typeof window.selected_world_info !== 'undefined' && Array.isArray(window.selected_world_info) && window.selected_world_info.length > 0) {
-          console.log(`[Message App] 备用方法：从变量获取 ${window.selected_world_info.length} 个全局世界书:`, window.selected_world_info);
+        if (
+          allEntries.length === 0 &&
+          typeof window.selected_world_info !== 'undefined' &&
+          Array.isArray(window.selected_world_info) &&
+          window.selected_world_info.length > 0
+        ) {
+          console.log(
+            `[Message App] 备用方法：从变量获取 ${window.selected_world_info.length} 个全局世界书:`,
+            window.selected_world_info,
+          );
 
           for (const worldName of window.selected_world_info) {
             try {
@@ -3014,7 +2991,7 @@ if (typeof window.MessageApp === 'undefined') {
               if (worldData && worldData.entries) {
                 const entries = Object.values(worldData.entries).map(entry => ({
                   ...entry,
-                  world: worldName
+                  world: worldName,
                 }));
                 allEntries.push(...entries);
                 console.log(`[Message App] 从全局世界书"${worldName}"获取到 ${entries.length} 个条目`);
@@ -3035,10 +3012,12 @@ if (typeof window.MessageApp === 'undefined') {
               if (worldData && worldData.entries) {
                 const entries = Object.values(worldData.entries).map(entry => ({
                   ...entry,
-                  world: worldName
+                  world: worldName,
                 }));
                 allEntries.push(...entries);
-                console.log(`[Message App] 从world_info.globalSelect世界书"${worldName}"获取到 ${entries.length} 个条目`);
+                console.log(
+                  `[Message App] 从world_info.globalSelect世界书"${worldName}"获取到 ${entries.length} 个条目`,
+                );
               }
             } catch (error) {
               console.warn(`[Message App] 从world_info.globalSelect加载世界书"${worldName}"失败:`, error);
@@ -3053,7 +3032,6 @@ if (typeof window.MessageApp === 'undefined') {
         } catch (error) {
           console.warn('[Message App] 获取角色世界书失败:', error);
         }
-
       } catch (error) {
         console.error('[Message App] 获取世界书条目时出错:', error);
       }
@@ -3062,12 +3040,15 @@ if (typeof window.MessageApp === 'undefined') {
 
       // 🔥 新增：为调试提供详细信息
       if (allEntries.length > 0) {
-        console.log('[Message App] 世界书条目预览:', allEntries.slice(0, 3).map(entry => ({
-          comment: entry.comment,
-          key: Array.isArray(entry.key) ? entry.key.join(', ') : entry.key,
-          contentPreview: entry.content ? entry.content.substring(0, 50) + '...' : '无内容',
-          world: entry.world || '未知来源'
-        })));
+        console.log(
+          '[Message App] 世界书条目预览:',
+          allEntries.slice(0, 3).map(entry => ({
+            comment: entry.comment,
+            key: Array.isArray(entry.key) ? entry.key.join(', ') : entry.key,
+            contentPreview: entry.content ? entry.content.substring(0, 50) + '...' : '无内容',
+            world: entry.world || '未知来源',
+          })),
+        );
       }
 
       return allEntries;
@@ -3110,7 +3091,6 @@ if (typeof window.MessageApp === 'undefined') {
         } else {
           console.error(`[Message App] 加载世界书 "${worldName}" 失败: ${response.status} ${response.statusText}`);
         }
-
       } catch (error) {
         console.error(`[Message App] 加载世界书 "${worldName}" 时出错:`, error);
       }
@@ -3159,7 +3139,7 @@ if (typeof window.MessageApp === 'undefined') {
           if (worldData && worldData.entries) {
             const worldEntries = Object.values(worldData.entries).map(entry => ({
               ...entry,
-              world: worldName
+              world: worldName,
             }));
             entries.push(...worldEntries);
             console.log(`[Message App] 从角色主要世界书获取到 ${worldEntries.length} 个条目`);
@@ -3181,7 +3161,7 @@ if (typeof window.MessageApp === 'undefined') {
                 if (worldData && worldData.entries) {
                   const worldEntries = Object.values(worldData.entries).map(entry => ({
                     ...entry,
-                    world: extraWorldName
+                    world: extraWorldName,
                   }));
                   entries.push(...worldEntries);
                   console.log(`[Message App] 从角色额外世界书"${extraWorldName}"获取到 ${worldEntries.length} 个条目`);
@@ -3192,7 +3172,6 @@ if (typeof window.MessageApp === 'undefined') {
             }
           }
         }
-
       } catch (error) {
         console.error('[Message App] 获取角色世界书条目时出错:', error);
       }
@@ -3231,7 +3210,7 @@ if (typeof window.MessageApp === 'undefined') {
               displayName: filename,
               fallbackPath: fallbackPath,
               prefix: prefix,
-              suffix: suffix
+              suffix: suffix,
             });
           }
 
@@ -3247,7 +3226,10 @@ if (typeof window.MessageApp === 'undefined') {
             const suffix = parts[1].trim();
             const filesStr = parts[2].trim();
 
-            const files = filesStr.split(',').map(f => f.trim()).filter(f => f);
+            const files = filesStr
+              .split(',')
+              .map(f => f.trim())
+              .filter(f => f);
 
             for (const filename of files) {
               const fullPath = prefix + filename + suffix;
@@ -3260,18 +3242,23 @@ if (typeof window.MessageApp === 'undefined') {
                 displayName: filename,
                 fallbackPath: fallbackPath,
                 prefix: prefix,
-                suffix: suffix
+                suffix: suffix,
               });
             }
 
-            console.log(`[Message App] 管道格式解析成功，前缀: "${prefix}", 后缀: "${suffix}", 获取到 ${stickerImages.length} 个表情包`);
+            console.log(
+              `[Message App] 管道格式解析成功，前缀: "${prefix}", 后缀: "${suffix}", 获取到 ${stickerImages.length} 个表情包`,
+            );
             return stickerImages;
           }
         }
 
         // 尝试简单逗号分隔格式
         if (content.includes(',')) {
-          const files = content.split(',').map(f => f.trim()).filter(f => f);
+          const files = content
+            .split(',')
+            .map(f => f.trim())
+            .filter(f => f);
           const defaultPrefix = '/scripts/extensions/third-party/mobile/images/';
           const defaultSuffix = '';
 
@@ -3280,7 +3267,7 @@ if (typeof window.MessageApp === 'undefined') {
             stickerImages.push({
               filename: filename,
               fullPath: fullPath,
-              displayName: filename
+              displayName: filename,
             });
           }
 
@@ -3289,7 +3276,10 @@ if (typeof window.MessageApp === 'undefined') {
         }
 
         // 尝试单行格式（每行一个文件名）
-        const lines = content.split('\n').map(line => line.trim()).filter(line => line);
+        const lines = content
+          .split('\n')
+          .map(line => line.trim())
+          .filter(line => line);
         if (lines.length > 0) {
           const defaultPrefix = '/scripts/extensions/third-party/mobile/images/';
           const defaultSuffix = '';
@@ -3299,14 +3289,13 @@ if (typeof window.MessageApp === 'undefined') {
             stickerImages.push({
               filename: filename,
               fullPath: fullPath,
-              displayName: filename
+              displayName: filename,
             });
           }
 
           console.log(`[Message App] 行分隔格式解析成功，获取到 ${stickerImages.length} 个表情包`);
           return stickerImages;
         }
-
       } catch (error) {
         console.error('[Message App] 解析表情包详情时出错:', error);
       }
@@ -3346,7 +3335,7 @@ if (typeof window.MessageApp === 'undefined') {
       return defaultFiles.map(filename => ({
         filename: filename,
         fullPath: defaultPrefix + filename + defaultSuffix,
-        displayName: filename
+        displayName: filename,
       }));
     }
 
@@ -3376,7 +3365,7 @@ if (typeof window.MessageApp === 'undefined') {
           console.log('✓ 找到表情包详情条目:', {
             comment: stickerDetailEntry.comment,
             key: stickerDetailEntry.key,
-            world: stickerDetailEntry.world
+            world: stickerDetailEntry.world,
           });
 
           // 测试解析表情包详情
@@ -3398,7 +3387,6 @@ if (typeof window.MessageApp === 'undefined') {
           console.log('💡 请确保世界书中有一个条目的注释包含"表情包详情"或关键词包含"sticker"');
           return { success: false, error: '未找到配置条目' };
         }
-
       } catch (error) {
         console.error('❌ Message App 表情包配置测试失败:', error);
         return { success: false, error: error.message };
@@ -3450,9 +3438,13 @@ if (typeof window.MessageApp === 'undefined') {
                 <div style="margin-top: 15px; text-align: center; font-size: 12px; color: #666;">
                     点击表情包插入到消息中
                     <br><span class="sticker-status">
-                        ${stickerImages.length > 0 && stickerImages[0].fullPath && stickerImages[0].fullPath !== stickerImages[0].filename ?
-                          '<small style="color: #999;">✓ 使用世界书配置</small>' :
-                          '<small style="color: #999;">使用默认配置</small>'}
+                        ${
+                          stickerImages.length > 0 &&
+                          stickerImages[0].fullPath &&
+                          stickerImages[0].fullPath !== stickerImages[0].filename
+                            ? '<small style="color: #999;">✓ 使用世界书配置</small>'
+                            : '<small style="color: #999;">使用默认配置</small>'
+                        }
                     </span>
                 </div>
             </div>
@@ -3674,9 +3666,8 @@ if (typeof window.MessageApp === 'undefined') {
         // 如果没有传入完整路径，尝试从缓存查找
         try {
           const stickerImages = this.getCachedStickerImages();
-          const stickerData = stickerImages.find(sticker =>
-            (sticker.filename === filename) ||
-            (typeof sticker === 'string' && sticker === filename)
+          const stickerData = stickerImages.find(
+            sticker => sticker.filename === filename || (typeof sticker === 'string' && sticker === filename),
           );
 
           if (stickerData && stickerData.fullPath) {
@@ -3778,7 +3769,7 @@ if (typeof window.MessageApp === 'undefined') {
           const now = Date.now();
 
           // 检查缓存是否过期（默认30分钟）
-          if (cacheData.timestamp && (now - cacheData.timestamp) < 30 * 60 * 1000) {
+          if (cacheData.timestamp && now - cacheData.timestamp < 30 * 60 * 1000) {
             console.log(`[Message App] 使用缓存的表情包配置，包含 ${cacheData.data.length} 个表情包`);
             return cacheData.data;
           } else {
@@ -3803,7 +3794,7 @@ if (typeof window.MessageApp === 'undefined') {
       try {
         const cacheData = {
           data: stickerImages,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         };
         localStorage.setItem('stickerConfig_cache', JSON.stringify(cacheData));
         console.log(`[Message App] 表情包配置已缓存，包含 ${stickerImages.length} 个表情包`);
@@ -3841,7 +3832,6 @@ if (typeof window.MessageApp === 'undefined') {
 
         // 显示成功提示
         this.showToast('表情包配置已刷新', 'success');
-
       } catch (error) {
         console.error('[Message App] 刷新表情包配置失败:', error);
         this.showToast('刷新失败，请检查世界书配置', 'error');
@@ -3873,8 +3863,12 @@ if (typeof window.MessageApp === 'undefined') {
       // 更新状态提示
       const statusElement = panel.querySelector('.sticker-status');
       if (statusElement) {
-        const statusText = stickerImages.length > 0 && stickerImages[0].fullPath && stickerImages[0].fullPath !== stickerImages[0].filename ?
-          '✓ 使用世界书配置' : '使用默认配置';
+        const statusText =
+          stickerImages.length > 0 &&
+          stickerImages[0].fullPath &&
+          stickerImages[0].fullPath !== stickerImages[0].filename
+            ? '✓ 使用世界书配置'
+            : '使用默认配置';
         statusElement.innerHTML = `<small style="color: #999;">${statusText}</small>`;
       }
 
@@ -3886,23 +3880,24 @@ if (typeof window.MessageApp === 'undefined') {
      */
     generateStickerGrid(stickerImages) {
       return stickerImages
-        .map(
-          stickerData => {
-            // 🔥 修复：为备用路径使用世界书配置的前缀，而不是硬编码路径
-            let fallbackPath;
-            if (stickerData.fallbackPath) {
-              // 如果已经有备用路径，直接使用
-              fallbackPath = stickerData.fallbackPath;
-            } else if (stickerData.prefix && stickerData.suffix !== undefined) {
-              // 如果有世界书配置的前缀和后缀，使用它们构建备用路径
-              fallbackPath = stickerData.prefix + (stickerData.filename || stickerData) + stickerData.suffix;
-            } else {
-              // 最后才使用默认路径
-              fallbackPath = `/scripts/extensions/third-party/mobile/images/${stickerData.filename || stickerData}`;
-            }
+        .map(stickerData => {
+          // 🔥 修复：为备用路径使用世界书配置的前缀，而不是硬编码路径
+          let fallbackPath;
+          if (stickerData.fallbackPath) {
+            // 如果已经有备用路径，直接使用
+            fallbackPath = stickerData.fallbackPath;
+          } else if (stickerData.prefix && stickerData.suffix !== undefined) {
+            // 如果有世界书配置的前缀和后缀，使用它们构建备用路径
+            fallbackPath = stickerData.prefix + (stickerData.filename || stickerData) + stickerData.suffix;
+          } else {
+            // 最后才使用默认路径
+            fallbackPath = `/scripts/extensions/third-party/mobile/images/${stickerData.filename || stickerData}`;
+          }
 
-            return `
-            <div class="sticker-item" onclick="window.messageApp.insertStickerMessage('${stickerData.filename || stickerData}', '${stickerData.fullPath || stickerData}')"
+          return `
+            <div class="sticker-item" onclick="window.messageApp.insertStickerMessage('${
+              stickerData.filename || stickerData
+            }', '${stickerData.fullPath || stickerData}')"
                  style="cursor: pointer; padding: 4px; border: 2px solid transparent; border-radius: 8px; transition: all 0.3s ease;width:calc(25%);box-sizing:border-box"
                  onmouseover="this.style.borderColor='#667eea'; this.style.transform='scale(1.1)'"
                  onmouseout="this.style.borderColor='transparent'; this.style.transform='scale(1)'"
@@ -3914,8 +3909,7 @@ if (typeof window.MessageApp === 'undefined') {
                      >
             </div>
         `;
-          }
-        )
+        })
         .join('');
     }
 
@@ -6083,9 +6077,6 @@ if (typeof window.MessageApp === 'undefined') {
           clearInterval(this.pollingInterval);
           this.pollingInterval = null;
         }
-
-        // 取消延迟渲染
-        this.cancelDelayedRender();
 
         this.isEventListening = false;
       } catch (error) {
