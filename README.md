@@ -1,3 +1,29 @@
+# 💛What is this project?
+This project is a version that I forked from yexiaoxiaoye.
+(You can actually see that clearly on GitHub already, haha 🤭)
+
+I wanted to use the “SillyTavern mobile phone simulator” in Thai,
+so I forked the project and started tweaking things here and there
+to make it feel more natural for Thai users from wording, playful jokes, Thai-style memes, to an overall vibe that feels friendlier for local users.
+
+❤ All credit goes to the original creator ❤ ️
+I truly admire yexiaoxiaoye they’re amazing and made such a cool project!
+As for me, I’m just a tiny little editor still learning how to code,
+messing around, breaking things, fixing things… and having fun LOL!
+
+## A small note (that I’ve wanted to say for a while)
+If anyone feels biased against me or simply doesn’t like me,
+you really don’t need to use anything I’ve edited or added, okay?
+I’m aware of everything And honestly… it would be kinda funny
+if someone “hates me with all their heart” but still secretly uses things I edited or fixed…XD
+
+## I hope those who genuinely want to try it
+will enjoy this Thai version 📱✨
+And if you want me to adjust or improve anything,
+just let me know anytime! 💛
+
+------
+
 # SillyTavern 手机插件 📱
 
 一个为 SillyTavern 设计的全功能手机界面模拟插件，提供丰富的应用生态和智能交互体验。
