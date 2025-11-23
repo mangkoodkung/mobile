@@ -1034,16 +1034,15 @@ if (typeof window.LiveApp === 'undefined') {
         <div class="live-app">
           <div class="live-main-container">
             <div class="live-main-header">
-              <h2>直播中心</h2>
-              <p>选择你想要的直播功能</p>
+              <h2>Live Center</h2>
+              <p>เลือกฟังก์ชันไลฟ์สดที่คุณต้องการ</p>
             </div>
 
             <div class="live-options">
               <div class="live-option-card" id="start-streaming-option">
                 <div class="option-icon">🎥</div>
                 <div class="option-content">
-                  <h3>我要直播</h3>
-                  <p>开始你的直播之旅</p>
+                  <h3>เริ่มไลฟ์ของฉัน</h3>
                 </div>
                 <div class="option-arrow">→</div>
               </div>
@@ -1051,50 +1050,49 @@ if (typeof window.LiveApp === 'undefined') {
               <div class="live-option-card" id="watch-streaming-option">
                 <div class="option-icon">📺</div>
                 <div class="option-content">
-                  <h3>观看直播</h3>
-                  <p>观看其他主播的精彩直播</p>
+                  <h3>ดูไลฟ์ของคนอื่น</h3>
                 </div>
                 <div class="option-arrow">→</div>
               </div>
             </div>
           </div>
 
-          <!-- 开始直播弹窗 -->
+          <!-- หน้าต่างไลฟ์สด -->
           <div class="modal" id="start-live-modal" style="display: none;">
             <div class="modal-content">
               <div class="modal-header">
-                <h3>开始直播</h3>
+                <h3>เริ่มต้นไลฟ์สด</h3>
                 <button class="modal-close-btn">&times;</button>
               </div>
               <div class="modal-body">
                 <div class="custom-interaction-section">
                   <textarea
                     id="custom-interaction-input"
-                    placeholder="输入自定义互动内容..."
+                    placeholder="บอกทุกคนหน่อยสิ วันนี้เป็นยังไงบ้าง..."
                     rows="3"
                   ></textarea>
                 </div>
 
                 <div class="preset-interactions">
-                  <h4>预设互动</h4>
+                  <h4>เลือกสิ่งที่อยากพูดกับผู้ชม</h4>
                   <div class="preset-buttons">
-                    <button class="preset-btn" data-interaction="和观众打个招呼">
-                      👋 和观众打个招呼
+                    <button class="preset-btn" data-interaction="ทักทายผู้ชมหน่อยสิ">
+                      👋 ทักทายผู้ชม
                     </button>
-                    <button class="preset-btn" data-interaction="分享今天的心情">
-                      😊 分享今天的心情
+                    <button class="preset-btn" data-interaction="แชร์อารมณ์ของคุณวันนี้">
+                      😊 แชร์อารมณ์วันนี้
                     </button>
-                    <button class="preset-btn" data-interaction="聊聊最近的趣事">
-                      💬 聊聊最近的趣事
+                    <button class="preset-btn" data-interaction="เล่าเรื่องสนุกๆ ช่วงนี้">
+                      💬 เล่าเรื่องสนุกๆ
                     </button>
-                    <button class="preset-btn" data-interaction="唱首歌给大家听">
-                      🎵 唱首歌给大家听
+                    <button class="preset-btn" data-interaction="ร้องเพลงให้ทุกคนฟัง">
+                      🎵 ร้องเพลงให้ฟัง
                     </button>
                   </div>
                 </div>
 
                 <button class="start-live-btn" id="start-custom-live">
-                  开始直播
+                  เริ่มต้นไลฟ์สด
                 </button>
               </div>
             </div>
@@ -1141,72 +1139,76 @@ if (typeof window.LiveApp === 'undefined') {
       return `
         <div class="live-app">
           <div class="live-container">
-            <!-- 视频框 -->
+            <!-- กรอบวิดิโอ -->
             <div class="video-placeholder">
-              <p class="live-content-text">${state.liveContent || '等待直播内容...'}</p>
+              <p class="live-content-text">${state.liveContent || 'กำลังโหลด...'}</p>
               <div class="live-status-bottom">
                 <div class="live-dot"></div>
                 <span>LIVE</span>
               </div>
             </div>
 
-            <!-- 推荐互动 -->
+            <!-- ส่วนแนะนำการตอบโต้ -->
             <div class="interaction-panel">
               <div class="interaction-header">
-                <h4>推荐互动：</h4>
+                <h4>หัวข้อแนะนำ：</h4>
                 <button class="interact-btn" id="custom-interact-btn">
-                  <i class="fas fa-pen-nib"></i> 自定义互动
+                  <i class="fas fa-pen-nib"></i> พิมข้อความของคุณ
                 </button>
               </div>
-              <div class="recommended-interactions">
-                ${recommendedButtons || '<p class="no-interactions">等待推荐互动...</p>'}
+          <div class="recommended-interactions">${
+            recommendedButtons || '<p class="no-interactions">กำลังแนะนำหัวข้อสำหรับพูดคุย...</p>'
+          }
               </div>
-            </div>
+              </div>
 
-            <!-- 弹幕容器 -->
-            <div class="danmaku-container" id="danmaku-container">
-              <div class="danmaku-list" id="danmaku-list">
-                ${danmakuItems || '<div class="no-danmaku">等待弹幕...</div>'}
-              </div>
-            </div>
+            <!-- กล่องข้อความผู้ชม -->
+          <div class="danmaku-container" id="danmaku-container">
+          <div class="danmaku-list" id="danmaku-list">${
+            danmakuItems || '<div class="no-danmaku">ยังไม่มีข้อความจากผู้ชม...</div>'
+          }
+          </div>
+          </div>
           </div>
 
-          <!-- 自定义互动弹窗 -->
+          <!-- หน้าต่างโต้ตอบแบบกำหนดเอง -->
           <div id="interaction-modal" class="modal">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h3>自定义互动</h3>
-                <button class="modal-close-btn">&times;</button>
-              </div>
-              <form id="interaction-form">
-                <textarea id="custom-interaction-textarea" placeholder="输入你想说的内容..." rows="4"></textarea>
-                <button type="submit" class="submit-btn">发送</button>
-              </form>
-            </div>
+          <div class="modal-content">
+          <div class="modal-header">
+          <h3>พิมพ์ข้อความที่นี่</h3>
+          <button class="modal-close-btn">&times;</button>
           </div>
+        <form id="interaction-form">
+      <textarea
+        id="custom-interaction-textarea"placeholder="พิมพ์ข้อความถึงแฟนๆ..." rows="4"></textarea>
+      <button type="submit" class="submit-btn">ส่งข้อความ</button>
+        </form>
+        </div>
+        </div>
 
-          <!-- 礼物列表弹窗 -->
-          <div id="gift-modal" class="modal">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h3>礼物流水</h3>
-                <button class="modal-close-btn">&times;</button>
-              </div>
-              <ul class="gift-list">
-                ${
-                  state.giftList
-                    .map(gift => {
-                      const gsig = this.createGiftSignature(gift);
-                      const needAppearClass = this.pendingAppearGiftSigs.has(gsig) ? ' need-appear' : '';
-                      return `<li class="${needAppearClass.trim()}" data-sig="${gsig}"><span class="username">${
-                        gift.username
-                      }</span>送出 <span class="gift-name">${gift.gift}</span></li>`;
-                    })
-                    .join('') || '<li class="no-gifts">暂无礼物</li>'
-                }
-              </ul>
-            </div>
-          </div>
+        <!-- หน้าต่างรายการของขวัญ -->
+      <div id="gift-modal" class="modal">
+        <div class="modal-content">
+        <div class="modal-header">
+        <h3>รายการของขวัญ</h3>
+        <button class="modal-close-btn">&times;</button>
+        </div>
+        <ul class="gift-list">
+      ${
+        state.giftList
+          .map(gift => {
+            const gsig = this.createGiftSignature(gift);
+            const needAppearClass = this.pendingAppearGiftSigs.has(gsig) ? ' need-appear' : '';
+            return `<li class="${needAppearClass.trim()}" data-sig="${gsig}">
+              <span class="username">${gift.username}</span>
+              ได้ส่ง <span class="gift-name">${gift.gift}</span>
+            </li>`;
+          })
+          .join('') || '<li class="no-gifts">ยังไม่มีของขวัญในตอนนี้</li>'
+      }
+    </ul>
+  </div>
+</div>
         </div>
       `;
     }
@@ -1256,7 +1258,7 @@ if (typeof window.LiveApp === 'undefined') {
                 this.hideModal('start-live-modal');
                 this.startLive(interaction);
               } else {
-                this.showToast('请输入互动内容', 'warning');
+                this.showToast('กรุณาใส่ข้อความก่อนเริ่มไลฟ์', 'warning');
               }
             });
           }
@@ -1305,7 +1307,7 @@ if (typeof window.LiveApp === 'undefined') {
                 textarea.value = '';
                 this.hideAllModals();
               } else {
-                this.showToast('请输入互动内容', 'warning');
+                this.showToast('กรุณาพิมพ์ข้อความก่อนเริ่มไลฟ์', 'warning');
               }
             });
           }
@@ -1333,10 +1335,10 @@ if (typeof window.LiveApp === 'undefined') {
           });
         });
 
-        console.log('[Live App] 事件绑定完成');
+        console.log('[Live App] ระบบเชื่อมปุ่มทั้งหมดเรียบร้อย');
       } catch (error) {
-        console.error('[Live App] 绑定事件时发生错误:', error);
-        this.showToast('事件绑定失败: ' + error.message, 'error');
+        console.error('[Live App] มีบางอย่างผิดพลาดระหว่างเชื่อมปุ่ม:', error);
+        this.showToast('เกิดข้อผิดพลาดขณะเชื่อมปุ่ม: ' + error.message, 'error');
       }
     }
 
@@ -1384,7 +1386,7 @@ if (typeof window.LiveApp === 'undefined') {
     }
 
     /**
-     * 设置渲染权
+     * ตั้งค่าสิทธิ์การเรนเดอร์
      */
     async setRenderingRight(type) {
       try {
@@ -1506,7 +1508,7 @@ if (typeof window.LiveApp === 'undefined') {
     }
 
     /**
-     * 发送消息到SillyTavern
+     * ส่งข้อความไปยัง SillyTavern
      */
     async sendToSillyTavern(message) {
       try {
@@ -1574,7 +1576,7 @@ if (typeof window.LiveApp === 'undefined') {
               messagesToUpdate.push({
                 index: i,
                 originalContent: content,
-                convertedContent: convertedContent
+                convertedContent: convertedContent,
               });
             }
           }
@@ -1919,7 +1921,7 @@ if (typeof window.LiveApp === 'undefined') {
       if (window.mobilePhone && window.mobilePhone.updateAppHeader) {
         const state = {
           app: 'live',
-          title: this.currentView === 'live' ? '直播中' : '直播',
+          title: this.currentView === 'live' ? 'กำลังไลฟ์สด' : 'ไลฟ์สด',
           view: this.currentView,
           viewerCount: this.stateManager.currentViewerCount,
         };
