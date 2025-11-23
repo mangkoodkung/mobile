@@ -1109,10 +1109,10 @@ ${
                 <div class="style-config-tabs">
                     <div class="tab-headers">
                         <button class="tab-header active" data-tab="editor">
-                            ✏️ 样式编辑器
+                            ✏️ เครื่องมือแก้ไขรูปแบบ
                         </button>
                         <button class="tab-header" data-tab="manager">
-                            📋 配置管理
+                            📋 การจัดการการตั้งค่า
                         </button>
                     </div>
 
@@ -1120,19 +1120,19 @@ ${
                         <div class="tab-panel active" data-tab="editor">
                 <div class="style-config-settings">
                     <div class="image-upload-settings">
-                        <h4>🔧 图片上传设置</h4>
+                        <h4>🔧การตั้งค่าการอัปโหลดรูปภาพ</h4>
                         <div class="setting-item">
                             <label>
                                 <input type="radio" name="imageUploadMode" value="auto" checked>
-                                <span>自动模式</span>
-                                <small>优先Data Bank，失败时自动使用base64</small>
+                                <span>โหมดอัตโนมัติ</span>
+                                <small>เน้น Data Bank ใช้ base64 อัตโนมัติเมื่อล้มเหลว</small>
                             </label>
                         </div>
                         <div class="setting-item">
                             <label>
                                 <input type="radio" name="imageUploadMode" value="base64">
-                                <span>Base64模式</span>
-                                <small>直接转换为base64，配置文件会较大但更稳定</small>
+                                <span>โหมด Base64</span>
+                                <small>แปลงเป็น base64 ไฟล์ใหญ่ขึ้นแต่เสถียร</small>
                             </label>
                         </div>
                     </div>
@@ -1155,8 +1155,8 @@ ${
                         <div class="tab-panel" data-tab="manager">
                             <div class="config-list-section">
                                 <div class="section-header">
-                                    <h3>📋 已保存的配置</h3>
-                                    <p>管理你保存的样式配置文件，使用编辑器底部的"另存为"按钮创建新配置</p>
+                                    <h3>📋การตั้งค่าที่บันทึกไว้</h3>
+                                    <p>จัดการไฟล์ตั้งค่าที่บันทึกไว้ สร้างใหม่ด้วยปุ่ม "บันทึกเป็น"</p>
                                 </div>
 
 
@@ -1164,19 +1164,19 @@ ${
                                 <div class="config-list" id="config-list-container">
                                     <div class="loading-configs">
                                         <div class="loading-icon">⏳</div>
-                                        <div class="loading-text">正在加载配置列表...</div>
+                                        <div class="loading-text">กำลังโหลดรายการการตั้งค่า...</div>
                                     </div>
                                 </div>
 
                                 <div class="config-list-actions">
                                     <button id="refresh-config-list" class="config-btn">
-                                        <span>刷新</span>
+                                        <span>รีเฟรช</span>
                                     </button>
                                     <button id="export-config" class="config-btn preview-btn">
-                                        <span>导出</span>
+                                        <span>ส่งออก</span>
                                     </button>
                                     <button id="import-config" class="config-btn save-btn">
-                                        <span>导入</span>
+                                        <span>นำเข้า</span>
                                     </button>
                                 </div>
 
@@ -1191,19 +1191,19 @@ ${
                 <div class="style-config-footer">
                     <div class="config-actions">
                         <button class="config-btn preview-btn" id="preview-styles">
-                            <span>预览样式</span>
+                            <span>ดูตัวอย่างรูปแบบ</span>
                         </button>
                         <button class="config-btn save-btn" id="save-new-config-btn">
-                            <span>另存为</span>
+                            <span>บันทึกเป็น</span>
                         </button>
                         <button class="config-btn reset-btn" id="reset-styles">
-                            <span>重置默认</span>
+                            <span>รีเซ็ตเป็นค่าเริ่มต้น</span>
                         </button>
                     </div>
 
                     <div class="config-status" id="config-status">
                         <span class="status-icon">ℹ️</span>
-                        <span class="status-text">调整完成后点击另存为按钮</span>
+                        <span class="status-text">เมื่อปรับแต่งเสร็จแล้วให้คลิกปุ่มบันทึกเป็น</span>
                     </div>
                 </div>
 
@@ -2658,7 +2658,7 @@ ${
                             <div class="config-info">
                                 <div class="config-name">
                                     ${isDefault ? '🏠' : '📄'} ${displayName}
-                                    ${isDefault ? '<span class="default-badge">默认</span>' : ''}
+                                    ${isDefault ? '<span class="default-badge">ค่าเริ่มต้น</span>' : ''}
                                 </div>
                                 <div class="config-meta">
                                     <small>创建时间: ${createTime}</small>
@@ -2669,13 +2669,13 @@ ${
                                 <button class="config-action-btn load-config" data-config-file="${
                                   config.name
                                 }" title="加载此配置">
-                                    📥 加载
+                                    📥 โหลด
                                 </button>
                                 ${
                                   !isDefault
                                     ? `
                                     <button class="config-action-btn delete-config" data-config-file="${config.name}" title="删除此配置">
-                                        🗑️ 删除
+                                        🗑️ ลบ
                                     </button>
                                 `
                                     : ''
@@ -3005,8 +3005,8 @@ ${
       return `
             <div class="config-section friend-backgrounds-section">
                 <div class="section-header">
-                    <h3>🎨 好友专属聊天背景</h3>
-                    <p>为每个好友设置独特的聊天背景，基于data-background-id机制实现</p>
+                    <h3>🎨 พื้นหลังการแชทเฉพาะเพื่อน</h3>
+                    <p>ตั้งพื้นหลังแชทสำหรับเพื่อนโดยใช้ data-background-id</p>
                 </div>
 
                 <div class="backgrounds-container">
@@ -3016,8 +3016,8 @@ ${
                         ? `
                         <div class="empty-backgrounds">
                             <div class="empty-icon">🖼️</div>
-                            <div class="empty-text">暂无好友专属背景</div>
-                            <div class="empty-hint">使用好友弹窗设置专属背景</div>
+                            <div class="empty-text">ยังไม่มีพื้นหลังเฉพาะเพื่อน</div>
+                            <div class="empty-hint">ใช้ป๊อปอัปเพื่อนเพื่อตั้งค่าพื้นหลังเฉพาะ</div>
                         </div>
                     `
                         : ''
@@ -3027,7 +3027,7 @@ ${
                 <div class="background-actions">
                     <button class="config-btn add-background-btn" onclick="window.styleConfigManager.addNewFriendBackground()">
                         <span class="btn-icon">➕</span>
-                        <span>手动添加背景</span>
+                        <span>เพิ่มพื้นหลังด้วยตนเอง</span>
                     </button>
                 </div>
             </div>
@@ -3049,8 +3049,8 @@ ${
       return `
             <div class="config-section avatars-section">
                 <div class="section-header">
-                    <h3>🎭 接收消息头像背景</h3>
-                    <p>为不同好友的头像设置个性化背景图片</p>
+                    <h3>🎭 พื้นหลังรูปโปรไฟล์ข้อความที่ได้รับ</h3>
+                    <p>ตั้งพื้นหลังเฉพาะให้รูปโปรไฟล์เพื่อน</p>
                 </div>
 
                 <div class="avatars-container">
@@ -3060,7 +3060,7 @@ ${
                 <div class="avatar-actions">
                     <button class="config-btn add-avatar-btn" onclick="window.styleConfigManager.addNewAvatar()">
                         <span class="btn-icon">➕</span>
-                        <span>添加新头像</span>
+                        <span>เพิ่มรูปโปรไฟล์ใหม่</span>
                     </button>
                 </div>
             </div>
