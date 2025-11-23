@@ -1139,16 +1139,16 @@ ${
                 </div>
 
                 <div class="style-config-content">
-                    ${this.generateConfigSection('homeScreen', '主屏幕背景', config.homeScreen)}
+                    ${this.generateConfigSection('homeScreen', 'พื้นหลังหน้าจอหลัก', config.homeScreen)}
                     ${this.generateFriendBackgroundsSection(config.friendBackgrounds || [])}
-                    ${this.generateConfigSection('messagesApp', '消息应用背景', config.messagesApp)}
+                    ${this.generateConfigSection('messagesApp', 'พื้นหลังหน้าต่างแชท', config.messagesApp)}
                                 ${this.generateAvatarConfigSection(
                                   'messageSentAvatar',
-                                  '发送消息头像背景',
+                                  'พื้นหลังโปรไฟล์ผู้ส่ง',
                                   config.messageSentAvatar,
                                 )}
             ${this.generateReceivedAvatarsSection(config.messageReceivedAvatars)}
-                    ${this.generateCustomStylesSection('customStyles', '自定义CSS样式', config.customStyles)}
+                    ${this.generateCustomStylesSection('customStyles', 'สไตล์ CSS แบบกำหนดเอง', config.customStyles)}
                             </div>
                         </div>
 
