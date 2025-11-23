@@ -849,18 +849,18 @@ function createSettingsUI() {
     <div id="mobile_context_settings">
         <div class="inline-drawer">
             <div class="inline-drawer-toggle inline-drawer-header">
-                <b>外置手机</b>
+                <b>POPKO-Mobile</b>
                 <div class="inline-drawer-icon fa-solid fa-circle-chevron-down"></div>
             </div>
             <div class="inline-drawer-content">
                 <div class="flex-container" style='flex-wrap: wrap;flex-direction: row;'>
                     <label class="checkbox_label" for="mobile_tavern_compatibility_mode">
                         <input id="mobile_tavern_compatibility_mode" type="checkbox" />
-                        <span>酒馆页面与手机控制兼容</span>
+                        <span>Compatibility Mode</span>
                     </label>
                     <label class="checkbox_label" for="mobile_hide_phone">
                         <input id="mobile_hide_phone" type="checkbox" />
-                        <span>隐藏手机按钮</span>
+                        <span>Hide Phone Button/span>
                     </label>
                     <label class="checkbox_label" for="mobile_auto_send_enabled">
                         <input id="mobile_auto_send_enabled" type="checkbox" />
@@ -1269,7 +1269,10 @@ function bindSettingsControls() {
     .on('change', function () {
       extension_settings.mobile_context.disableBodyText = $(this).prop('checked');
       saveSettings();
-      console.log('[Mobile Context] 禁止正文功能已', extension_settings.mobile_context.disableBodyText ? '启用' : '禁用');
+      console.log(
+        '[Mobile Context] 禁止正文功能已',
+        extension_settings.mobile_context.disableBodyText ? '启用' : '禁用',
+      );
     });
 }
 
