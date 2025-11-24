@@ -928,7 +928,7 @@ if (typeof window.MessageRenderer === 'undefined') {
     /**
      * 批量渲染消息 - 优化DOM操作
      */
-        /**
+    /**
      * 批量渲染消息 - 保留缓存，尽量少的 DOM 操作
      */
     renderMessagesBatch(messages) {
@@ -963,7 +963,9 @@ if (typeof window.MessageRenderer === 'undefined') {
       if (message.textPosition !== undefined && message.textPosition !== null) return `tp:${message.textPosition}`;
       if (message.contextOrder !== undefined && message.contextOrder !== null) return `co:${message.contextOrder}`;
       if (message.fullMatch) return `fm:${this.simpleHash(String(message.fullMatch))}`;
-      const raw = [message.messageType || '', message.sender || '', message.number || '', message.msgType || ''].join('|');
+      const raw = [message.messageType || '', message.sender || '', message.number || '', message.msgType || ''].join(
+        '|',
+      );
       return `h:${this.simpleHash(raw)}`;
     }
 
@@ -977,7 +979,7 @@ if (typeof window.MessageRenderer === 'undefined') {
           message.msgType || '',
           message.content || '',
           message.detailedContent || '',
-          message.extra ? JSON.stringify(message.extra) : ''
+          message.extra ? JSON.stringify(message.extra) : '',
         ].join('|');
         return String(this.simpleHash(raw));
       } catch (e) {
@@ -1019,8 +1021,8 @@ if (typeof window.MessageRenderer === 'undefined') {
       // 同样计算公共后缀
       let suffix = 0;
       while (
-        suffix < (oldLen - prefix) &&
-        suffix < (newKeys.length - prefix) &&
+        suffix < oldLen - prefix &&
+        suffix < newKeys.length - prefix &&
         this._lastRenderedMessageKeys[oldLen - 1 - suffix] === newKeys[newKeys.length - 1 - suffix] &&
         this._lastRenderedMessageHashes[oldLen - 1 - suffix] === newHashes[newHashes.length - 1 - suffix]
       ) {
@@ -1055,18 +1057,16 @@ if (typeof window.MessageRenderer === 'undefined') {
       this._lastRenderedMessageHashes = newHashes;
       this.initLazyLoadingForNewMessages();
 
-    // 生成用于比对的消息唯一key（尽量稳定）
+      // 生成用于比对的消息唯一key（尽量稳定）
     }
-        generateCacheKey(messages) {
+    generateCacheKey(messages) {
       if (!messages || messages.length === 0) return 'empty';
       const first = messages[0] || {};
       const last = messages[messages.length - 1] || {};
       const idPart = `${messages.length}_${first.messageIndex || 0}_${last.messageIndex || 0}`;
       // 加入内容指纹，避免同长度/同索引但内容变化时命中旧缓存
       const sig = this.simpleHash(
-        messages
-          .map(m => `${this.getMessageKey(m)}:${this.getMessageRenderHash(m)}`)
-          .join('|')
+        messages.map(m => `${this.getMessageKey(m)}:${this.getMessageRenderHash(m)}`).join('|'),
       );
       return `${idPart}_${sig}`;
     }
@@ -1949,9 +1949,13 @@ if (typeof window.MessageRenderer === 'undefined') {
                 <div style="margin-top: 15px; text-align: center; font-size: 12px; color: #666;">
                     点击表情包插入到消息中
                     <br><span class="sticker-status">
-                        ${stickerImages.length > 0 && stickerImages[0].fullPath && stickerImages[0].fullPath !== stickerImages[0].filename ?
-                          '<small style="color: #999;">✓ 使用世界书配置</small>' :
-                          '<small style="color: #999;">使用默认配置</small>'}
+                        ${
+                          stickerImages.length > 0 &&
+                          stickerImages[0].fullPath &&
+                          stickerImages[0].fullPath !== stickerImages[0].filename
+                            ? '<small style="color: #999;">✓ 使用世界书配置</small>'
+                            : '<small style="color: #999;">使用默认配置</small>'
+                        }
                     </span>
                 </div>
             </div>
@@ -2181,9 +2185,8 @@ if (typeof window.MessageRenderer === 'undefined') {
         // 如果没有传入完整路径，尝试从缓存查找
         try {
           const stickerImages = this.getCachedStickerImages();
-          const stickerData = stickerImages.find(sticker =>
-            (sticker.filename === filename) ||
-            (typeof sticker === 'string' && sticker === filename)
+          const stickerData = stickerImages.find(
+            sticker => sticker.filename === filename || (typeof sticker === 'string' && sticker === filename),
           );
 
           if (stickerData && stickerData.fullPath) {
@@ -2324,11 +2327,14 @@ if (typeof window.MessageRenderer === 'undefined') {
         if (stickerDetailEntries.length === 0) {
           console.warn('[Message Renderer] 未找到"表情包详情"世界书条目，使用默认表情包列表');
           console.log('[Message Renderer] 搜索的条目总数:', allEntries.length);
-          console.log('[Message Renderer] 条目示例:', allEntries.slice(0, 3).map(e => ({
-            comment: e.comment,
-            key: e.key,
-            content: e.content ? e.content.substring(0, 50) + '...' : ''
-          })));
+          console.log(
+            '[Message Renderer] 条目示例:',
+            allEntries.slice(0, 3).map(e => ({
+              comment: e.comment,
+              key: e.key,
+              content: e.content ? e.content.substring(0, 50) + '...' : '',
+            })),
+          );
           return this.getDefaultStickerImages();
         }
 
@@ -2346,7 +2352,7 @@ if (typeof window.MessageRenderer === 'undefined') {
               const imagesWithSource = stickerImages.map(img => ({
                 ...img,
                 source: entry.comment,
-                world: entry.world
+                world: entry.world,
               }));
               allStickerImages.push(...imagesWithSource);
               console.log(`[Message Renderer] 从"${entry.comment}"解析到 ${stickerImages.length} 个表情包`);
@@ -2363,9 +2369,10 @@ if (typeof window.MessageRenderer === 'undefined') {
           return this.getDefaultStickerImages();
         }
 
-        console.log(`[Message Renderer] 成功从 ${stickerDetailEntries.length} 个条目解析到总共 ${allStickerImages.length} 个表情包`);
+        console.log(
+          `[Message Renderer] 成功从 ${stickerDetailEntries.length} 个条目解析到总共 ${allStickerImages.length} 个表情包`,
+        );
         return allStickerImages;
-
       } catch (error) {
         console.error('[Message Renderer] 读取世界书表情包详情时出错:', error);
         return this.getDefaultStickerImages();
@@ -2407,7 +2414,10 @@ if (typeof window.MessageRenderer === 'undefined') {
 
           // 获取所有选中的选项
           const selectedOptions = Array.from(worldInfoSelect.selectedOptions);
-          console.log(`[Message Renderer] 找到 ${selectedOptions.length} 个选中的世界书选项:`, selectedOptions.map(opt => opt.text));
+          console.log(
+            `[Message Renderer] 找到 ${selectedOptions.length} 个选中的世界书选项:`,
+            selectedOptions.map(opt => opt.text),
+          );
 
           for (const option of selectedOptions) {
             const worldName = option.text;
@@ -2419,7 +2429,7 @@ if (typeof window.MessageRenderer === 'undefined') {
               if (worldData && worldData.entries) {
                 const entries = Object.values(worldData.entries).map(entry => ({
                   ...entry,
-                  world: worldName
+                  world: worldName,
                 }));
                 allEntries.push(...entries);
                 console.log(`[Message Renderer] 从全局世界书"${worldName}"获取到 ${entries.length} 个条目`);
@@ -2435,8 +2445,16 @@ if (typeof window.MessageRenderer === 'undefined') {
         }
 
         // 方法2：从 selected_world_info 变量获取（备用）
-        if (allEntries.length === 0 && typeof window.selected_world_info !== 'undefined' && Array.isArray(window.selected_world_info) && window.selected_world_info.length > 0) {
-          console.log(`[Message Renderer] 备用方法：从变量获取 ${window.selected_world_info.length} 个全局世界书:`, window.selected_world_info);
+        if (
+          allEntries.length === 0 &&
+          typeof window.selected_world_info !== 'undefined' &&
+          Array.isArray(window.selected_world_info) &&
+          window.selected_world_info.length > 0
+        ) {
+          console.log(
+            `[Message Renderer] 备用方法：从变量获取 ${window.selected_world_info.length} 个全局世界书:`,
+            window.selected_world_info,
+          );
 
           for (const worldName of window.selected_world_info) {
             try {
@@ -2445,7 +2463,7 @@ if (typeof window.MessageRenderer === 'undefined') {
               if (worldData && worldData.entries) {
                 const entries = Object.values(worldData.entries).map(entry => ({
                   ...entry,
-                  world: worldName
+                  world: worldName,
                 }));
                 allEntries.push(...entries);
                 console.log(`[Message Renderer] 从全局世界书"${worldName}"获取到 ${entries.length} 个条目`);
@@ -2466,10 +2484,12 @@ if (typeof window.MessageRenderer === 'undefined') {
               if (worldData && worldData.entries) {
                 const entries = Object.values(worldData.entries).map(entry => ({
                   ...entry,
-                  world: worldName
+                  world: worldName,
                 }));
                 allEntries.push(...entries);
-                console.log(`[Message Renderer] 从world_info.globalSelect世界书"${worldName}"获取到 ${entries.length} 个条目`);
+                console.log(
+                  `[Message Renderer] 从world_info.globalSelect世界书"${worldName}"获取到 ${entries.length} 个条目`,
+                );
               }
             } catch (error) {
               console.warn(`[Message Renderer] 从world_info.globalSelect加载世界书"${worldName}"失败:`, error);
@@ -2484,7 +2504,6 @@ if (typeof window.MessageRenderer === 'undefined') {
         } catch (error) {
           console.warn('[Message Renderer] 获取角色世界书失败:', error);
         }
-
       } catch (error) {
         console.error('[Message Renderer] 获取世界书条目时出错:', error);
       }
@@ -2493,12 +2512,15 @@ if (typeof window.MessageRenderer === 'undefined') {
 
       // 🔥 新增：为调试提供详细信息
       if (allEntries.length > 0) {
-        console.log('[Message Renderer] 世界书条目预览:', allEntries.slice(0, 3).map(entry => ({
-          comment: entry.comment,
-          key: Array.isArray(entry.key) ? entry.key.join(', ') : entry.key,
-          contentPreview: entry.content ? entry.content.substring(0, 50) + '...' : '无内容',
-          world: entry.world || '未知来源'
-        })));
+        console.log(
+          '[Message Renderer] 世界书条目预览:',
+          allEntries.slice(0, 3).map(entry => ({
+            comment: entry.comment,
+            key: Array.isArray(entry.key) ? entry.key.join(', ') : entry.key,
+            contentPreview: entry.content ? entry.content.substring(0, 50) + '...' : '无内容',
+            world: entry.world || '未知来源',
+          })),
+        );
       }
 
       return allEntries;
@@ -2541,7 +2563,6 @@ if (typeof window.MessageRenderer === 'undefined') {
         } else {
           console.error(`[Message Renderer] 加载世界书 "${worldName}" 失败: ${response.status} ${response.statusText}`);
         }
-
       } catch (error) {
         console.error(`[Message Renderer] 加载世界书 "${worldName}" 时出错:`, error);
       }
@@ -2590,7 +2611,7 @@ if (typeof window.MessageRenderer === 'undefined') {
           if (worldData && worldData.entries) {
             const worldEntries = Object.values(worldData.entries).map(entry => ({
               ...entry,
-              world: worldName
+              world: worldName,
             }));
             entries.push(...worldEntries);
             console.log(`[Message Renderer] 从角色主要世界书获取到 ${worldEntries.length} 个条目`);
@@ -2612,10 +2633,12 @@ if (typeof window.MessageRenderer === 'undefined') {
                 if (worldData && worldData.entries) {
                   const worldEntries = Object.values(worldData.entries).map(entry => ({
                     ...entry,
-                    world: extraWorldName
+                    world: extraWorldName,
                   }));
                   entries.push(...worldEntries);
-                  console.log(`[Message Renderer] 从角色额外世界书"${extraWorldName}"获取到 ${worldEntries.length} 个条目`);
+                  console.log(
+                    `[Message Renderer] 从角色额外世界书"${extraWorldName}"获取到 ${worldEntries.length} 个条目`,
+                  );
                 }
               } catch (error) {
                 console.warn(`[Message Renderer] 加载角色额外世界书"${extraWorldName}"失败:`, error);
@@ -2623,7 +2646,6 @@ if (typeof window.MessageRenderer === 'undefined') {
             }
           }
         }
-
       } catch (error) {
         console.error('[Message Renderer] 获取角色世界书条目时出错:', error);
       }
@@ -2662,7 +2684,7 @@ if (typeof window.MessageRenderer === 'undefined') {
               displayName: filename,
               fallbackPath: fallbackPath,
               prefix: prefix,
-              suffix: suffix
+              suffix: suffix,
             });
           }
 
@@ -2678,7 +2700,10 @@ if (typeof window.MessageRenderer === 'undefined') {
             const suffix = parts[1].trim();
             const filesStr = parts[2].trim();
 
-            const files = filesStr.split(',').map(f => f.trim()).filter(f => f);
+            const files = filesStr
+              .split(',')
+              .map(f => f.trim())
+              .filter(f => f);
 
             for (const filename of files) {
               const fullPath = prefix + filename + suffix;
@@ -2691,18 +2716,23 @@ if (typeof window.MessageRenderer === 'undefined') {
                 displayName: filename,
                 fallbackPath: fallbackPath,
                 prefix: prefix,
-                suffix: suffix
+                suffix: suffix,
               });
             }
 
-            console.log(`[Message Renderer] 管道格式解析成功，前缀: "${prefix}", 后缀: "${suffix}", 获取到 ${stickerImages.length} 个表情包`);
+            console.log(
+              `[Message Renderer] 管道格式解析成功，前缀: "${prefix}", 后缀: "${suffix}", 获取到 ${stickerImages.length} 个表情包`,
+            );
             return stickerImages;
           }
         }
 
         // 尝试简单逗号分隔格式
         if (content.includes(',')) {
-          const files = content.split(',').map(f => f.trim()).filter(f => f);
+          const files = content
+            .split(',')
+            .map(f => f.trim())
+            .filter(f => f);
           const defaultPrefix = 'data/default-user/extensions/mobile/images/';
           const defaultSuffix = '';
 
@@ -2711,7 +2741,7 @@ if (typeof window.MessageRenderer === 'undefined') {
             stickerImages.push({
               filename: filename,
               fullPath: fullPath,
-              displayName: filename
+              displayName: filename,
             });
           }
 
@@ -2720,7 +2750,10 @@ if (typeof window.MessageRenderer === 'undefined') {
         }
 
         // 尝试单行格式（每行一个文件名）
-        const lines = content.split('\n').map(line => line.trim()).filter(line => line);
+        const lines = content
+          .split('\n')
+          .map(line => line.trim())
+          .filter(line => line);
         if (lines.length > 0) {
           const defaultPrefix = 'data/default-user/extensions/mobile/images/';
           const defaultSuffix = '';
@@ -2730,14 +2763,13 @@ if (typeof window.MessageRenderer === 'undefined') {
             stickerImages.push({
               filename: filename,
               fullPath: fullPath,
-              displayName: filename
+              displayName: filename,
             });
           }
 
           console.log(`[Message Renderer] 行分隔格式解析成功，获取到 ${stickerImages.length} 个表情包`);
           return stickerImages;
         }
-
       } catch (error) {
         console.error('[Message Renderer] 解析表情包详情时出错:', error);
       }
@@ -2807,7 +2839,7 @@ if (typeof window.MessageRenderer === 'undefined') {
           console.log('✓ 找到表情包详情条目:', {
             comment: stickerDetailEntry.comment,
             key: stickerDetailEntry.key,
-            world: stickerDetailEntry.world
+            world: stickerDetailEntry.world,
           });
 
           // 测试解析表情包详情
@@ -2829,7 +2861,6 @@ if (typeof window.MessageRenderer === 'undefined') {
           console.log('💡 请确保世界书中有一个条目的注释包含"表情包详情"或关键词包含"sticker"');
           return { success: false, error: '未找到配置条目' };
         }
-
       } catch (error) {
         console.error('❌ 表情包配置测试失败:', error);
         return { success: false, error: error.message };
@@ -3462,9 +3493,8 @@ if (typeof window.MessageRenderer === 'undefined') {
         const stickerImages = this._stickerConfigCache;
 
         // 查找匹配的表情包
-        const stickerData = stickerImages.find(sticker =>
-          (sticker.filename === filename) ||
-          (typeof sticker === 'string' && sticker === filename)
+        const stickerData = stickerImages.find(
+          sticker => sticker.filename === filename || (typeof sticker === 'string' && sticker === filename),
         );
 
         if (stickerData && stickerData.fullPath) {
@@ -3476,7 +3506,6 @@ if (typeof window.MessageRenderer === 'undefined') {
         const defaultPath = `data/default-user/extensions/mobile/images/${filename}`;
         console.log(`[Message Renderer] 使用默认表情包路径: ${filename} -> ${defaultPath}`);
         return defaultPath;
-
       } catch (error) {
         console.warn('[Message Renderer] 获取表情包完整路径失败:', error);
         return `data/default-user/extensions/mobile/images/${filename}`;
@@ -3500,9 +3529,8 @@ if (typeof window.MessageRenderer === 'undefined') {
         const stickerImages = this._stickerConfigCache;
 
         // 查找匹配的表情包
-        const stickerData = stickerImages.find(sticker =>
-          (sticker.filename === filename) ||
-          (typeof sticker === 'string' && sticker === filename)
+        const stickerData = stickerImages.find(
+          sticker => sticker.filename === filename || (typeof sticker === 'string' && sticker === filename),
         );
 
         if (stickerData) {
@@ -3523,7 +3551,6 @@ if (typeof window.MessageRenderer === 'undefined') {
         const defaultPath = `data/default-user/extensions/mobile/images/${filename}`;
         console.log(`[Message Renderer] 使用默认备用路径: ${filename} -> ${defaultPath}`);
         return defaultPath;
-
       } catch (error) {
         console.warn('[Message Renderer] 获取表情包备用路径失败:', error);
         return `data/default-user/extensions/mobile/images/${filename}`;
@@ -3542,7 +3569,7 @@ if (typeof window.MessageRenderer === 'undefined') {
           const now = Date.now();
 
           // 检查缓存是否过期（默认30分钟）
-          if (cacheData.timestamp && (now - cacheData.timestamp) < 30 * 60 * 1000) {
+          if (cacheData.timestamp && now - cacheData.timestamp < 30 * 60 * 1000) {
             console.log(`[Message Renderer] 使用缓存的表情包配置，包含 ${cacheData.data.length} 个表情包`);
             return cacheData.data;
           } else {
@@ -3567,7 +3594,7 @@ if (typeof window.MessageRenderer === 'undefined') {
       try {
         const cacheData = {
           data: stickerImages,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         };
         localStorage.setItem('stickerConfig_cache', JSON.stringify(cacheData));
         console.log(`[Message Renderer] 表情包配置已缓存，包含 ${stickerImages.length} 个表情包`);
@@ -3606,7 +3633,6 @@ if (typeof window.MessageRenderer === 'undefined') {
 
         // 显示成功提示
         this.showToast('表情包配置已刷新', 'success');
-
       } catch (error) {
         console.error('[Message Renderer] 刷新表情包配置失败:', error);
         this.showToast('刷新失败，请检查世界书配置', 'error');
@@ -3638,8 +3664,12 @@ if (typeof window.MessageRenderer === 'undefined') {
       // 更新状态提示
       const statusElement = panel.querySelector('.sticker-status');
       if (statusElement) {
-        const statusText = stickerImages.length > 0 && stickerImages[0].fullPath && stickerImages[0].fullPath !== stickerImages[0].filename ?
-          '✓ 使用世界书配置' : '使用默认配置';
+        const statusText =
+          stickerImages.length > 0 &&
+          stickerImages[0].fullPath &&
+          stickerImages[0].fullPath !== stickerImages[0].filename
+            ? '✓ 使用世界书配置'
+            : '使用默认配置';
         statusElement.innerHTML = `<small style="color: #999;">${statusText}</small>`;
       }
 
@@ -3651,23 +3681,24 @@ if (typeof window.MessageRenderer === 'undefined') {
      */
     generateStickerGrid(stickerImages) {
       return stickerImages
-        .map(
-          stickerData => {
-            // 🔥 修复：为备用路径使用世界书配置的前缀，而不是硬编码路径
-            let fallbackPath;
-            if (stickerData.fallbackPath) {
-              // 如果已经有备用路径，直接使用
-              fallbackPath = stickerData.fallbackPath;
-            } else if (stickerData.prefix && stickerData.suffix !== undefined) {
-              // 如果有世界书配置的前缀和后缀，使用它们构建备用路径
-              fallbackPath = stickerData.prefix + (stickerData.filename || stickerData) + stickerData.suffix;
-            } else {
-              // 最后才使用默认路径
-              fallbackPath = `data/default-user/extensions/mobile/images/${stickerData.filename || stickerData}`;
-            }
+        .map(stickerData => {
+          // 🔥 修复：为备用路径使用世界书配置的前缀，而不是硬编码路径
+          let fallbackPath;
+          if (stickerData.fallbackPath) {
+            // 如果已经有备用路径，直接使用
+            fallbackPath = stickerData.fallbackPath;
+          } else if (stickerData.prefix && stickerData.suffix !== undefined) {
+            // 如果有世界书配置的前缀和后缀，使用它们构建备用路径
+            fallbackPath = stickerData.prefix + (stickerData.filename || stickerData) + stickerData.suffix;
+          } else {
+            // 最后才使用默认路径
+            fallbackPath = `data/default-user/extensions/mobile/images/${stickerData.filename || stickerData}`;
+          }
 
-            return `
-            <div class="sticker-item" onclick="window.messageRenderer.insertStickerMessage('${stickerData.filename || stickerData}', '${stickerData.fullPath || stickerData}')"
+          return `
+            <div class="sticker-item" onclick="window.messageRenderer.insertStickerMessage('${
+              stickerData.filename || stickerData
+            }', '${stickerData.fullPath || stickerData}')"
                  style="cursor: pointer; padding: 4px; border: 2px solid transparent; border-radius: 8px; transition: all 0.3s ease;width:25%"
                  onmouseover="this.style.borderColor='#667eea'; this.style.transform='scale(1.1)'"
                  onmouseout="this.style.borderColor='transparent'; this.style.transform='scale(1)'"
@@ -3679,8 +3710,7 @@ if (typeof window.MessageRenderer === 'undefined') {
                      >
             </div>
         `;
-          }
-        )
+        })
         .join('');
     }
 
