@@ -1,17 +1,17 @@
 /**
- * Shop App - 购物应用
- * 为mobile-phone.js提供购物功能
+ * Shop App - แอปพลิเคชันร้านค้า (เวอร์ชันภาษาไทย)
+ * ให้ฟังก์ชันการช้อปปิ้งสำหรับ mobile-phone.js
  */
 
 // @ts-nocheck
-// 避免重复定义
+// ป้องกันการประกาศซ้ำ
 if (typeof window.ShopApp === 'undefined') {
   class ShopApp {
     constructor() {
       this.currentView = 'productList'; // 'productList', 'cart', 'checkout'
       this.currentTab = 'productList'; // 'productList', 'cart'
-      this.currentProductType = 'all'; // 'all', '数码', '服装', '家居', etc.
-      this.showCategories = false; // 是否显示分类标签栏
+      this.currentProductType = 'all'; // 'all', 'ดิจิทัล', 'เสื้อผ้า', 'ของแต่งบ้าน', etc.
+      this.showCategories = false; // แสดงแถบหมวดหมู่หรือไม่
       this.products = [];
       this.cart = [];
       this.contextMonitor = null;
@@ -26,56 +26,56 @@ if (typeof window.ShopApp === 'undefined') {
     }
 
     init() {
-      console.log('[Shop App] 购物应用初始化开始 - 版本 2.0 (背包格式支持)');
+      console.log('[Shop App] เริ่มต้นแอปพลิเคชันร้านค้า - เวอร์ชัน 2.0 (รองรับรูปแบบกระเป๋าเป้)');
 
-      // 立即解析一次商品信息
+      // แยกวิเคราะห์ข้อมูลสินค้าจากบริบททันที
       this.parseProductsFromContext();
 
-      // 异步初始化监控，避免阻塞界面渲染
+      // เริ่มต้นการตรวจสอบแบบ Asynchronous เพื่อไม่ให้ขัดขวางการเรนเดอร์ UI
       setTimeout(() => {
         this.setupContextMonitor();
       }, 100);
 
-      console.log('[Shop App] 购物应用初始化完成 - 版本 2.0');
+      console.log('[Shop App] การเริ่มต้นเสร็จสมบูรณ์');
     }
 
-    // 设置上下文监控
+    // ตั้งค่าการตรวจสอบบริบท (Context Monitor)
     setupContextMonitor() {
-      console.log('[Shop App] 设置上下文监控...');
+      console.log('[Shop App] กำลังตั้งค่า Context Monitor...');
 
-      // 监听上下文变化事件
+      // ฟังเหตุการณ์การอัปเดตบริบท
       if (window.addEventListener) {
         window.addEventListener('contextUpdate', event => {
           this.handleContextChange(event);
         });
 
-        // 监听消息更新事件
+        // ฟังเหตุการณ์การอัปเดตข้อความ
         window.addEventListener('messageUpdate', event => {
           this.handleContextChange(event);
         });
 
-        // 监听聊天变化事件
+        // ฟังเหตุการณ์การเปลี่ยนแปลงแชท
         window.addEventListener('chatChanged', event => {
           this.handleContextChange(event);
         });
       }
 
-      // 减少定时检查频率，从2秒改为10秒
+      // ลดความถี่ในการตรวจสอบจาก 2 วินาที เป็น 10 วินาที
       this.contextCheckInterval = setInterval(() => {
         this.checkContextChanges();
       }, 10000);
 
-      // 监听SillyTavern的事件系统
+      // ตั้งค่า Listener สำหรับ SillyTavern
       this.setupSillyTavernEventListeners();
     }
 
-    // 处理上下文变化
+    // จัดการเมื่อบริบทมีการเปลี่ยนแปลง
     handleContextChange(event) {
-      console.log('[Shop App] 上下文变化:', event);
+      console.log('[Shop App] บริบทมีการเปลี่ยนแปลง:', event);
       this.parseProductsFromContext();
     }
 
-    // 检查上下文变化
+    // ตรวจสอบการเปลี่ยนแปลงบริบท
     checkContextChanges() {
       if (!this.isAutoRenderEnabled) return;
 
@@ -88,52 +88,48 @@ if (typeof window.ShopApp === 'undefined') {
       this.lastRenderTime = currentTime;
     }
 
-    // 设置SillyTavern事件监听器
+    // ตั้งค่า Listener ของ SillyTavern
     setupSillyTavernEventListeners() {
-      // 防止重复设置
+      // ป้องกันการตั้งค่าซ้ำ
       if (this.eventListenersSetup) {
         return;
       }
 
       try {
-        // 监听SillyTavern的事件系统
         const eventSource = window['eventSource'];
         const event_types = window['event_types'];
 
         if (eventSource && event_types) {
           this.eventListenersSetup = true;
 
-          // 创建防抖函数，避免过于频繁的解析
+          // Debounce เพื่อป้องกันการประมวลผลที่ถี่เกินไป
           const debouncedParse = this.debounce(() => {
             this.parseProductsFromContext();
           }, 1000);
 
-          // 监听消息发送事件
           if (event_types.MESSAGE_SENT) {
             eventSource.on(event_types.MESSAGE_SENT, debouncedParse);
           }
 
-          // 监听消息接收事件
           if (event_types.MESSAGE_RECEIVED) {
             eventSource.on(event_types.MESSAGE_RECEIVED, debouncedParse);
           }
 
-          // 监听聊天变化事件
           if (event_types.CHAT_CHANGED) {
             eventSource.on(event_types.CHAT_CHANGED, debouncedParse);
           }
         } else {
-          // 减少重试频率，从2秒改为5秒
+          // ลดความถี่ในการลองใหม่
           setTimeout(() => {
             this.setupSillyTavernEventListeners();
           }, 5000);
         }
       } catch (error) {
-        console.warn('[Shop App] 设置SillyTavern事件监听器失败:', error);
+        console.warn('[Shop App] ตั้งค่า SillyTavern Listeners ล้มเหลว:', error);
       }
     }
 
-    // 防抖函数
+    // ฟังก์ชัน Debounce
     debounce(func, wait) {
       let timeout;
       return function executedFunction(...args) {
@@ -146,89 +142,78 @@ if (typeof window.ShopApp === 'undefined') {
       };
     }
 
-    // 从上下文解析商品信息（学习论坛应用的解析逻辑）
+    // แยกข้อมูลสินค้าจากบริบท
     parseProductsFromContext() {
       try {
-        // 获取当前商品数据
         const shopData = this.getCurrentShopData();
 
-        // 更新商品列表
         if (shopData.products.length !== this.products.length || this.hasProductsChanged(shopData.products)) {
           this.products = shopData.products;
           this.updateProductList();
         }
       } catch (error) {
-        console.error('[Shop App] 解析商品信息失败:', error);
+        console.error('[Shop App] แยกข้อมูลสินค้าล้มเหลว:', error);
       }
     }
 
-    /**
-     * 从消息中获取当前商品数据（参考论坛应用的getCurrentForumData方法）
-     */
+    // ดึงข้อมูลร้านค้าจากข้อความปัจจุบัน
     getCurrentShopData() {
       try {
-        // 优先使用mobileContextEditor获取数据
         const mobileContextEditor = window['mobileContextEditor'];
         if (mobileContextEditor) {
           const chatData = mobileContextEditor.getCurrentChatData();
           if (chatData && chatData.messages && chatData.messages.length > 0) {
-            // 搜索所有消息，不限制第一条
             const allContent = chatData.messages.map(msg => msg.mes || '').join('\n');
             return this.parseShopContent(allContent);
           }
         }
 
-        // 如果没有mobileContextEditor，尝试其他方式
         const chatData = this.getChatData();
         if (chatData && chatData.length > 0) {
-          // 合并所有消息内容进行解析
           const allContent = chatData.map(msg => msg.mes || '').join('\n');
           return this.parseShopContent(allContent);
         }
       } catch (error) {
-        console.warn('[Shop App] 获取商品数据失败:', error);
+        console.warn('[Shop App] ดึงข้อมูลสินค้าล้มเหลว:', error);
       }
 
       return { products: [] };
     }
 
-    /**
-     * 从消息中实时解析商品内容（参考论坛应用的parseForumContent方法）
-     */
+    // แยกเนื้อหาร้านค้าจากข้อความ (Regex Parsing)
     parseShopContent(content) {
-      // 去掉标记限制，直接解析所有内容
       const products = [];
 
-      // 解析商品格式: [商品|商品名称|商品类型|商品描述|商品价格]（'商品'是固定标识符）
+      // รูปแบบ: [商品|ชื่อสินค้า|ประเภท|คำอธิบาย|ราคา] ('商品' เป็นคีย์เวิร์ดระบุสินค้า)
+      // หมายเหตุ: ยังคงใช้คำว่า '商品' ใน Regex เพื่อความเข้ากันได้กับระบบเดิม แต่ถ้าระบบ AI ส่งมาเป็นภาษาไทยอาจต้องปรับ Regex นี้
       const productRegex = /\[商品\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\]]+)\]/g;
 
       let productMatch;
       while ((productMatch = productRegex.exec(content)) !== null) {
         const [fullMatch, name, type, description, price] = productMatch;
 
-        // 检查是否已存在相同商品（根据名称和类型判断）
         const existingProduct = products.find(p => p.name.trim() === name.trim() && p.type.trim() === type.trim());
 
         if (!existingProduct) {
           const newProduct = {
             id: `product_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-            name: name.trim(), // 使用商品名称
+            name: name.trim(),
             type: type.trim(),
             description: description.trim(),
             price: parseFloat(price.trim()) || 0,
             image: this.getProductImage(type.trim()),
-            stock: Math.floor(Math.random() * 50) + 10, // 随机库存
+            stock: Math.floor(Math.random() * 50) + 10,
             timestamp: new Date().toLocaleString(),
           };
           products.push(newProduct);
         }
       }
 
-      console.log('[Shop App] 解析完成，商品数:', products.length);
+      console.log('[Shop App] แยกข้อมูลเสร็จสิ้น จำนวนสินค้า:', products.length);
       return { products };
     }
 
-    // 检查商品是否有变化（更高效的比较方法）
+    // ตรวจสอบการเปลี่ยนแปลงของสินค้า
     hasProductsChanged(newProducts) {
       if (newProducts.length !== this.products.length) {
         return true;
@@ -252,11 +237,12 @@ if (typeof window.ShopApp === 'undefined') {
       return false;
     }
 
-    // 获取商品图片
+    // รับรูปภาพ/ไอคอนสินค้า
     getProductImage(type) {
       const imageMap = {
+        // จีน (Original)
         食品: '🍎',
-        食物: '🍎', // 兼容"食物"写法
+        食物: '🍎',
         饮料: '🥤',
         服装: '👔',
         数码: '📱',
@@ -266,15 +252,35 @@ if (typeof window.ShopApp === 'undefined') {
         图书: '📚',
         玩具: '🧸',
         音乐: '🎵',
+        // ไทย (Added Support)
+        อาหาร: '🍎',
+        ของกิน: '🍎',
+        เครื่องดื่ม: '🥤',
+        เสื้อผ้า: '👔',
+        เครื่องแต่งกาย: '👔',
+        ดิจิทัล: '📱',
+        อุปกรณ์ไอที: '📱',
+        ของใช้ในบ้าน: '🏠',
+        เฟอร์นิเจอร์: '🏠',
+        เครื่องสำอาง: '💄',
+        ความงาม: '💄',
+        กีฬา: '⚽',
+        หนังสือ: '📚',
+        ของเล่น: '🧸',
+        ดนตรี: '🎵',
+        เพลง: '🎵',
+        ยา: '💊',
+        อาวุธ: '⚔️',
+        เวทมนตร์: '✨',
+        // Default
         默认: '🛒',
       };
       return imageMap[type] || imageMap['默认'];
     }
 
-    // 获取聊天数据
+    // ดึงข้อมูลแชท
     getChatData() {
       try {
-        // 优先使用mobileContextEditor获取数据
         const mobileContextEditor = window['mobileContextEditor'];
         if (mobileContextEditor) {
           const chatData = mobileContextEditor.getCurrentChatData();
@@ -283,13 +289,11 @@ if (typeof window.ShopApp === 'undefined') {
           }
         }
 
-        // 尝试从全局变量获取
         const chat = window['chat'];
         if (chat && Array.isArray(chat)) {
           return chat;
         }
 
-        // 尝试从其他可能的位置获取
         const SillyTavern = window['SillyTavern'];
         if (SillyTavern && SillyTavern.chat) {
           return SillyTavern.chat;
@@ -297,14 +301,13 @@ if (typeof window.ShopApp === 'undefined') {
 
         return [];
       } catch (error) {
-        console.error('[Shop App] 获取聊天数据失败:', error);
+        console.error('[Shop App] ดึงข้อมูลแชทล้มเหลว:', error);
         return [];
       }
     }
 
-    // 获取应用内容
+    // รับเนื้อหาแอปเพื่อแสดงผล
     getAppContent() {
-      // 移除每次都解析的逻辑，改为只在需要时解析
       switch (this.currentView) {
         case 'productList':
           return this.renderProductList();
@@ -317,7 +320,7 @@ if (typeof window.ShopApp === 'undefined') {
       }
     }
 
-    // 渲染购物页面标签页
+    // เรนเดอร์แท็บด้านบน
     renderShopTabs() {
       const totalItems = this.cart.reduce((sum, item) => sum + item.quantity, 0);
       const productCount = this.products.length;
@@ -326,24 +329,22 @@ if (typeof window.ShopApp === 'undefined') {
           <div class="shop-tabs">
               <button class="shop-tab ${this.currentTab === 'productList' ? 'active' : ''}"
                       data-tab="productList">
-                  商品列表 (${productCount})
+                  รายการสินค้า (${productCount})
               </button>
               <button class="shop-tab ${this.currentTab === 'cart' ? 'active' : ''}"
                       data-tab="cart">
-                  购物车 (${totalItems})
+                  รถเข็น (${totalItems})
               </button>
           </div>
       `;
     }
 
-    // 渲染商品列表
+    // เรนเดอร์รายการสินค้า
     renderProductList() {
-      console.log('[Shop App] 渲染商品列表...');
+      console.log('[Shop App] เรนเดอร์รายการสินค้า...');
 
-      // 获取所有产品类型
       const allTypes = ['all', ...new Set(this.products.map(p => p.type))];
 
-      // 根据当前选择的类型过滤商品
       const filteredProducts =
         this.currentProductType === 'all'
           ? this.products
@@ -361,7 +362,6 @@ if (typeof window.ShopApp === 'undefined') {
             `;
       }
 
-      // 渲染产品类型标签栏（可折叠）
       const typeTabsHtml = this.showCategories
         ? `
           <div class="product-type-tabs">
@@ -370,7 +370,7 @@ if (typeof window.ShopApp === 'undefined') {
                   type => `
                   <button class="product-type-tab ${this.currentProductType === type ? 'active' : ''}"
                           data-type="${type}">
-                      ${type === 'all' ? '全部' : type}
+                      ${type === 'all' ? 'ทั้งหมด' : type}
                   </button>
               `,
                 )
@@ -392,7 +392,7 @@ if (typeof window.ShopApp === 'undefined') {
                     <div class="product-footer">
                         <div class="product-price">¥${product.price.toFixed(2)}</div>
                         <button class="add-to-cart-btn" data-product-id="${product.id}">
-                            加入购物车
+                            เพิ่มลงรถเข็น
                         </button>
                     </div>
                 </div>
@@ -412,9 +412,9 @@ if (typeof window.ShopApp === 'undefined') {
         `;
     }
 
-    // 渲染购物车
+    // เรนเดอร์หน้ารถเข็น
     renderCart() {
-      console.log('[Shop App] 渲染购物车...');
+      console.log('[Shop App] เรนเดอร์รถเข็น...');
 
       if (!this.cart.length) {
         return `
@@ -423,7 +423,7 @@ if (typeof window.ShopApp === 'undefined') {
                     <div class="shop-empty-state">
                         <div class="empty-icon">🛒</div>
                         <div class="empty-title">รถเข็นว่างเปล่า</div>
-                        <div class="empty-subtitle">ไปเลือกของที่ชอบกันเถอะ</div>
+                        <div class="empty-subtitle">ไปเลือกซื้อสินค้าที่คุณชอบกันเถอะ</div>
                     </div>
                 </div>
             `;
@@ -465,9 +465,9 @@ if (typeof window.ShopApp === 'undefined') {
                 </div>
                 <div class="cart-footer">
                     <div class="cart-summary">
-                        <div class="cart-count">รวมทั้งหมด${totalItems}ชิ้น</div>
+                        <div class="cart-count">รวมทั้งหมด ${totalItems} ชิ้น</div>
                         <div class="cart-total">
-                            <span class="total-label">ราคารวมทั้งหมด：¥$：</span>
+                            <span class="total-label">ราคารวมทั้งหมด:</span>
                             <span class="total-price">¥${totalPrice.toFixed(2)}</span>
                         </div>
                     </div>
@@ -479,9 +479,9 @@ if (typeof window.ShopApp === 'undefined') {
         `;
     }
 
-    // 渲染结算页面
+    // เรนเดอร์หน้าชำระเงิน (Checkout)
     renderCheckout() {
-      console.log('[Shop App] 渲染结算页面...');
+      console.log('[Shop App] เรนเดอร์หน้าชำระเงิน...');
 
       const totalPrice = this.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
       const totalItems = this.cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -508,7 +508,7 @@ if (typeof window.ShopApp === 'undefined') {
                     ${orderItems}
                     <div class="order-total">
                         <div class="total-items">รวมทั้งหมด ${totalItems} ชิ้น</div>
-                        <div class="total-price">ราคารวมทั้งหมด：¥${totalPrice.toFixed(2)}</div>
+                        <div class="total-price">ราคารวมทั้งหมด: ¥${totalPrice.toFixed(2)}</div>
                     </div>
                 </div>
                 <div class="checkout-actions">
@@ -519,18 +519,17 @@ if (typeof window.ShopApp === 'undefined') {
         `;
     }
 
-    // 更新商品列表显示
+    // อัปเดตรายการสินค้า
     updateProductList() {
       if (this.currentView === 'productList') {
         this.updateAppContent();
       }
     }
 
-    // 更新应用内容
+    // อัปเดตเนื้อหาแอป
     updateAppContent(preserveScrollPosition = false) {
       const appContent = document.getElementById('app-content');
       if (appContent) {
-        // 保存滚动位置
         let scrollTop = 0;
         if (preserveScrollPosition) {
           const scrollContainer = appContent.querySelector('.product-grid, .cart-items');
@@ -542,7 +541,6 @@ if (typeof window.ShopApp === 'undefined') {
         appContent.innerHTML = this.getAppContent();
         this.bindEvents();
 
-        // 恢复滚动位置
         if (preserveScrollPosition && scrollTop > 0) {
           setTimeout(() => {
             const scrollContainer = appContent.querySelector('.product-grid, .cart-items');
@@ -554,16 +552,15 @@ if (typeof window.ShopApp === 'undefined') {
       }
     }
 
-    // 渲染应用（供测试页面使用）
     renderApp() {
       return this.getAppContent();
     }
 
-    // 绑定事件
+    // ผูกเหตุการณ์ (Bind Events)
     bindEvents() {
-      console.log('[Shop App] 绑定事件...');
+      console.log('[Shop App] กำลังผูกเหตุการณ์...');
 
-      // 添加到购物车
+      // เพิ่มลงรถเข็น
       document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
         btn.addEventListener('click', e => {
           e.preventDefault();
@@ -573,7 +570,7 @@ if (typeof window.ShopApp === 'undefined') {
         });
       });
 
-      // 购物车数量调整
+      // ปรับจำนวน
       document.querySelectorAll('.quantity-btn').forEach(btn => {
         btn.addEventListener('click', e => {
           e.preventDefault();
@@ -585,7 +582,7 @@ if (typeof window.ShopApp === 'undefined') {
         });
       });
 
-      // 删除购物车项目
+      // ลบสินค้า
       document.querySelectorAll('.remove-item-btn').forEach(btn => {
         btn.addEventListener('click', e => {
           e.preventDefault();
@@ -595,7 +592,7 @@ if (typeof window.ShopApp === 'undefined') {
         });
       });
 
-      // 导航按钮
+      // ปุ่มนำทาง
       document.querySelectorAll('.back-to-shop-btn').forEach(btn => {
         btn.addEventListener('click', e => {
           e.preventDefault();
@@ -628,7 +625,7 @@ if (typeof window.ShopApp === 'undefined') {
         });
       });
 
-      // 购物页面标签页切换
+      // เปลี่ยนแท็บ
       document.querySelectorAll('.shop-tab').forEach(btn => {
         btn.addEventListener('click', e => {
           e.preventDefault();
@@ -638,7 +635,7 @@ if (typeof window.ShopApp === 'undefined') {
         });
       });
 
-      // 产品类型标签页切换
+      // เปลี่ยนประเภทสินค้า
       document.querySelectorAll('.product-type-tab').forEach(btn => {
         btn.addEventListener('click', e => {
           e.preventDefault();
@@ -649,29 +646,25 @@ if (typeof window.ShopApp === 'undefined') {
       });
     }
 
-    // 切换购物页面标签页
     switchTab(tab) {
-      console.log('[Shop App] 切换标签页:', tab);
+      console.log('[Shop App] เปลี่ยนแท็บ:', tab);
       this.currentTab = tab;
       this.currentView = tab;
       this.updateAppContent();
     }
 
-    // 切换产品类型
     switchProductType(type) {
-      console.log('[Shop App] 切换产品类型:', type);
+      console.log('[Shop App] เปลี่ยนประเภทสินค้า:', type);
       this.currentProductType = type;
       this.updateAppContent();
     }
 
-    // 切换分类显示
     toggleCategories() {
-      console.log('[Shop App] 切换分类显示:', !this.showCategories);
+      console.log('[Shop App] สลับการแสดงหมวดหมู่:', !this.showCategories);
       this.showCategories = !this.showCategories;
       this.updateAppContent();
     }
 
-    // 添加到购物车
     addToCart(productId) {
       const product = this.products.find(p => p.id === productId);
       if (!product) return;
@@ -686,11 +679,10 @@ if (typeof window.ShopApp === 'undefined') {
         });
       }
 
-      this.showToast(`${product.name} 已添加到购物车`, 'success');
+      this.showToast(`เพิ่ม ${product.name} ลงในรถเข็นแล้ว`, 'success');
       this.updateCartBadge();
     }
 
-    // 更新购物车数量
     updateCartQuantity(productId, isPlus) {
       const item = this.cart.find(item => item.id === productId);
       if (!item) return;
@@ -705,29 +697,25 @@ if (typeof window.ShopApp === 'undefined') {
         }
       }
 
-      this.updateAppContent(true); // 保持滚动位置
+      this.updateAppContent(true);
       this.updateCartBadge();
     }
 
-    // 从购物车移除
     removeFromCart(productId) {
       this.cart = this.cart.filter(item => item.id !== productId);
-      this.updateAppContent(true); // 保持滚动位置
+      this.updateAppContent(true);
       this.updateCartBadge();
     }
 
-    // 更新购物车徽章
     updateCartBadge() {
       const totalItems = this.cart.reduce((sum, item) => sum + item.quantity, 0);
 
-      // 只更新购物车标签页的数量显示，不重新渲染整个页面
       const cartTab = document.querySelector('.shop-tab[data-tab="cart"]');
       if (cartTab) {
-        cartTab.textContent = `购物车 (${totalItems})`;
+        cartTab.textContent = `รถเข็น (${totalItems})`;
       }
     }
 
-    // 显示商品列表
     showProductList() {
       this.currentView = 'productList';
       this.currentTab = 'productList';
@@ -735,7 +723,6 @@ if (typeof window.ShopApp === 'undefined') {
       this.updateHeader();
     }
 
-    // 显示购物车
     showCart() {
       this.currentView = 'cart';
       this.currentTab = 'cart';
@@ -743,10 +730,9 @@ if (typeof window.ShopApp === 'undefined') {
       this.updateHeader();
     }
 
-    // 显示结算页面
     showCheckout() {
       if (this.cart.length === 0) {
-        this.showToast('购物车为空', 'warning');
+        this.showToast('รถเข็นว่างเปล่า', 'warning');
         return;
       }
 
@@ -755,33 +741,25 @@ if (typeof window.ShopApp === 'undefined') {
       this.updateHeader();
     }
 
-    // 确认订单
     confirmOrder() {
       if (this.cart.length === 0) {
-        this.showToast('购物车为空', 'warning');
+        this.showToast('รถเข็นว่างเปล่า', 'warning');
         return;
       }
 
-      // 生成订单摘要
       const orderSummary = this.generateOrderSummary();
-
-      // 发送消息到SillyTavern
       this.sendOrderToSillyTavern(orderSummary);
 
-      // 清空购物车
       this.cart = [];
       this.updateCartBadge();
 
-      // 显示成功消息
-      this.showToast('订单已确认！', 'success');
+      this.showToast('ยืนยันคำสั่งซื้อเรียบร้อยแล้ว!', 'success');
 
-      // 返回商品列表
       setTimeout(() => {
         this.showProductList();
       }, 1500);
     }
 
-    // 生成订单摘要
     generateOrderSummary() {
       const totalPrice = this.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
       const totalItems = this.cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -790,102 +768,90 @@ if (typeof window.ShopApp === 'undefined') {
         .map(item => `${item.name} x${item.quantity} = ¥${(item.price * item.quantity).toFixed(2)}`)
         .join('\n');
 
-      return `订单确认：
+      return `ยืนยันคำสั่งซื้อ:
 ${itemsList}
-总计：${totalItems}件商品，¥${totalPrice.toFixed(2)}`;
+รวม: ${totalItems} รายการ, ราคารวม ¥${totalPrice.toFixed(2)}`;
     }
 
-    // 发送订单到SillyTavern（改为发送带花费描述和背包格式）
+    // ส่งคำสั่งซื้อไปยัง SillyTavern (ปรับปรุงข้อความเป็นภาษาไทย)
     sendOrderToSillyTavern(orderSummary) {
       try {
-        console.log('[Shop App] 发送订单到SillyTavern');
+        console.log('[Shop App] ส่งคำสั่งซื้อไปยัง SillyTavern');
 
-        // 计算总价和获得的商品名称
         const totalPrice = this.cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
         const itemNames = this.cart.map(item => `${item.name}x${item.quantity}`).join('、');
 
-        // 生成背包格式的消息：[背包|商品名|商品类型|商品描述|数量]
+        // สร้างรูปแบบกระเป๋าเป้: [背包|ชื่อสินค้า|ประเภท|คำอธิบาย|จำนวน]
+        // หมายเหตุ: คำว่า '背包' (Backpack) ในวงเล็บอาจต้องคงไว้ถ้าเป็น System Command แต่ส่วนอื่นแปลได้
         const bagMessages = this.cart
           .map(item => `[背包|${item.name}|${item.type}|${item.description}|${item.quantity}]`)
           .join('');
 
-        // 拼接最终消息
-        const finalMessage = `用户在商城购买物品，花费${totalPrice}元（请正确更新用户账户余额变量，扣除用户本次的购物花费），获得了${itemNames}。${bagMessages}`;
-        console.log('[Shop App] 最终发送消息:', finalMessage);
+        // ข้อความที่จะส่งให้ AI (แปลเป็นไทยเพื่อให้ AI ตอบกลับเป็นไทย)
+        const finalMessage = `ผู้ใช้ได้ซื้อสินค้าในร้านค้า ใช้จ่ายไป ${totalPrice} (กรุณาอัปเดตตัวแปรยอดเงินของผู้ใช้ให้ถูกต้อง โดยหักค่าใช้จ่ายในการซื้อสินค้าครั้งนี้) ได้รับสินค้า: ${itemNames} ${bagMessages}`;
+        console.log('[Shop App] ข้อความสุดท้ายที่ส่ง:', finalMessage);
 
-        // 使用与消息app相同的发送方式
         this.sendToSillyTavern(finalMessage);
       } catch (error) {
-        console.error('[Shop App] 发送订单失败:', error);
+        console.error('[Shop App] ส่งคำสั่งซื้อล้มเหลว:', error);
       }
     }
 
-    // 发送查看商品消息
+    // ส่งข้อความขอดูสินค้า
     sendViewProductsMessage() {
       try {
-        console.log('[Shop App] 发送查看商品消息');
-
-        const message = '查看商品';
-
-        // 使用与消息app相同的发送方式
+        console.log('[Shop App] ส่งข้อความขอดูสินค้า');
+        const message = 'ขอดูสินค้าในร้านหน่อย'; // แปลเป็นไทย
         this.sendToSillyTavern(message);
       } catch (error) {
-        console.error('[Shop App] 发送查看商品消息失败:', error);
+        console.error('[Shop App] ส่งข้อความล้มเหลว:', error);
       }
     }
 
-    // 统一的发送消息方法（参考消息app的sendToChat方法）
+    // ฟังก์ชันส่งข้อความ
     async sendToSillyTavern(message) {
       try {
-        console.log('[Shop App] 🔄 使用新版发送方法 v2.0 - 发送消息到SillyTavern:', message);
+        console.log('[Shop App] 🔄 ใช้วิธีการส่งแบบใหม่ v2.0:', message);
 
-        // 方法1: 直接使用DOM元素（与消息app相同的方式）
         const originalInput = document.getElementById('send_textarea');
         const sendButton = document.getElementById('send_but');
 
         if (!originalInput || !sendButton) {
-          console.error('[Shop App] 找不到输入框或发送按钮元素');
+          console.error('[Shop App] ไม่พบช่องป้อนข้อมูลหรือปุ่มส่ง');
           return this.sendToSillyTavernBackup(message);
         }
 
-        // 检查输入框是否可用
         if (originalInput.disabled) {
-          console.warn('[Shop App] 输入框被禁用');
+          console.warn('[Shop App] ช่องป้อนข้อมูลถูกปิดใช้งาน');
           return false;
         }
 
-        // 检查发送按钮是否可用
         if (sendButton.classList.contains('disabled')) {
-          console.warn('[Shop App] 发送按钮被禁用');
+          console.warn('[Shop App] ปุ่มส่งถูกปิดใช้งาน');
           return false;
         }
 
-        // 设置值
         originalInput.value = message;
-        console.log('[Shop App] 已设置输入框值:', originalInput.value);
+        console.log('[Shop App] ตั้งค่าข้อความแล้ว:', originalInput.value);
 
-        // 触发输入事件
         originalInput.dispatchEvent(new Event('input', { bubbles: true }));
         originalInput.dispatchEvent(new Event('change', { bubbles: true }));
 
-        // 延迟点击发送按钮
         await new Promise(resolve => setTimeout(resolve, 300));
         sendButton.click();
-        console.log('[Shop App] 已点击发送按钮');
+        console.log('[Shop App] คลิกปุ่มส่งแล้ว');
 
         return true;
       } catch (error) {
-        console.error('[Shop App] 发送消息时出错:', error);
+        console.error('[Shop App] เกิดข้อผิดพลาดขณะส่ง:', error);
         return this.sendToSillyTavernBackup(message);
       }
     }
 
-    // 备用发送方法
     async sendToSillyTavernBackup(message) {
       try {
-        console.log('[Shop App] 尝试备用发送方法:', message);
+        console.log('[Shop App] ลองใช้วิธีสำรอง:', message);
 
-        // 尝试查找其他可能的输入框
         const textareas = document.querySelectorAll('textarea');
         const inputs = document.querySelectorAll('input[type="text"]');
 
@@ -894,7 +860,6 @@ ${itemsList}
           textarea.value = message;
           textarea.focus();
 
-          // 模拟键盘事件
           textarea.dispatchEvent(new Event('input', { bubbles: true }));
           textarea.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
           return true;
@@ -902,40 +867,32 @@ ${itemsList}
 
         return false;
       } catch (error) {
-        console.error('[Shop App] 备用发送方法失败:', error);
+        console.error('[Shop App] วิธีสำรองล้มเหลว:', error);
         return false;
       }
     }
 
-    // 手动刷新商品列表
     refreshProductList() {
-      console.log('[Shop App] 手动刷新商品列表');
+      console.log('[Shop App] รีเฟรชรายการสินค้าด้วยตนเอง');
       this.parseProductsFromContext();
       this.updateAppContent();
     }
 
-    // 销毁应用，清理资源
     destroy() {
-      console.log('[Shop App] 销毁应用，清理资源');
+      console.log('[Shop App] ทำลายแอป ล้างทรัพยากร');
 
-      // 清理定时器
       if (this.contextCheckInterval) {
         clearInterval(this.contextCheckInterval);
         this.contextCheckInterval = null;
       }
 
-      // 重置状态
       this.eventListenersSetup = false;
       this.isAutoRenderEnabled = false;
-
-      // 清空数据
       this.products = [];
       this.cart = [];
     }
 
-    // 更新header
     updateHeader() {
-      // 通知mobile-phone更新header
       if (window.mobilePhone && window.mobilePhone.updateAppHeader) {
         const state = {
           app: 'shop',
@@ -946,12 +903,10 @@ ${itemsList}
       }
     }
 
-    // 获取视图标题
     getViewTitle() {
-      return '购物';
+      return 'ร้านค้า';
     }
 
-    // 显示提示消息
     showToast(message, type = 'info') {
       const toast = document.createElement('div');
       toast.className = `shop-toast ${type}`;
@@ -972,44 +927,42 @@ ${itemsList}
     }
   }
 
-  // 创建全局实例
   window.ShopApp = ShopApp;
   window.shopApp = new ShopApp();
-} // 结束类定义检查
+}
 
-// 全局函数供mobile-phone.js调用
+// Global Functions
 window.getShopAppContent = function () {
-  console.log('[Shop App] 获取购物应用内容');
+  console.log('[Shop App] ดึงเนื้อหาแอป');
 
   if (!window.shopApp) {
-    console.error('[Shop App] shopApp实例不存在');
-    return '<div class="error-message">购物应用加载失败</div>';
+    console.error('[Shop App] ไม่พบอินสแตนซ์ shopApp');
+    return '<div class="error-message">โหลดแอปพลิเคชันล้มเหลว</div>';
   }
 
   try {
     return window.shopApp.getAppContent();
   } catch (error) {
-    console.error('[Shop App] 获取应用内容失败:', error);
-    return '<div class="error-message">获取内容失败</div>';
+    console.error('[Shop App] ดึงเนื้อหาล้มเหลว:', error);
+    return '<div class="error-message">เกิดข้อผิดพลาดในการโหลดเนื้อหา</div>';
   }
 };
 
 window.bindShopAppEvents = function () {
-  console.log('[Shop App] 绑定购物应用事件');
+  console.log('[Shop App] ผูกเหตุการณ์ของแอป');
 
   if (!window.shopApp) {
-    console.error('[Shop App] shopApp实例不存在');
+    console.error('[Shop App] ไม่พบอินสแตนซ์ shopApp');
     return;
   }
 
   try {
     window.shopApp.bindEvents();
   } catch (error) {
-    console.error('[Shop App] 绑定事件失败:', error);
+    console.error('[Shop App] ผูกเหตุการณ์ล้มเหลว:', error);
   }
 };
 
-// 供mobile-phone.js调用的额外功能
 window.shopAppShowCart = function () {
   if (window.shopApp) {
     window.shopApp.showCart();
@@ -1028,7 +981,6 @@ window.shopAppToggleCategories = function () {
   }
 };
 
-// 调试和测试功能
 window.shopAppRefresh = function () {
   if (window.shopApp) {
     window.shopApp.refreshProductList();
@@ -1037,50 +989,34 @@ window.shopAppRefresh = function () {
 
 window.shopAppDebugInfo = function () {
   if (window.shopApp) {
-    console.log('[Shop App Debug] 当前商品数量:', window.shopApp.products.length);
-    console.log('[Shop App Debug] 商品列表:', window.shopApp.products);
-    console.log('[Shop App Debug] 购物车:', window.shopApp.cart);
-    console.log('[Shop App Debug] 当前视图:', window.shopApp.currentView);
-    console.log('[Shop App Debug] 事件监听器设置:', window.shopApp.eventListenersSetup);
-    console.log('[Shop App Debug] 自动渲染启用:', window.shopApp.isAutoRenderEnabled);
+    console.log('[Shop App Debug] สินค้า:', window.shopApp.products);
+    console.log('[Shop App Debug] รถเข็น:', window.shopApp.cart);
+    console.log('[Shop App Debug] มุมมอง:', window.shopApp.currentView);
   }
 };
 
-// 性能优化：销毁应用实例
 window.shopAppDestroy = function () {
   if (window.shopApp) {
     window.shopApp.destroy();
-    console.log('[Shop App] 应用已销毁');
+    console.log('[Shop App] แอปถูกทำลายแล้ว');
   }
 };
 
-// 强制重新加载应用（清除缓存）
 window.shopAppForceReload = function () {
-  console.log('[Shop App] 🔄 强制重新加载应用...');
-
-  // 销毁现有实例
+  console.log('[Shop App] 🔄 บังคับโหลดแอปใหม่...');
   if (window.shopApp) {
     window.shopApp.destroy();
   }
-
-  // 重新创建实例
   window.shopApp = new ShopApp();
-  console.log('[Shop App] ✅ 应用已重新加载 - 版本 2.0');
+  console.log('[Shop App] ✅ แอปโหลดใหม่เรียบร้อย - เวอร์ชัน 2.0');
 };
 
-// 检查发送方法版本
 window.shopAppCheckVersion = function () {
-  console.log('[Shop App] 📋 版本检查:');
-  console.log('- sendToSillyTavern 方法:', typeof window.shopApp?.sendToSillyTavern);
-  console.log('- sendOrderToSillyTavern 方法:', typeof window.shopApp?.sendOrderToSillyTavern);
-  console.log('- sendViewProductsMessage 方法:', typeof window.shopApp?.sendViewProductsMessage);
-
   if (window.shopApp?.sendToSillyTavern) {
-    console.log('✅ 新版发送方法已加载');
+    console.log('✅ โหลดเวอร์ชันใหม่เรียบร้อย');
   } else {
-    console.log('❌ 新版发送方法未找到，请重新加载页面');
+    console.log('❌ ไม่พบเวอร์ชันใหม่ กรุณารีเฟรชหน้าจอ');
   }
 };
 
-// 初始化
-console.log('[Shop App] 购物应用模块加载完成 - 版本 2.0 (背包格式支持)');
+console.log('[Shop App] โมดูลร้านค้าพร้อมใช้งาน - เวอร์ชันภาษาไทย');
