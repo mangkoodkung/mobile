@@ -1,17 +1,17 @@
 /**
- * Friend Renderer - 好友渲染器
- * 从上下文中提取好友信息并渲染成消息列表
+ * Friend Renderer - ตัวแสดงผลรายชื่อเพื่อน
+ * ดึงข้อมูลเพื่อนจากบริบทและแสดงผลเป็นรายการข้อความ
  */
 
-// 避免重复定义
+// ป้องกันการนิยามซ้ำ
 if (typeof window.FriendRenderer === 'undefined') {
   class FriendRenderer {
     constructor() {
-      // 使用统一的正则表达式管理器
+      // ใช้ตัวจัดการ Regular Expression แบบรวมศูนย์
       this.contextMonitor =
         window['contextMonitor'] || (window['ContextMonitor'] ? new window['ContextMonitor']() : null);
       if (!this.contextMonitor) {
-        console.warn('[Friend Renderer] 上下文监控器未初始化，使用默认正则表达式');
+        console.warn('[Friend Renderer] ตัวตรวจสอบบริบทไม่ได้เริ่มต้น, ใช้ Regular Expression เริ่มต้น');
         this.friendPattern = /\[好友id\|([^|]+)\|(\d+)\]/g;
       } else {
         this.friendPattern = this.contextMonitor.getRegexForFormat('friend');
@@ -22,54 +22,54 @@ if (typeof window.FriendRenderer === 'undefined') {
     }
 
     init() {
-      console.log('[Friend Renderer] 好友渲染器初始化完成');
+      console.log('[Friend Renderer] ตัวแสดงผลรายชื่อเพื่อนเริ่มต้นเสร็จสมบูรณ์');
     }
 
     /**
-     * 从上下文中提取所有好友和群聊信息
+     * ดึงข้อมูลเพื่อนและกลุ่มแชททั้งหมดจากบริบท
      */
     extractFriendsFromContext() {
       this.extractedFriends = [];
 
-      // 检查移动端上下文编辑器是否可用
+      // ตรวจสอบว่าตัวแก้ไขบริบทมือถือใช้งานได้หรือไม่
       if (!window.mobileContextEditor) {
-        console.warn('[Friend Renderer] 移动端上下文编辑器未加载');
+        console.warn('[Friend Renderer] ตัวแก้ไขบริบทมือถือไม่ได้โหลด');
         return [];
       }
 
-      // 检查SillyTavern是否准备就绪
+      // ตรวจสอบว่า SillyTavern พร้อมใช้งานหรือไม่
       if (!window.mobileContextEditor.isSillyTavernReady()) {
-        console.warn('[Friend Renderer] SillyTavern未准备就绪');
+        console.warn('[Friend Renderer] SillyTavern ยังไม่พร้อม');
         return [];
       }
 
       try {
-        // 获取上下文数据
+        // รับข้อมูลบริบท
         const context = window.SillyTavern.getContext();
         if (!context || !context.chat || !Array.isArray(context.chat)) {
-          console.warn('[Friend Renderer] 聊天数据不可用');
+          console.warn('[Friend Renderer] ข้อมูลแชทไม่พร้อมใช้งาน');
           return [];
         }
 
-        // 遍历所有消息，提取好友和群聊信息
+        // วนซ้ำทุกข้อความ, ดึงข้อมูลเพื่อนและกลุ่มแชท
         const friendsMap = new Map();
         const groupsMap = new Map();
 
-        // 定义正则表达式
+        // นิยาม Regular Expression
         const friendPattern = /\[好友id\|([^|]+)\|(\d+)\]/g;
         const groupPattern = /\[群聊\|([^|]+)\|([^|]+)\|([^\]]+)\]/g;
 
-        // 新增：支持群聊消息格式来提取群聊信息
+        // เพิ่มเติม: รองรับรูปแบบข้อความกลุ่มเพื่อดึงข้อมูลกลุ่ม
         const groupMessagePattern = /\[群聊消息\|([^|]+)\|([^|]+)\|([^|]+)\|([^\]]+)\]/g;
-        // 新增：支持我方群聊消息格式
+        // เพิ่มเติม: รองรับรูปแบบข้อความกลุ่มของเรา
         const myGroupMessagePattern = /\[我方群聊消息\|我\|([^|]+)\|([^|]+)\|([^\]]+)\]/g;
 
         context.chat.forEach((message, index) => {
           if (message.mes && typeof message.mes === 'string') {
-            // 移除thinking标签后再进行匹配，避免提取thinking内的内容
+            // ลบแท็ก thinking ออกก่อนทำการจับคู่ เพื่อหลีกเลี่ยงการดึงเนื้อหาภายใน thinking
             const messageForMatching = this.removeThinkingTags(message.mes);
 
-            // 提取好友信息
+            // ดึงข้อมูลเพื่อน
             const friendMatches = [...messageForMatching.matchAll(friendPattern)];
             friendMatches.forEach(match => {
               const friendName = match[1];
@@ -88,13 +88,13 @@ if (typeof window.FriendRenderer === 'undefined') {
               }
             });
 
-            // 提取群聊信息（原有格式）
+            // ดึงข้อมูลกลุ่มแชท (รูปแบบเดิม)
             const groupMatches = [...messageForMatching.matchAll(groupPattern)];
             groupMatches.forEach(match => {
               const groupName = match[1];
               const groupId = match[2];
               const groupMembers = match[3];
-              const groupKey = `group_${groupId}`; // 统一使用群ID作为key
+              const groupKey = `group_${groupId}`; // ใช้ ID กลุ่มเป็น key เดียวกัน
 
               if (!groupsMap.has(groupKey) || groupsMap.get(groupKey).messageIndex < index) {
                 groupsMap.set(groupKey, {
@@ -109,7 +109,7 @@ if (typeof window.FriendRenderer === 'undefined') {
               }
             });
 
-            // 处理群聊消息格式
+            // จัดการรูปแบบข้อความกลุ่ม
             const groupMessageMatches = [...messageForMatching.matchAll(groupMessagePattern)];
             groupMessageMatches.forEach(match => {
               const groupId = match[1];
@@ -117,13 +117,13 @@ if (typeof window.FriendRenderer === 'undefined') {
               const messageType = match[3];
               const messageContent = match[4];
 
-              const groupKey = `group_${groupId}`; // 统一使用群ID作为key
+              const groupKey = `group_${groupId}`; // ใช้ ID กลุ่มเป็น key เดียวกัน
 
               if (!groupsMap.has(groupKey)) {
-                // 如果群聊不存在，创建一个基于消息的群聊记录
+                // หากกลุ่มแชทไม่มีอยู่, สร้างบันทึกกลุ่มตามข้อความ
                 groupsMap.set(groupKey, {
                   type: 'group',
-                  name: `群聊${groupId}`,
+                  name: `กลุ่มแชท${groupId}`, // Translated: 群聊${groupId} -> กลุ่มแชท${groupId}
                   number: groupId,
                   members: senderName,
                   messageIndex: index,
@@ -131,7 +131,7 @@ if (typeof window.FriendRenderer === 'undefined') {
                   isGroup: true,
                 });
               } else {
-                // 如果已存在，更新成员列表和最新消息索引
+                // หากมีอยู่แล้ว, อัปเดตรายการสมาชิกและดัชนีข้อความล่าสุด
                 const existingGroup = groupsMap.get(groupKey);
                 if (existingGroup.members && !existingGroup.members.includes(senderName)) {
                   existingGroup.members += `、${senderName}`;
@@ -143,20 +143,20 @@ if (typeof window.FriendRenderer === 'undefined') {
               }
             });
 
-            // 处理我方群聊消息格式
+            // จัดการรูปแบบข้อความกลุ่มของเรา
             const myGroupMessageMatches = [...messageForMatching.matchAll(myGroupMessagePattern)];
             myGroupMessageMatches.forEach(match => {
               const groupId = match[1];
               const messageType = match[2];
               const messageContent = match[3];
 
-              const groupKey = `group_${groupId}`; // 统一使用群ID作为key
+              const groupKey = `group_${groupId}`; // ใช้ ID กลุ่มเป็น key เดียวกัน
 
               if (!groupsMap.has(groupKey)) {
-                // 如果群聊不存在，创建一个基于消息的群聊记录
+                // หากกลุ่มแชทไม่มีอยู่, สร้างบันทึกกลุ่มตามข้อความ
                 groupsMap.set(groupKey, {
                   type: 'group',
-                  name: `群聊${groupId}`,
+                  name: `กลุ่มแชท${groupId}`, // Translated: 群聊${groupId} -> กลุ่มแชท${groupId}
                   number: groupId,
                   members: '我',
                   messageIndex: index,
@@ -164,7 +164,7 @@ if (typeof window.FriendRenderer === 'undefined') {
                   isGroup: true,
                 });
               } else {
-                // 如果已存在，更新最新消息索引
+                // หากมีอยู่แล้ว, อัปเดตดัชนีข้อความล่าสุด
                 const existingGroup = groupsMap.get(groupKey);
                 if (!existingGroup.members.includes('我')) {
                   existingGroup.members += '、我';
@@ -178,12 +178,12 @@ if (typeof window.FriendRenderer === 'undefined') {
           }
         });
 
-        // 合并好友和群聊，按添加时间排序
+        // รวมเพื่อนและกลุ่มแชท, จัดเรียงตามเวลาที่เพิ่ม
         const allContacts = [...Array.from(friendsMap.values()), ...Array.from(groupsMap.values())].sort(
           (a, b) => b.addTime - a.addTime,
         );
 
-        // 为每个联系人找到最后一条消息
+        // ค้นหาข้อความสุดท้ายสำหรับผู้ติดต่อแต่ละราย
         this.extractedFriends = allContacts.map(contact => {
           const lastMessage = this.getLastMessageForContact(context.chat, contact);
           return {
@@ -192,38 +192,38 @@ if (typeof window.FriendRenderer === 'undefined') {
           };
         });
 
-        // 只在联系人数量变化时输出日志，避免重复输出
+        // แสดงผลลัพธ์การบันทึกเฉพาะเมื่อจำนวนผู้ติดต่อเปลี่ยนแปลง เพื่อหลีกเลี่ยงการแสดงผลซ้ำ
         if (!this.lastContactCount || this.lastContactCount !== this.extractedFriends.length) {
-          console.log(`[Friend Renderer] 从上下文中提取到 ${this.extractedFriends.length} 个联系人 (好友+群聊)`);
+          console.log(`[Friend Renderer] ดึงผู้ติดต่อ ${this.extractedFriends.length} รายการ (เพื่อน+กลุ่ม) จากบริบท`); // Translated: 从上下文中提取到 ${this.extractedFriends.length} 个联系人 (好友+群聊)
           this.lastContactCount = this.extractedFriends.length;
         }
 
         return this.extractedFriends;
       } catch (error) {
-        console.error('[Friend Renderer] 提取联系人信息失败:', error);
+        console.error('[Friend Renderer] ดึงข้อมูลผู้ติดต่อล้มเหลว:', error); // Translated: 提取联系人信息失败
         return [];
       }
     }
 
     /**
-     * 获取指定联系人的最后一条消息
+     * รับข้อความสุดท้ายสำหรับผู้ติดต่อที่ระบุ
      */
     getLastMessageForContact(chatMessages, contact) {
       if (!chatMessages || chatMessages.length === 0) {
-        return '暂无聊天记录';
+        return 'ไม่มีบันทึกการแชท'; // Translated: 暂无聊天记录
       }
 
-      // 创建匹配模式
+      // สร้างรูปแบบการจับคู่
       let messagePatterns = [];
 
       if (contact.isGroup) {
-        // 群聊消息模式
+        // รูปแบบข้อความกลุ่มแชท
         messagePatterns = [
-          // 我方群聊消息：[我方群聊消息|我|群ID|消息类型|消息内容]
+          // ข้อความกลุ่มแชทของเรา: [我方群聊消息|我|群ID|消息类型|消息内容]
           new RegExp(`\\[我方群聊消息\\|我\\|${this.escapeRegex(contact.number)}\\|[^|]+\\|([^\\]]+)\\]`, 'g'),
-          // 群聊消息格式：[群聊消息|群ID|发送者|消息类型|消息内容]
+          // รูปแบบข้อความกลุ่มแชท: [群聊消息|群ID|发送者|消息类型|消息内容]
           new RegExp(`\\[群聊消息\\|${this.escapeRegex(contact.number)}\\|[^|]+\\|[^|]+\\|([^\\]]+)\\]`, 'g'),
-          // 原有格式兼容（如果还有的话）
+          // ความเข้ากันได้ของรูปแบบเดิม (ถ้ายังมีอยู่)
           new RegExp(
             `\\[我方群聊消息\\|${this.escapeRegex(contact.name)}\\|${this.escapeRegex(
               contact.number,
@@ -238,11 +238,11 @@ if (typeof window.FriendRenderer === 'undefined') {
           ),
         ];
       } else {
-        // 私聊消息模式
+        // รูปแบบข้อความส่วนตัว
         messagePatterns = [
-          // 我方消息：[我方消息|我|好友号|消息内容|时间]
+          // ข้อความของเรา: [我方消息|我|好友号|消息内容|时间]
           new RegExp(`\\[我方消息\\|我\\|${this.escapeRegex(contact.number)}\\|([^|]+)\\|[^\\]]+\\]`, 'g'),
-          // 对方消息：[对方消息|好友名|好友号|消息类型|消息内容]
+          // ข้อความของอีกฝ่าย: [对方消息|好友名|好友号|消息类型|消息内容]
           new RegExp(
             `\\[对方消息\\|${this.escapeRegex(contact.name)}\\|${this.escapeRegex(
               contact.number,
@@ -252,91 +252,91 @@ if (typeof window.FriendRenderer === 'undefined') {
         ];
       }
 
-      // 从最后一条消息开始往前找
+      // ค้นหาย้อนกลับจากข้อความสุดท้าย
       for (let i = chatMessages.length - 1; i >= 0; i--) {
         const message = chatMessages[i];
         if (message.mes && typeof message.mes === 'string') {
           for (const pattern of messagePatterns) {
             const matches = [...message.mes.matchAll(pattern)];
             if (matches.length > 0) {
-              // 找到最后一条匹配的消息，提取内容
+              // พบข้อความที่ตรงกันล่าสุด, ดึงเนื้อหา
               const lastMatch = matches[matches.length - 1];
               if (lastMatch[1]) {
                 const content = lastMatch[1].trim();
                 return content.length > 50 ? content.substring(0, 50) + '...' : content;
               }
             }
-            pattern.lastIndex = 0; // 重置正则表达式
+            pattern.lastIndex = 0; // รีเซ็ต Regular Expression
           }
         }
       }
 
-      return contact.isGroup ? '暂无群聊记录' : '暂无聊天记录';
+      return contact.isGroup ? 'ไม่มีบันทึกกลุ่มแชท' : 'ไม่มีบันทึกการแชท'; // Translated: 暂无群聊记录, 暂无聊天记录
     }
 
     /**
-     * 转义正则表达式特殊字符
+     * Escape อักขระพิเศษของ Regular Expression
      */
     escapeRegex(string) {
       return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
     /**
-     * 获取最后一条聊天记录（保留兼容性）
+     * รับบันทึกการแชทล่าสุด (คงความเข้ากันได้)
      */
     getLastChatRecord(chatMessages) {
       if (!chatMessages || chatMessages.length === 0) {
-        return '暂无聊天记录';
+        return 'ไม่มีบันทึกการแชท'; // Translated: 暂无聊天记录
       }
 
-      // 从最后一条消息开始往前找，找到第一条非好友添加/群聊添加消息
+      // ค้นหาย้อนกลับจากข้อความสุดท้าย, หาข้อความที่ไม่ใช่การเพิ่มเพื่อน/เพิ่มกลุ่ม
       for (let i = chatMessages.length - 1; i >= 0; i--) {
         const message = chatMessages[i];
         if (message.mes && typeof message.mes === 'string') {
-          // 如果不是好友添加或群聊格式的消息，则作为最后聊天记录
+          // หากไม่ใช่ข้อความรูปแบบการเพิ่มเพื่อนหรือกลุ่ม ให้ถือเป็นบันทึกการแชทล่าสุด
           const friendPattern = /\[好友id\|[^|]+\|\d+\]/;
           const groupPattern = /\[群聊\|[^|]+\|[^|]+\|[^\]]+\]/;
 
           if (!friendPattern.test(message.mes) && !groupPattern.test(message.mes)) {
-            // 提取实际的消息内容
+            // ดึงเนื้อหาข้อความจริง
             const actualContent = this.extractActualMessageContent(message.mes);
             return actualContent.length > 50 ? actualContent.substring(0, 50) + '...' : actualContent;
           }
         }
       }
 
-      return '暂无聊天记录';
+      return 'ไม่มีบันทึกการแชท'; // Translated: 暂无聊天记录
     }
 
     /**
-     * 提取实际的消息内容（过滤思考过程，提取QQ格式消息）
+     * ดึงเนื้อหาข้อความจริง (กรองกระบวนการคิด, ดึงข้อความรูปแบบ QQ)
      */
     extractActualMessageContent(messageText) {
       try {
-        // 1. 移除 <thinking> 标签及其内容
+        // 1. ลบแท็ก <thinking> และเนื้อหาภายใน
         let cleanedText = messageText.replace(/<thinking>[\s\S]*?<\/thinking>/gi, '');
 
-        // 2. 尝试提取QQ格式的消息
+        // 2. ลองดึงข้อความรูปแบบ QQ
         const qqMessagePatterns = [
-          // 我方消息格式：[我方消息|好友名|好友号|消息内容|时间]
+          // รูปแบบข้อความของเรา: [我方消息|好友名|好友号|消息内容|时间]
           /\[我方消息\|[^|]+\|[^|]+\|([^|]+)\|[^\]]+\]/g,
-          // 我方群聊消息格式：[我方群聊消息|群名|群号|我|消息内容|时间]
+          // รูปแบบข้อความกลุ่มของเรา: [我方群聊消息|群名|群号|我|消息内容|时间]
           /\[我方群聊消息\|[^|]+\|[^|]+\|[^|]+\|([^|]+)\|[^\]]+\]/g,
-          // 对方消息格式：[对方消息|角色名|数字id|消息类型|消息内容]
+          // รูปแบบข้อความของอีกฝ่าย: [对方消息|角色名|数字id|消息类型|消息内容]
           /\[对方消息\|[^|]+\|[^|]+\|[^|]+\|([^\]]+)\]/g,
-          // 对方群聊消息格式：[对方群聊消息|群名|群号|发言者|消息类型|消息内容]
+          // รูปแบบข้อความกลุ่มของอีกฝ่าย: [对方群聊消息|群名|群号|发言者|消息类型|消息内容]
           /\[对方群聊消息\|[^|]+\|[^|]+\|[^|]+\|[^|]+\|([^\]]+)\]/g,
-          // 新增：群聊消息格式：[群聊消息|群ID|发送者|消息类型|消息内容]
+          // เพิ่มเติม: รูปแบบข้อความกลุ่ม: [群聊消息|群ID|发送者|消息类型|消息内容]
           /\[群聊消息\|[^|]+\|[^|]+\|[^|]+\|([^\]]+)\]/g,
-          // 表情包格式：[表情包|文件名|文件路径]
+          // รูปแบบสติกเกอร์: [表情包|文件名|ไฟล์พาธ]
           /\[表情包\|[^|]+\|[^\]]+\]/g,
-          // 语音格式：[语音|时长|内容]
+          // รูปแบบเสียง: [语音|ระยะเวลา|เนื้อหา]
           /\[语音\|[^|]+\|([^\]]+)\]/g,
-          // 红包格式：[红包|金额|祝福语]
+          // รูปแบบอั่งเปา: [红包|จำนวนเงิน|คำอวยพร]
           /\[红包\|([^|]+)\|[^\]]+\]/g,
         ];
 
-        // 查找所有匹配的消息
+        // ค้นหาข้อความที่ตรงกันทั้งหมด
         const extractedMessages = [];
 
         for (const pattern of qqMessagePatterns) {
@@ -345,67 +345,67 @@ if (typeof window.FriendRenderer === 'undefined') {
             if (match[1]) {
               let content = match[1];
 
-              // 检查是否包含HTML标签
+              // ตรวจสอบว่ามีแท็ก HTML หรือไม่
               if (content.includes('<img')) {
-                content = '[图片]';
+                content = '[รูปภาพ]'; // Translated: [图片]
               } else if (content.includes('<video')) {
-                content = '[视频]';
+                content = '[วิดีโอ]'; // Translated: [视频]
               } else if (content.includes('<audio')) {
-                content = '[音频]';
+                content = '[เสียง]'; // Translated: [音频]
               } else if (/<[^>]+>/.test(content)) {
-                // 移除其他HTML标签，只保留文本内容
+                // ลบแท็ก HTML อื่นๆ ออก, คงไว้เฉพาะเนื้อหาข้อความ
                 content = content.replace(/<[^>]*>/g, '').trim();
                 if (!content) {
-                  content = '[富文本消息]';
+                  content = '[ข้อความ Rich Text]'; // Translated: [富文本消息]
                 }
               }
 
-              // 对于红包，显示 "红包：金额"
+              // สำหรับอั่งเปา, แสดง "อั่งเปา: จำนวนเงิน"
               if (pattern.source.includes('红包')) {
-                extractedMessages.push(`红包：${content}`);
+                extractedMessages.push(`อั่งเปา: ${content}`); // Translated: 红包：${content}
               } else if (pattern.source.includes('表情包')) {
-                extractedMessages.push('表情包');
+                extractedMessages.push('สติกเกอร์'); // Translated: 表情包
               } else if (pattern.source.includes('语音')) {
-                extractedMessages.push(`语音：${content}`);
+                extractedMessages.push(`เสียง: ${content}`); // Translated: 语音：${content}
               } else {
                 extractedMessages.push(content);
               }
             } else if (match[0]) {
-              // 对于表情包这种没有提取内容的，直接显示类型
+              // สำหรับสติกเกอร์ที่ไม่มีเนื้อหาที่ดึงออกมา ให้แสดงประเภทโดยตรง
               if (pattern.source.includes('表情包')) {
-                extractedMessages.push('表情包');
+                extractedMessages.push('สติกเกอร์'); // Translated: 表情包
               }
             }
           }
-          pattern.lastIndex = 0; // 重置正则表达式
+          pattern.lastIndex = 0; // รีเซ็ต Regular Expression
         }
 
-        // 如果提取到了消息，返回最后一条
+        // หากดึงข้อความได้ ให้ส่งคืนข้อความสุดท้าย
         if (extractedMessages.length > 0) {
           return extractedMessages[extractedMessages.length - 1];
         }
 
-        // 3. 如果没有匹配到QQ格式，尝试其他常见格式
+        // 3. หากไม่พบรูปแบบ QQ, ลองใช้รูปแบบทั่วไปอื่นๆ
         cleanedText = cleanedText.trim();
 
-        // 移除多余的空行
+        // ลบช่องว่างบรรทัดที่เกินมา
         cleanedText = cleanedText.replace(/\n\s*\n/g, '\n');
 
-        // 如果还是很长，取第一行作为预览
+        // หากยังยาวอยู่, ใช้บรรทัดแรกเป็นการแสดงตัวอย่าง
         if (cleanedText.length > 50) {
           const firstLine = cleanedText.split('\n')[0];
-          return firstLine || '消息内容';
+          return firstLine || 'เนื้อหาข้อความ'; // Translated: 消息内容
         }
 
-        return cleanedText || '消息内容';
+        return cleanedText || 'เนื้อหาข้อความ'; // Translated: 消息内容
       } catch (error) {
-        console.error('[Friend Renderer] 提取消息内容失败:', error);
-        return '消息内容';
+        console.error('[Friend Renderer] ดึงเนื้อหาข้อความล้มเหลว:', error); // Translated: 提取消息内容失败
+        return 'เนื้อหาข้อความ'; // Translated: 消息内容
       }
     }
 
     /**
-     * HTML转义函数
+     * ฟังก์ชัน Escape HTML
      */
     escapeHtml(text) {
       const div = document.createElement('div');
@@ -414,56 +414,56 @@ if (typeof window.FriendRenderer === 'undefined') {
     }
 
     /**
-     * 渲染好友和群聊列表HTML
+     * แสดงผล HTML ของรายการเพื่อนและกลุ่มแชท
      */
     renderFriendsHTML() {
-      // 先提取好友和群聊信息
+      // ดึงข้อมูลเพื่อนและกลุ่มแชทก่อน
       const contacts = this.extractFriendsFromContext();
 
       if (contacts.length === 0) {
         return `
-                <div class="empty-state">
-                    <div class="empty-icon">💬</div>
-                    <div class="empty-text">暂无联系人</div>
-                    <div class="empty-hint">点击右上角"添加"按钮添加好友或创建群聊</div>
-                </div>
-            `;
+          <div class="empty-state">
+            <div class="empty-icon">💬</div>
+            <div class="empty-text">ไม่มีผู้ติดต่อ</div>
+            <div class="empty-hint">คลิกปุ่ม "เพิ่ม" ที่มุมขวาบนเพื่อเพิ่มเพื่อนหรือสร้างกลุ่มแชท</div>
+          </div>
+        `; // Translated: 暂无联系人, 点击右上角"添加"按钮添加好友或创建群聊
       }
 
-      // 渲染联系人列表
+      // แสดงผลรายการผู้ติดต่อ
       const contactsHTML = contacts
         .map(contact => {
-          const lastMessage = this.escapeHtml(contact.lastMessage || '暂无消息');
+          const lastMessage = this.escapeHtml(contact.lastMessage || 'ไม่มีข้อความ'); // Translated: 暂无消息
 
           if (contact.isGroup) {
-            // 群聊条目
+            // รายการกลุ่มแชท
             return `
-                    <div class="message-item group-item" data-friend-id="${contact.number}" data-is-group="true">
-                        <div class="message-avatar group-avatar"></div>
-                        <div class="message-content">
-                            <div class="message-name">
-                                ${contact.name}
-                                <span class="group-badge">群聊</span>
-                            </div>
-                            <div class="message-text">${lastMessage}</div>
-                        </div>
-                        <div class="group-members-info">
-                            <span class="member-count">${this.getMemberCount(contact.members)}</span>
-                        </div>
-                    </div>
-                `;
+              <div class="message-item group-item" data-friend-id="${contact.number}" data-is-group="true">
+                <div class="message-avatar group-avatar"></div>
+                <div class="message-content">
+                  <div class="message-name">
+                    ${contact.name}
+                    <span class="group-badge">กลุ่ม</span>
+                  </div>
+                  <div class="message-text">${lastMessage}</div>
+                </div>
+                <div class="group-members-info">
+                  <span class="member-count">${this.getMemberCount(contact.members)}</span>
+                </div>
+              </div>
+            `; // Translated: 群聊 -> กลุ่ม
           } else {
-            // 个人好友条目
+            // รายการเพื่อนส่วนตัว
             const avatar = this.getRandomAvatar();
             return `
-                    <div class="message-item friend-item" data-friend-id="${contact.number}" data-is-group="false">
-                        <div class="message-avatar">${avatar}</div>
-                        <div class="message-content">
-                            <div class="message-name">${contact.name}</div>
-                            <div class="message-text">${lastMessage}</div>
-                        </div>
-                    </div>
-                `;
+              <div class="message-item friend-item" data-friend-id="${contact.number}" data-is-group="false">
+                <div class="message-avatar">${avatar}</div>
+                <div class="message-content">
+                  <div class="message-name">${contact.name}</div>
+                  <div class="message-text">${lastMessage}</div>
+                </div>
+              </div>
+            `;
           }
         })
         .join('');
@@ -472,49 +472,49 @@ if (typeof window.FriendRenderer === 'undefined') {
     }
 
     /**
-     * 获取群成员数量
+     * รับจำนวนสมาชิกกลุ่ม
      */
     getMemberCount(membersString) {
       if (!membersString) return 0;
-      // 群成员格式：我、张三、李四、王五
+      // รูปแบบสมาชิกกลุ่ม: 我、张三、李四、王五
       const members = membersString.split('、').filter(m => m.trim());
       return members.length;
     }
 
     /**
-     * 获取随机头像
+     * รับอวาตาร์แบบสุ่ม
      */
     getRandomAvatar() {
-      // 返回空字符串，不显示表情符号，只显示背景图片
+      // ส่งคืนสตริงว่าง, ไม่แสดงอีโมจิ, แสดงเฉพาะภาพพื้นหลัง
       return '';
     }
 
     /**
-     * 格式化时间
+     * จัดรูปแบบเวลา
      */
     formatTime(timestamp) {
-      // 处理各种可能的时间戳格式
+      // จัดการรูปแบบ timestamp ที่เป็นไปได้ทั้งหมด
       let date;
 
       if (!timestamp) {
-        // 如果没有时间戳，使用当前时间
+        // หากไม่มี timestamp, ใช้เวลาปัจจุบัน
         date = new Date();
       } else if (typeof timestamp === 'string') {
-        // 如果是字符串，尝试解析
+        // หากเป็นสตริง, ลองแยกวิเคราะห์
         date = new Date(timestamp);
-        // 如果解析失败，使用当前时间
+        // หากแยกวิเคราะห์ล้มเหลว, ใช้เวลาปัจจุบัน
         if (isNaN(date.getTime())) {
           date = new Date();
         }
       } else if (typeof timestamp === 'number') {
-        // 如果是数字，直接使用
+        // หากเป็นตัวเลข, ใช้โดยตรง
         date = new Date(timestamp);
-        // 检查是否为有效时间戳
+        // ตรวจสอบว่าเป็น timestamp ที่ถูกต้องหรือไม่
         if (isNaN(date.getTime())) {
           date = new Date();
         }
       } else {
-        // 其他情况使用当前时间
+        // กรณีอื่น, ใช้เวลาปัจจุบัน
         date = new Date();
       }
 
@@ -524,24 +524,26 @@ if (typeof window.FriendRenderer === 'undefined') {
       const diffHours = Math.floor(diffMins / 60);
       const diffDays = Math.floor(diffHours / 24);
 
-      // 如果时间差异过大（超过1年），可能是时间戳格式问题，显示简单格式
+      // หากความแตกต่างของเวลามากเกินไป (เกิน 1 ปี), อาจเป็นปัญหาของรูปแบบ timestamp, แสดงรูปแบบง่ายๆ
       if (Math.abs(diffDays) > 365) {
-        return date.toLocaleDateString('zh-CN', {
+        return date.toLocaleDateString('th-TH', {
+          // Changed to th-TH locale
           month: 'short',
           day: 'numeric',
         });
       }
 
       if (diffMins < 1) {
-        return '刚刚';
+        return 'เมื่อกี้'; // Translated: 刚刚
       } else if (diffMins < 60) {
-        return `${diffMins}分钟前`;
+        return `${diffMins} นาทีที่แล้ว`; // Translated: 分钟前
       } else if (diffHours < 24) {
-        return `${diffHours}小时前`;
+        return `${diffHours} ชั่วโมงที่แล้ว`; // Translated: 小时前
       } else if (diffDays < 7) {
-        return `${diffDays}天前`;
+        return `${diffDays} วันที่แล้ว`; // Translated: 天前
       } else {
-        return date.toLocaleDateString('zh-CN', {
+        return date.toLocaleDateString('th-TH', {
+          // Changed to th-TH locale
           month: 'short',
           day: 'numeric',
         });
@@ -549,49 +551,49 @@ if (typeof window.FriendRenderer === 'undefined') {
     }
 
     /**
-     * 获取好友数量
+     * รับจำนวนเพื่อน
      */
     getFriendCount() {
       return this.extractedFriends.length;
     }
 
     /**
-     * 根据ID获取好友信息
+     * รับข้อมูลเพื่อนตาม ID
      */
     getFriendById(friendId) {
       return this.extractedFriends.find(friend => friend.number === friendId);
     }
 
     /**
-     * 刷新好友列表
+     * รีเฟรชรายการเพื่อน
      */
     refresh() {
       this.extractFriendsFromContext();
-      console.log('[Friend Renderer] 好友列表已刷新');
+      console.log('[Friend Renderer] รายการเพื่อนถูกรีเฟรชแล้ว'); // Translated: 好友列表已刷新
     }
 
     /**
-     * 提取好友信息（兼容方法名）
+     * ดึงข้อมูลเพื่อน (ชื่อเมธอดที่เข้ากันได้)
      */
     extractFriends() {
       return this.extractFriendsFromContext();
     }
 
     /**
-     * 移除thinking标签包裹的内容
+     * ลบเนื้อหาที่ถูกล้อมรอบด้วยแท็ก thinking
      */
     removeThinkingTags(text) {
       if (!text || typeof text !== 'string') {
         return text;
       }
 
-      // 移除 <think>...</think> 和 <thinking>...</thinking> 标签及其内容
+      // ลบแท็ก <think>...</think> และ <thinking>...</thinking> และเนื้อหาภายใน
       const thinkingTagRegex = /<think>[\s\S]*?<\/think>|<thinking>[\s\S]*?<\/thinking>/gi;
       return text.replace(thinkingTagRegex, '');
     }
 
     /**
-     * 检查格式标记是否在thinking标签内
+     * ตรวจสอบว่าเครื่องหมายรูปแบบอยู่ภายในแท็ก thinking หรือไม่
      */
     isPatternInsideThinkingTags(text, patternStart, patternEnd) {
       if (!text || typeof text !== 'string') {
@@ -605,7 +607,7 @@ if (typeof window.FriendRenderer === 'undefined') {
         const thinkStart = match.index;
         const thinkEnd = match.index + match[0].length;
 
-        // 检查格式标记是否完全在thinking标签内
+        // ตรวจสอบว่าเครื่องหมายรูปแบบอยู่ภายในแท็ก thinking ทั้งหมดหรือไม่
         if (patternStart >= thinkStart && patternEnd <= thinkEnd) {
           return true;
         }
@@ -615,25 +617,25 @@ if (typeof window.FriendRenderer === 'undefined') {
     }
 
     /**
-     * 只移除不在thinking标签内的格式标记
+     * ลบเครื่องหมายรูปแบบที่ไม่ได้อยู่ภายในแท็ก thinking เท่านั้น
      */
     removePatternOutsideThinkingTags(text, pattern) {
       if (!text || typeof text !== 'string') {
         return text;
       }
 
-      // 创建新的正则表达式实例，避免lastIndex问题
+      // สร้าง Regular Expression ใหม่เพื่อหลีกเลี่ยงปัญหา lastIndex
       const newPattern = new RegExp(pattern.source, pattern.flags);
       let result = text;
       const replacements = [];
       let match;
 
-      // 找到所有匹配
+      // ค้นหาการจับคู่ทั้งหมด
       while ((match = newPattern.exec(text)) !== null) {
         const matchStart = match.index;
         const matchEnd = match.index + match[0].length;
 
-        // 检查这个匹配是否在thinking标签内
+        // ตรวจสอบว่าการจับคู่นี้อยู่ภายในแท็ก thinking หรือไม่
         if (!this.isPatternInsideThinkingTags(text, matchStart, matchEnd)) {
           replacements.push({
             start: matchStart,
@@ -643,7 +645,7 @@ if (typeof window.FriendRenderer === 'undefined') {
         }
       }
 
-      // 从后往前替换，避免索引问题
+      // แทนที่จากด้านหลังไปด้านหน้าเพื่อหลีกเลี่ยงปัญหาดัชนี
       replacements.reverse().forEach(replacement => {
         result = result.substring(0, replacement.start) + result.substring(replacement.end);
       });
@@ -652,26 +654,26 @@ if (typeof window.FriendRenderer === 'undefined') {
     }
 
     /**
-     * 调试输出
+     * แสดงผลลัพธ์การดีบัก
      */
     debug() {
-      // 修复：只在调试模式下输出详细信息
+      // แก้ไข: แสดงผลเฉพาะในโหมดดีบักเท่านั้น
       if (window.DEBUG_FRIEND_RENDERER) {
-        console.group('[Friend Renderer] 调试信息');
-        console.log('提取的好友数量:', this.extractedFriends.length);
-        console.log('好友列表:', this.extractedFriends);
-        console.log('最后聊天记录:', this.lastChatRecord);
-        console.log('正则表达式:', this.friendPattern);
+        console.group('[Friend Renderer] ข้อมูลการดีบัก'); // Translated: 调试信息
+        console.log('จำนวนเพื่อนที่ดึงมา:', this.extractedFriends.length); // Translated: 提取的好友数量
+        console.log('รายการเพื่อน:', this.extractedFriends); // Translated: 好友列表
+        console.log('บันทึกการแชทล่าสุด:', this.lastChatRecord); // Translated: 最后聊天记录
+        console.log('Regular Expression:', this.friendPattern); // Translated: 正则表达式
         console.groupEnd();
       }
     }
   }
 
-  // 创建全局实例
+  // สร้างอินสแตนซ์ส่วนกลาง
   window.FriendRenderer = FriendRenderer;
   window.friendRenderer = new FriendRenderer();
 
-  // 为message-app提供的接口
+  // อินเทอร์เฟซสำหรับ message-app
   window.renderFriendsFromContext = function () {
     return window.friendRenderer.renderFriendsHTML();
   };
@@ -680,5 +682,5 @@ if (typeof window.FriendRenderer === 'undefined') {
     window.friendRenderer.refresh();
   };
 
-  console.log('[Friend Renderer] 好友渲染器模块加载完成');
+  console.log('[Friend Renderer] โมดูลตัวแสดงผลรายชื่อเพื่อนโหลดเสร็จสมบูรณ์'); // Translated: 好友渲染器模块加载完成
 } // 结束 if (typeof window.FriendRenderer === 'undefined') 检查
