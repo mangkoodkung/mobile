@@ -3770,482 +3770,489 @@ if (typeof window.FriendsCircle === 'undefined') {
     }
 
     /**
-   * ดีบักสถานะระบบฟัง
-   */
-  debugListenerStatus() {
-    console.log('=== ข้อมูลดีบักระบบฟังวงเพื่อน ==='); // Translated: === 朋友圈监听系统调试信息 ===
-    console.log('สถานะตัวฟัง:', this.eventListener?.isListening); // Translated: 监听器状态
-    console.log('สถานะเปิดใช้งานวงเพื่อน:', this.isActive); // Translated: 朋友圈激活状态
-    console.log('จำนวนข้อความปัจจุบัน:', this.eventListener?.getCurrentMessageCount()); // Translated: 当前消息数量
-    console.log('จำนวนข้อความล่าสุด:', this.eventListener?.lastMessageCount); // Translated: 上次消息数量
+     * ดีบักสถานะระบบฟัง
+     */
+    debugListenerStatus() {
+      console.log('=== ข้อมูลดีบักระบบฟังวงเพื่อน ==='); // Translated: === 朋友圈监听系统调试信息 ===
+      console.log('สถานะตัวฟัง:', this.eventListener?.isListening); // Translated: 监听器状态
+      console.log('สถานะเปิดใช้งานวงเพื่อน:', this.isActive); // Translated: 朋友圈激活状态
+      console.log('จำนวนข้อความปัจจุบัน:', this.eventListener?.getCurrentMessageCount()); // Translated: 当前消息数量
+      console.log('จำนวนข้อความล่าสุด:', this.eventListener?.lastMessageCount); // Translated: 上次消息数量
 
-    // ตรวจสอบระบบเหตุการณ์ที่ใช้งานได้
-    console.log('ระบบเหตุการณ์ที่ใช้งานได้:'); // Translated: 可用的事件系统
-    console.log('- window.SillyTavern:', !!window.SillyTavern);
-    console.log('- window.SillyTavern.getContext:', !!window.SillyTavern?.getContext);
+      // ตรวจสอบระบบเหตุการณ์ที่ใช้งานได้
+      console.log('ระบบเหตุการณ์ที่ใช้งานได้:'); // Translated: 可用的事件系统
+      console.log('- window.SillyTavern:', !!window.SillyTavern);
+      console.log('- window.SillyTavern.getContext:', !!window.SillyTavern?.getContext);
 
-    if (window.SillyTavern?.getContext) {
-      const context = window.SillyTavern.getContext();
-      console.log('- context:', !!context);
-      console.log('- context.eventSource:', !!context?.eventSource);
-      console.log('- context.event_types:', !!context?.event_types);
-      console.log('- context.event_types.MESSAGE_RECEIVED:', context?.event_types?.MESSAGE_RECEIVED);
-    }
-
-    console.log('- ฟังก์ชัน eventOn:', typeof eventOn); // Translated: eventOn函数
-    console.log('- tavern_events:', typeof tavern_events);
-    console.log('- window.parent.eventSource:', !!window.parent?.eventSource);
-    console.log('- window.eventSource:', typeof window.eventSource);
-
-    // ตรวจสอบการรับข้อมูลแชท
-    console.log('=== การทดสอบการรับข้อมูลแชท ==='); // Translated: === 聊天数据获取测试 ===
-    this.testChatDataAccess();
-
-    // บังคับทริกเกอร์การตรวจสอบหนึ่งครั้ง
-    if (this.eventListener) {
-      console.log('บังคับทริกเกอร์การตรวจสอบข้อความ...'); // Translated: 强制触发消息检查...
-      this.eventListener.checkForNewMessages();
-    }
-  }
-
-  /**
-   * ทดสอบการรับข้อมูลแชท
-   */
-  async testChatDataAccess() {
-    console.log('[Debug] กำลังทดสอบการรับข้อมูลแชท...'); // Translated: 测试聊天数据获取...
-
-    // วิธีที่ 1: SillyTavern.getContext
-    if (window.SillyTavern?.getContext) {
-      try {
+      if (window.SillyTavern?.getContext) {
         const context = window.SillyTavern.getContext();
-        console.log('[Debug] SillyTavern.getContext():', !!context);
-        if (context?.chat) {
-          console.log('[Debug] context.chat ความยาว:', context.chat.length); // Translated: 长度
-          console.log('[Debug] ข้อความล่าสุด:', context.chat[context.chat.length - 1]?.mes?.substring(0, 100)); // Translated: 最后一条消息
+        console.log('- context:', !!context);
+        console.log('- context.eventSource:', !!context?.eventSource);
+        console.log('- context.event_types:', !!context?.event_types);
+        console.log('- context.event_types.MESSAGE_RECEIVED:', context?.event_types?.MESSAGE_RECEIVED);
+      }
+
+      console.log('- ฟังก์ชัน eventOn:', typeof eventOn); // Translated: eventOn函数
+      console.log('- tavern_events:', typeof tavern_events);
+      console.log('- window.parent.eventSource:', !!window.parent?.eventSource);
+      console.log('- window.eventSource:', typeof window.eventSource);
+
+      // ตรวจสอบการรับข้อมูลแชท
+      console.log('=== การทดสอบการรับข้อมูลแชท ==='); // Translated: === 聊天数据获取测试 ===
+      this.testChatDataAccess();
+
+      // บังคับทริกเกอร์การตรวจสอบหนึ่งครั้ง
+      if (this.eventListener) {
+        console.log('บังคับทริกเกอร์การตรวจสอบข้อความ...'); // Translated: 强制触发消息检查...
+        this.eventListener.checkForNewMessages();
+      }
+    }
+
+    /**
+     * ทดสอบการรับข้อมูลแชท
+     */
+    async testChatDataAccess() {
+      console.log('[Debug] กำลังทดสอบการรับข้อมูลแชท...'); // Translated: 测试聊天数据获取...
+
+      // วิธีที่ 1: SillyTavern.getContext
+      if (window.SillyTavern?.getContext) {
+        try {
+          const context = window.SillyTavern.getContext();
+          console.log('[Debug] SillyTavern.getContext():', !!context);
+          if (context?.chat) {
+            console.log('[Debug] context.chat ความยาว:', context.chat.length); // Translated: 长度
+            console.log('[Debug] ข้อความล่าสุด:', context.chat[context.chat.length - 1]?.mes?.substring(0, 100)); // Translated: 最后一条消息
+          }
+        } catch (error) {
+          console.log('[Debug] SillyTavern.getContext ข้อผิดพลาด:', error); // Translated: 错误
         }
-      } catch (error) {
-        console.log('[Debug] SillyTavern.getContext ข้อผิดพลาด:', error); // Translated: 错误
       }
-    }
 
-    // วิธีที่ 2: contextMonitor
-    if (window.contextMonitor?.getCurrentChatMessages) {
-      try {
-        const chatData = await window.contextMonitor.getCurrentChatMessages();
-        console.log('[Debug] contextMonitor ข้อมูล:', !!chatData); // Translated: 数据
-        if (chatData?.messages) {
-          console.log('[Debug] contextMonitor จำนวนข้อความ:', chatData.messages.length); // Translated: 消息数量
+      // วิธีที่ 2: contextMonitor
+      if (window.contextMonitor?.getCurrentChatMessages) {
+        try {
+          const chatData = await window.contextMonitor.getCurrentChatMessages();
+          console.log('[Debug] contextMonitor ข้อมูล:', !!chatData); // Translated: 数据
+          if (chatData?.messages) {
+            console.log('[Debug] contextMonitor จำนวนข้อความ:', chatData.messages.length); // Translated: 消息数量
+          }
+        } catch (error) {
+          console.log('[Debug] contextMonitor ข้อผิดพลาด:', error); // Translated: 错误
         }
-      } catch (error) {
-        console.log('[Debug] contextMonitor ข้อผิดพลาด:', error); // Translated: 错误
+      }
+
+      // วิธีที่ 3: Window แม่
+      if (window.parent?.chat) {
+        try {
+          console.log('[Debug] window.parent.chat ความยาว:', window.parent.chat.length); // Translated: 长度
+        } catch (error) {
+          console.log('[Debug] window.parent.chat ข้อผิดพลาด:', error); // Translated: 错误
+        }
       }
     }
 
-    // วิธีที่ 3: Window แม่
-    if (window.parent?.chat) {
-      try {
-        console.log('[Debug] window.parent.chat ความยาว:', window.parent.chat.length); // Translated: 长度
-      } catch (error) {
-        console.log('[Debug] window.parent.chat ข้อผิดพลาด:', error); // Translated: 错误
+    /**
+     * รีสตาร์ทระบบฟัง
+     */
+    restartListener() {
+      console.log('[Friends Circle] กำลังรีสตาร์ทระบบฟัง...'); // Translated: 重启监听系统...
+      if (this.eventListener) {
+        this.eventListener.stopListening();
+        setTimeout(() => {
+          this.eventListener.startListening();
+        }, 1000);
       }
     }
-  }
 
-  /**
-   * รีสตาร์ทระบบฟัง
-   */
-  restartListener() {
-    console.log('[Friends Circle] กำลังรีสตาร์ทระบบฟัง...'); // Translated: 重启监听系统...
-    if (this.eventListener) {
-      this.eventListener.stopListening();
-      setTimeout(() => {
+    /**
+     * ดีบักระบบวงเพื่อนทั้งหมด
+     */
+    debugAll() {
+      console.log('=== ดีบักระบบวงเพื่อนทั้งหมด ==='); // Translated: === 朋友圈系统全面调试 ===
+
+      // 1. สถานะพื้นฐาน
+      console.log('1. สถานะพื้นฐาน:'); // Translated: 基本状态
+      console.log('- อินสแตนซ์วงเพื่อน:', !!this); // Translated: 朋友圈实例
+      console.log('- อินสแตนซ์ตัวจัดการ:', !!this.manager); // Translated: 管理器实例
+      console.log('- อินสแตนซ์ตัวแสดงผล:', !!this.renderer); // Translated: 渲染器实例
+      console.log('- อินสแตนซ์ตัวฟังเหตุการณ์:', !!this.eventListener); // Translated: 事件监听器实例
+      console.log('- สถานะเปิดใช้งานวงเพื่อน:', this.isActive); // Translated: 朋友圈激活状态
+
+      // 2. สถานะข้อมูล
+      console.log('2. สถานะข้อมูล:'); // Translated: 数据状态
+      const circles = this.manager?.getSortedFriendsCircles() || [];
+      console.log('- จำนวนวงเพื่อน:', circles.length); // Translated: 朋友圈数量
+      circles.forEach((circle, index) => {
+        console.log(`- วงเพื่อน ${index + 1}:`, {
+          // Translated: 朋友圈
+          id: circle.id,
+          type: circle.type,
+          author: circle.author,
+          hasImageDescription: !!circle.imageDescription,
+          hasContent: !!circle.content,
+        });
+      });
+
+      // 3. สถานะ DOM
+      console.log('3. สถานะ DOM:'); // Translated: DOM状态
+      const circleElements = document.querySelectorAll('.circle-item');
+      console.log('- จำนวนองค์ประกอบวงเพื่อนบนหน้า:', circleElements.length); // Translated: 页面上的朋友圈元素数量
+
+      // 4. สถานะป๊อปอัปเผยแพร่
+      console.log('4. สถานะป๊อปอัปเผยแพร่:'); // Translated: 发布弹窗状态
+      const publishModal = document.querySelector('.friends-circle-publish-modal');
+      console.log('- ป๊อปอัปเผยแพร่มีอยู่:', !!publishModal); // Translated: 发布弹窗存在
+      if (publishModal) {
+        console.log('- การมองเห็นป๊อปอัป:', window.getComputedStyle(publishModal).display); // Translated: 弹窗可见性
+        console.log('- ตำแหน่งป๊อปอัป:', publishModal.getBoundingClientRect()); // Translated: 弹窗位置
+      }
+
+      // 5. สถานะระบบฟัง
+      console.log('5. สถานะระบบฟัง:'); // Translated: 监听系统状态
+      this.debugListenerStatus();
+
+      // 6. ทดสอบป๊อปอัปเผยแพร่
+      console.log('5. ทดสอบฟังก์ชันป๊อปอัปเผยแพร่:'); // Translated: 测试发布弹窗功能
+      if (this.renderer) {
+        console.log('- กำลังพยายามแสดงป๊อปอัปเผยแพร่...'); // Translated: 尝试显示发布弹窗...
+        this.renderer.showPublishModal();
+      }
+    }
+
+    /**
+     * บังคับเปิดใช้งานวงเพื่อน (แก้ไขปัญหาการเปิดใช้งาน)
+     */
+    async forceActivate() {
+      console.log('[Friends Circle] กำลังบังคับเปิดใช้งานวงเพื่อน...'); // Translated: 强制激活朋友圈...
+
+      // 1. บังคับตั้งค่าสถานะเปิดใช้งาน
+      this.isActive = true;
+      console.log('[Friends Circle] สถานะเปิดใช้งานถูกตั้งค่าเป็น true'); // Translated: 激活状态已设置为 true
+
+      // 2. ตรวจสอบให้แน่ใจว่าส่วนหัวแสดงผลถูกต้อง
+      this.updateHeader();
+
+      // 3. บังคับรีเฟรชข้อมูล
+      await this.refreshFriendsCircle();
+
+      // 4. เริ่มตัวฟัง
+      if (this.eventListener) {
         this.eventListener.startListening();
-      }, 1000);
+        console.log('[Friends Circle] ตัวฟังถูกเริ่มแล้ว'); // Translated: 监听器已启动
+      }
+
+      // 5. ตรวจสอบผลลัพธ์
+      const circles = this.manager?.getSortedFriendsCircles() || [];
+      console.log('[Friends Circle] บังคับเปิดใช้งานเสร็จสมบูรณ์, จำนวนวงเพื่อน:', circles.length); // Translated: 强制激活完成，朋友圈数量
+
+      return circles.length > 0;
     }
-  }
 
-  /**
-   * ดีบักระบบวงเพื่อนทั้งหมด
-   */
-  debugAll() {
-    console.log('=== ดีบักระบบวงเพื่อนทั้งหมด ==='); // Translated: === 朋友圈系统全面调试 ===
+    /**
+     * ทดสอบระบบจัดเรียงใหม่
+     */
+    testNewSortingSystem() {
+      console.log('=== ทดสอบระบบจัดเรียงใหม่ตามตำแหน่งข้อความ ==='); // Translated: === 测试新的基于消息位置的排序方案 ===
 
-    // 1. สถานะพื้นฐาน
-    console.log('1. สถานะพื้นฐาน:'); // Translated: 基本状态
-    console.log('- อินสแตนซ์วงเพื่อน:', !!this); // Translated: 朋友圈实例
-    console.log('- อินสแตนซ์ตัวจัดการ:', !!this.manager); // Translated: 管理器实例
-    console.log('- อินสแตนซ์ตัวแสดงผล:', !!this.renderer); // Translated: 渲染器实例
-    console.log('- อินสแตนซ์ตัวฟังเหตุการณ์:', !!this.eventListener); // Translated: 事件监听器实例
-    console.log('- สถานะเปิดใช้งานวงเพื่อน:', this.isActive); // Translated: 朋友圈激活状态
+      // รับข้อมูลวงเพื่อนปัจจุบัน
+      const circles = this.manager.getSortedFriendsCircles();
 
-    // 2. สถานะข้อมูล
-    console.log('2. สถานะข้อมูล:'); // Translated: 数据状态
-    const circles = this.manager?.getSortedFriendsCircles() || [];
-    console.log('- จำนวนวงเพื่อน:', circles.length); // Translated: 朋友圈数量
-    circles.forEach((circle, index) => {
-      console.log(`- วงเพื่อน ${index + 1}:`, { // Translated: 朋友圈
-        id: circle.id,
-        type: circle.type,
-        author: circle.author,
-        hasImageDescription: !!circle.imageDescription,
-        hasContent: !!circle.content,
+      console.log('ผลการจัดเรียงวงเพื่อน:'); // Translated: 朋友圈排序结果
+      circles.forEach((circle, index) => {
+        console.log(`${index + 1}. ${circle.author} (${circle.id}):`, {
+          messageIndex: circle.messageIndex,
+          latestActivityIndex: circle.latestActivityIndex,
+          repliesCount: circle.replies?.length || 0,
+          content: circle.content?.substring(0, 30) + '...',
+        });
       });
-    });
 
-    // 3. สถานะ DOM
-    console.log('3. สถานะ DOM:'); // Translated: DOM状态
-    const circleElements = document.querySelectorAll('.circle-item');
-    console.log('- จำนวนองค์ประกอบวงเพื่อนบนหน้า:', circleElements.length); // Translated: 页面上的朋友圈元素数量
+      // ตรวจสอบว่าจัดเรียงถูกต้องหรือไม่
+      let isCorrectlySorted = true;
+      for (let i = 1; i < circles.length; i++) {
+        if (circles[i - 1].latestActivityIndex < circles[i].latestActivityIndex) {
+          isCorrectlySorted = false;
+          console.error(
+            `จัดเรียงผิดพลาด: ตำแหน่งกิจกรรมของวงเพื่อนที่ตำแหน่ง ${i - 1} (${
+              // Translated: 排序错误: 位置
+              circles[i - 1].latestActivityIndex
+            }) น้อยกว่าตำแหน่งกิจกรรมของวงเพื่อนที่ตำแหน่ง ${i} (${circles[i].latestActivityIndex})`, // Translated: 的朋友圈活动位置, 小于位置, 的朋友圈活动位置
+          );
+        }
+      }
 
-    // 4. สถานะป๊อปอัปเผยแพร่
-    console.log('4. สถานะป๊อปอัปเผยแพร่:'); // Translated: 发布弹窗状态
-    const publishModal = document.querySelector('.friends-circle-publish-modal');
-    console.log('- ป๊อปอัปเผยแพร่มีอยู่:', !!publishModal); // Translated: 发布弹窗存在
-    if (publishModal) {
-      console.log('- การมองเห็นป๊อปอัป:', window.getComputedStyle(publishModal).display); // Translated: 弹窗可见性
-      console.log('- ตำแหน่งป๊อปอัป:', publishModal.getBoundingClientRect()); // Translated: 弹窗位置
+      if (isCorrectlySorted) {
+        console.log('✅ ตรวจสอบการจัดเรียงผ่าน: วงเพื่อนถูกจัดเรียงตามตำแหน่งกิจกรรมล่าสุดอย่างถูกต้อง'); // Translated: 排序验证通过：朋友圈按最新活动位置正确排序
+      } else {
+        console.error('❌ ตรวจสอบการจัดเรียงล้มเหลว: มีข้อผิดพลาดในการจัดเรียง'); // Translated: 排序验证失败：存在排序错误
+      }
+
+      console.log('=== ทดสอบการจัดเรียงเสร็จสมบูรณ์ ==='); // Translated: === 排序测试完成 ===
+      return { circles, isCorrectlySorted };
     }
 
-    // 5. สถานะระบบฟัง
-    console.log('5. สถานะระบบฟัง:'); // Translated: 监听系统状态
-    this.debugListenerStatus();
+    /**
+     * ทดสอบระบบอัปเดตแบบเพิ่มหน่วย
+     */
+    testIncrementalUpdate() {
+      console.log('=== ทดสอบระบบอัปเดตแบบเพิ่มหน่วย ==='); // Translated: === 测试增量更新系统 ===
 
-    // 6. ทดสอบป๊อปอัปเผยแพร่
-    console.log('5. ทดสอบฟังก์ชันป๊อปอัปเผยแพร่:'); // Translated: 测试发布弹窗功能
-    if (this.renderer) {
-      console.log('- กำลังพยายามแสดงป๊อปอัปเผยแพร่...'); // Translated: 尝试显示发布弹窗...
-      this.renderer.showPublishModal();
-    }
-  }
+      console.log('สถานะปัจจุบัน:'); // Translated: 当前状态
+      console.log('- จำนวนวงเพื่อน:', this.manager.friendsCircleData.size); // Translated: 朋友圈数量
+      console.log('- ดัชนีข้อความที่ประมวลผลล่าสุด:', this.manager.lastProcessedMessageIndex); // Translated: 上次处理消息索引
 
-  /**
-   * บังคับเปิดใช้งานวงเพื่อน (แก้ไขปัญหาการเปิดใช้งาน)
-   */
-  async forceActivate() {
-    console.log('[Friends Circle] กำลังบังคับเปิดใช้งานวงเพื่อน...'); // Translated: 强制激活朋友圈...
+      // บังคับทริกเกอร์การอัปเดตแบบเพิ่มหน่วยหนึ่งครั้ง
+      console.log('บังคับทริกเกอร์การอัปเดตแบบเพิ่มหน่วย...'); // Translated: 强制触发增量更新...
+      this.manager.refreshData(false);
 
-    // 1. บังคับตั้งค่าสถานะเปิดใช้งาน
-    this.isActive = true;
-    console.log('[Friends Circle] สถานะเปิดใช้งานถูกตั้งค่าเป็น true'); // Translated: 激活状态已设置为 true
-
-    // 2. ตรวจสอบให้แน่ใจว่าส่วนหัวแสดงผลถูกต้อง
-    this.updateHeader();
-
-    // 3. บังคับรีเฟรชข้อมูล
-    await this.refreshFriendsCircle();
-
-    // 4. เริ่มตัวฟัง
-    if (this.eventListener) {
-      this.eventListener.startListening();
-      console.log('[Friends Circle] ตัวฟังถูกเริ่มแล้ว'); // Translated: 监听器已启动
+      console.log('=== ทดสอบการอัปเดตแบบเพิ่มหน่วยเสร็จสมบูรณ์ ==='); // Translated: === 增量更新测试完成 ===
     }
 
-    // 5. ตรวจสอบผลลัพธ์
-    const circles = this.manager?.getSortedFriendsCircles() || [];
-    console.log('[Friends Circle] บังคับเปิดใช้งานเสร็จสมบูรณ์, จำนวนวงเพื่อน:', circles.length); // Translated: 强制激活完成，朋友圈数量
+    /**
+     * ตรวจสอบความคงทนของข้อมูล
+     */
+    verifyDataPersistence() {
+      console.log('=== ตรวจสอบความคงทนของข้อมูลวงเพื่อน ==='); // Translated: === 验证朋友圈数据持久性 ===
 
-    return circles.length > 0;
-  }
+      const manager = this.manager;
+      console.log('ID อินสแตนซ์ตัวจัดการ:', manager.constructor.name); // Translated: 管理器实例ID
+      console.log('ขนาดข้อมูลวงเพื่อน:', manager.friendsCircleData.size); // Translated: 朋友圈数据大小
+      console.log('ดัชนีที่ประมวลผลล่าสุด:', manager.lastProcessedMessageIndex); // Translated: 上次处理索引
 
-  /**
-   * ทดสอบระบบจัดเรียงใหม่
-   */
-  testNewSortingSystem() {
-    console.log('=== ทดสอบระบบจัดเรียงใหม่ตามตำแหน่งข้อความ ==='); // Translated: === 测试新的基于消息位置的排序方案 ===
+      // ตรวจสอบอินสแตนซ์ส่วนกลาง
+      console.log('อินสแตนซ์ส่วนกลางมีอยู่:', !!window.friendsCircle); // Translated: 全局实例存在
+      console.log('อินสแตนซ์ส่วนกลางเหมือนกับอินสแตนซ์ปัจจุบัน:', window.friendsCircle === this); // Translated: 全局实例与当前实例相同
 
-    // รับข้อมูลวงเพื่อนปัจจุบัน
-    const circles = this.manager.getSortedFriendsCircles();
+      if (window.messageApp) {
+        console.log('อินสแตนซ์วงเพื่อนของ MessageApp มีอยู่:', !!window.messageApp.friendsCircle); // Translated: MessageApp朋友圈实例存在
+        console.log(
+          'อินสแตนซ์ MessageApp เหมือนกับอินสแตนซ์ส่วนกลาง:',
+          window.messageApp.friendsCircle === window.friendsCircle,
+        ); // Translated: MessageApp实例与全局实例相同
+      }
 
-    console.log('ผลการจัดเรียงวงเพื่อน:'); // Translated: 朋友圈排序结果
-    circles.forEach((circle, index) => {
-      console.log(`${index + 1}. ${circle.author} (${circle.id}):`, {
-        messageIndex: circle.messageIndex,
-        latestActivityIndex: circle.latestActivityIndex,
-        repliesCount: circle.replies?.length || 0,
-        content: circle.content?.substring(0, 30) + '...',
+      // แสดงข้อมูลวงเพื่อน
+      const circles = manager.getSortedFriendsCircles();
+      console.log('รายการวงเพื่อน:'); // Translated: 朋友圈列表
+      circles.forEach((circle, index) => {
+        console.log(`${index + 1}. ${circle.author} (${circle.id}): ${circle.replies?.length || 0} รายการตอบกลับ`); // Translated: 条回复
       });
-    });
 
-    // ตรวจสอบว่าจัดเรียงถูกต้องหรือไม่
-    let isCorrectlySorted = true;
-    for (let i = 1; i < circles.length; i++) {
-      if (circles[i - 1].latestActivityIndex < circles[i].latestActivityIndex) {
-        isCorrectlySorted = false;
-        console.error(
-          `จัดเรียงผิดพลาด: ตำแหน่งกิจกรรมของวงเพื่อนที่ตำแหน่ง ${i - 1} (${ // Translated: 排序错误: 位置
-            circles[i - 1].latestActivityIndex
-          }) น้อยกว่าตำแหน่งกิจกรรมของวงเพื่อนที่ตำแหน่ง ${i} (${circles[i].latestActivityIndex})`, // Translated: 的朋友圈活动位置, 小于位置, 的朋友圈活动位置
-        );
+      console.log('=== ตรวจสอบความคงทนของข้อมูลเสร็จสมบูรณ์ ==='); // Translated: === 数据持久性验证完成 ===
+    }
+
+    /**
+     * บังคับรีเฟรชข้อมูลวงเพื่อน (สำหรับทดสอบ)
+     */
+    async forceRefresh() {
+      console.log('=== บังคับรีเฟรชข้อมูลวงเพื่อน ==='); // Translated: === 强制刷新朋友圈数据 ===
+
+      try {
+        // บังคับรีเฟรชแบบเต็ม
+        await this.manager.refreshData(true);
+
+        // อัปเดต UI
+        if (this.isActive) {
+          this.dispatchUpdateEvent();
+        }
+
+        console.log('บังคับรีเฟรชเสร็จสมบูรณ์, จำนวนวงเพื่อน:', this.manager.friendsCircleData.size); // Translated: 强制刷新完成，朋友圈数量
+      } catch (error) {
+        console.error('บังคับรีเฟรชล้มเหลว:', error); // Translated: 强制刷新失败
+      }
+
+      console.log('=== บังคับรีเฟรชเสร็จสมบูรณ์ ==='); // Translated: === 强制刷新完成 ===
+    }
+
+    /**
+     * ตรวจสอบสถานะหน้าปัจจุบัน
+     */
+    checkPageStatus() {
+      console.log('=== ตรวจสอบสถานะหน้า ==='); // Translated: === 页面状态检查 ===
+
+      // ตรวจสอบสถานะ message-app
+      if (window.messageApp) {
+        console.log('- messageApp มีอยู่:', true); // Translated: messageApp存在
+        console.log('- currentMainTab:', window.messageApp.currentMainTab);
+        console.log('- currentView:', window.messageApp.currentView);
+        console.log('- อินสแตนซ์ friendsCircle:', !!window.messageApp.friendsCircle); // Translated: friendsCircle实例
+        console.log('- สถานะเปิดใช้งาน friendsCircle:', window.messageApp.friendsCircle?.isActive); // Translated: friendsCircle激活状态
+      } else {
+        console.log('- messageApp มีอยู่:', false); // Translated: messageApp存在
+      }
+
+      // ตรวจสอบอินสแตนซ์วงเพื่อนส่วนกลาง
+      console.log('- window.friendsCircle มีอยู่:', !!window.friendsCircle); // Translated: window.friendsCircle存在
+      console.log('- สถานะเปิดใช้งาน window.friendsCircle:', window.friendsCircle?.isActive); // Translated: window.friendsCircle激活状态
+
+      // ตรวจสอบสถานะ DOM
+      const friendsCirclePage = document.querySelector('.friends-circle-page');
+      console.log('- องค์ประกอบ DOM หน้าวงเพื่อนมีอยู่:', !!friendsCirclePage); // Translated: 朋友圈页面DOM存在
+
+      return {
+        messageAppExists: !!window.messageApp,
+        currentTab: window.messageApp?.currentMainTab,
+        friendsCircleActive: window.friendsCircle?.isActive,
+        domExists: !!friendsCirclePage,
+      };
+    }
+
+    /**
+     * ทดสอบการโต้ตอบป๊อปอัป
+     */
+    testModalInteraction() {
+      console.log('[Friends Circle Debug] ทดสอบการโต้ตอบป๊อปอัป...'); // Translated: 测试弹窗交互...
+
+      const modal = document.querySelector('.friends-circle-publish-modal');
+      if (!modal) {
+        console.log('[Friends Circle Debug] ป๊อปอัปไม่มีอยู่, กำลังแสดงป๊อปอัปก่อน'); // Translated: 弹窗不存在，先显示弹窗
+        this.showPublishModal();
+        setTimeout(() => this.testModalInteraction(), 200);
+        return;
+      }
+
+      console.log('[Friends Circle Debug] พบป๊อปอัป, กำลังทดสอบการคลิกปุ่ม...'); // Translated: 找到弹窗，测试按钮点击...
+
+      const textBtn = modal.querySelector('.text-btn');
+      const imageBtn = modal.querySelector('.image-btn');
+      const closeBtn = modal.querySelector('.modal-close');
+      const overlay = modal.querySelector('.modal-overlay');
+
+      if (textBtn) {
+        console.log('[Friends Circle Debug] ทริกเกอร์เหตุการณ์คลิกปุ่มข้อความด้วยตนเอง'); // Translated: 手动触发文字按钮点击事件
+        textBtn.click();
+
+        // ลองเรียกเมธอดโดยตรงด้วย
+        setTimeout(() => {
+          console.log('[Friends Circle Debug] เรียกเมธอด showTextPublishModal โดยตรง'); // Translated: 直接调用showTextPublishModal方法
+          this.renderer.showTextPublishModal();
+        }, 1000);
+      }
+
+      if (closeBtn) {
+        setTimeout(() => {
+          console.log('[Friends Circle Debug] ทดสอบปุ่มปิด'); // Translated: 测试关闭按钮
+          closeBtn.click();
+        }, 2000);
       }
     }
 
-    if (isCorrectlySorted) {
-      console.log('✅ ตรวจสอบการจัดเรียงผ่าน: วงเพื่อนถูกจัดเรียงตามตำแหน่งกิจกรรมล่าสุดอย่างถูกต้อง'); // Translated: 排序验证通过：朋友圈按最新活动位置正确排序
-    } else {
-      console.error('❌ ตรวจสอบการจัดเรียงล้มเหลว: มีข้อผิดพลาดในการจัดเรียง'); // Translated: 排序验证失败：存在排序错误
-    }
+    /**
+     * ทดสอบป๊อปอัปเผยแพร่ข้อความ
+     */
+    testTextPublishModal() {
+      console.log('[Friends Circle Debug] ทดสอบป๊อปอัปเผยแพร่ข้อความ...'); // Translated: 测试文字发布弹窗...
 
-    console.log('=== ทดสอบการจัดเรียงเสร็จสมบูรณ์ ==='); // Translated: === 排序测试完成 ===
-    return { circles, isCorrectlySorted };
-  }
-
-  /**
-   * ทดสอบระบบอัปเดตแบบเพิ่มหน่วย
-   */
-  testIncrementalUpdate() {
-    console.log('=== ทดสอบระบบอัปเดตแบบเพิ่มหน่วย ==='); // Translated: === 测试增量更新系统 ===
-
-    console.log('สถานะปัจจุบัน:'); // Translated: 当前状态
-    console.log('- จำนวนวงเพื่อน:', this.manager.friendsCircleData.size); // Translated: 朋友圈数量
-    console.log('- ดัชนีข้อความที่ประมวลผลล่าสุด:', this.manager.lastProcessedMessageIndex); // Translated: 上次处理消息索引
-
-    // บังคับทริกเกอร์การอัปเดตแบบเพิ่มหน่วยหนึ่งครั้ง
-    console.log('บังคับทริกเกอร์การอัปเดตแบบเพิ่มหน่วย...'); // Translated: 强制触发增量更新...
-    this.manager.refreshData(false);
-
-    console.log('=== ทดสอบการอัปเดตแบบเพิ่มหน่วยเสร็จสมบูรณ์ ==='); // Translated: === 增量更新测试完成 ===
-  }
-
-  /**
-   * ตรวจสอบความคงทนของข้อมูล
-   */
-  verifyDataPersistence() {
-    console.log('=== ตรวจสอบความคงทนของข้อมูลวงเพื่อน ==='); // Translated: === 验证朋友圈数据持久性 ===
-
-    const manager = this.manager;
-    console.log('ID อินสแตนซ์ตัวจัดการ:', manager.constructor.name); // Translated: 管理器实例ID
-    console.log('ขนาดข้อมูลวงเพื่อน:', manager.friendsCircleData.size); // Translated: 朋友圈数据大小
-    console.log('ดัชนีที่ประมวลผลล่าสุด:', manager.lastProcessedMessageIndex); // Translated: 上次处理索引
-
-    // ตรวจสอบอินสแตนซ์ส่วนกลาง
-    console.log('อินสแตนซ์ส่วนกลางมีอยู่:', !!window.friendsCircle); // Translated: 全局实例存在
-    console.log('อินสแตนซ์ส่วนกลางเหมือนกับอินสแตนซ์ปัจจุบัน:', window.friendsCircle === this); // Translated: 全局实例与当前实例相同
-
-    if (window.messageApp) {
-      console.log('อินสแตนซ์วงเพื่อนของ MessageApp มีอยู่:', !!window.messageApp.friendsCircle); // Translated: MessageApp朋友圈实例存在
-      console.log('อินสแตนซ์ MessageApp เหมือนกับอินสแตนซ์ส่วนกลาง:', window.messageApp.friendsCircle === window.friendsCircle); // Translated: MessageApp实例与全局实例相同
-    }
-
-    // แสดงข้อมูลวงเพื่อน
-    const circles = manager.getSortedFriendsCircles();
-    console.log('รายการวงเพื่อน:'); // Translated: 朋友圈列表
-    circles.forEach((circle, index) => {
-      console.log(`${index + 1}. ${circle.author} (${circle.id}): ${circle.replies?.length || 0} รายการตอบกลับ`); // Translated: 条回复
-    });
-
-    console.log('=== ตรวจสอบความคงทนของข้อมูลเสร็จสมบูรณ์ ==='); // Translated: === 数据持久性验证完成 ===
-  }
-
-  /**
-   * บังคับรีเฟรชข้อมูลวงเพื่อน (สำหรับทดสอบ)
-   */
-  async forceRefresh() {
-    console.log('=== บังคับรีเฟรชข้อมูลวงเพื่อน ==='); // Translated: === 强制刷新朋友圈数据 ===
-
-    try {
-      // บังคับรีเฟรชแบบเต็ม
-      await this.manager.refreshData(true);
-
-      // อัปเดต UI
-      if (this.isActive) {
-        this.dispatchUpdateEvent();
+      const modal = document.querySelector('.friends-circle-text-publish-modal');
+      if (!modal) {
+        console.log('[Friends Circle Debug] ป๊อปอัปเผยแพร่ข้อความไม่มีอยู่'); // Translated: 文字发布弹窗不存在
+        return;
       }
 
-      console.log('บังคับรีเฟรชเสร็จสมบูรณ์, จำนวนวงเพื่อน:', this.manager.friendsCircleData.size); // Translated: 强制刷新完成，朋友圈数量
-    } catch (error) {
-      console.error('บังคับรีเฟรชล้มเหลว:', error); // Translated: 强制刷新失败
-    }
+      console.log('[Friends Circle Debug] พบป๊อปอัปเผยแพร่ข้อความ'); // Translated: 找到文字发布弹窗
 
-    console.log('=== บังคับรีเฟรชเสร็จสมบูรณ์ ==='); // Translated: === 强制刷新完成 ===
-  }
+      // ตรวจสอบสไตล์ป๊อปอัป
+      const modalStyle = window.getComputedStyle(modal);
+      console.log('[Friends Circle Debug] สไตล์ป๊อปอัปข้อความ:', {
+        // Translated: 文字弹窗样式
+        display: modalStyle.display,
+        position: modalStyle.position,
+        zIndex: modalStyle.zIndex,
+        visibility: modalStyle.visibility,
+        opacity: modalStyle.opacity,
+        pointerEvents: modalStyle.pointerEvents,
+      });
 
-  /**
-   * ตรวจสอบสถานะหน้าปัจจุบัน
-   */
-  checkPageStatus() {
-    console.log('=== ตรวจสอบสถานะหน้า ==='); // Translated: === 页面状态检查 ===
+      // ตรวจสอบปุ่ม
+      const cancelBtn = modal.querySelector('.cancel-btn');
+      const sendBtn = modal.querySelector('.send-btn');
+      const closeBtn = modal.querySelector('.modal-close');
+      const textInput = modal.querySelector('.text-input');
 
-    // ตรวจสอบสถานะ message-app
-    if (window.messageApp) {
-      console.log('- messageApp มีอยู่:', true); // Translated: messageApp存在
-      console.log('- currentMainTab:', window.messageApp.currentMainTab);
-      console.log('- currentView:', window.messageApp.currentView);
-      console.log('- อินสแตนซ์ friendsCircle:', !!window.messageApp.friendsCircle); // Translated: friendsCircle实例
-      console.log('- สถานะเปิดใช้งาน friendsCircle:', window.messageApp.friendsCircle?.isActive); // Translated: friendsCircle激活状态
-    } else {
-      console.log('- messageApp มีอยู่:', false); // Translated: messageApp存在
-    }
+      console.log('[Friends Circle Debug] องค์ประกอบป๊อปอัปข้อความ:', {
+        // Translated: 文字弹窗元素
+        cancelBtn: !!cancelBtn,
+        sendBtn: !!sendBtn,
+        closeBtn: !!closeBtn,
+        textInput: !!textInput,
+      });
 
-    // ตรวจสอบอินสแตนซ์วงเพื่อนส่วนกลาง
-    console.log('- window.friendsCircle มีอยู่:', !!window.friendsCircle); // Translated: window.friendsCircle存在
-    console.log('- สถานะเปิดใช้งาน window.friendsCircle:', window.friendsCircle?.isActive); // Translated: window.friendsCircle激活状态
-
-    // ตรวจสอบสถานะ DOM
-    const friendsCirclePage = document.querySelector('.friends-circle-page');
-    console.log('- องค์ประกอบ DOM หน้าวงเพื่อนมีอยู่:', !!friendsCirclePage); // Translated: 朋友圈页面DOM存在
-
-    return {
-      messageAppExists: !!window.messageApp,
-      currentTab: window.messageApp?.currentMainTab,
-      friendsCircleActive: window.friendsCircle?.isActive,
-      domExists: !!friendsCirclePage,
-    };
-  }
-
-  /**
-   * ทดสอบการโต้ตอบป๊อปอัป
-   */
-  testModalInteraction() {
-    console.log('[Friends Circle Debug] ทดสอบการโต้ตอบป๊อปอัป...'); // Translated: 测试弹窗交互...
-
-    const modal = document.querySelector('.friends-circle-publish-modal');
-    if (!modal) {
-      console.log('[Friends Circle Debug] ป๊อปอัปไม่มีอยู่, กำลังแสดงป๊อปอัปก่อน'); // Translated: 弹窗不存在，先显示弹窗
-      this.showPublishModal();
-      setTimeout(() => this.testModalInteraction(), 200);
-      return;
-    }
-
-    console.log('[Friends Circle Debug] พบป๊อปอัป, กำลังทดสอบการคลิกปุ่ม...'); // Translated: 找到弹窗，测试按钮点击...
-
-    const textBtn = modal.querySelector('.text-btn');
-    const imageBtn = modal.querySelector('.image-btn');
-    const closeBtn = modal.querySelector('.modal-close');
-    const overlay = modal.querySelector('.modal-overlay');
-
-    if (textBtn) {
-      console.log('[Friends Circle Debug] ทริกเกอร์เหตุการณ์คลิกปุ่มข้อความด้วยตนเอง'); // Translated: 手动触发文字按钮点击事件
-      textBtn.click();
-
-      // ลองเรียกเมธอดโดยตรงด้วย
-      setTimeout(() => {
-        console.log('[Friends Circle Debug] เรียกเมธอด showTextPublishModal โดยตรง'); // Translated: 直接调用showTextPublishModal方法
-        this.renderer.showTextPublishModal();
-      }, 1000);
-    }
-
-    if (closeBtn) {
-      setTimeout(() => {
-        console.log('[Friends Circle Debug] ทดสอบปุ่มปิด'); // Translated: 测试关闭按钮
-        closeBtn.click();
-      }, 2000);
-    }
-  }
-
-  /**
-   * ทดสอบป๊อปอัปเผยแพร่ข้อความ
-   */
-  testTextPublishModal() {
-    console.log('[Friends Circle Debug] ทดสอบป๊อปอัปเผยแพร่ข้อความ...'); // Translated: 测试文字发布弹窗...
-
-    const modal = document.querySelector('.friends-circle-text-publish-modal');
-    if (!modal) {
-      console.log('[Friends Circle Debug] ป๊อปอัปเผยแพร่ข้อความไม่มีอยู่'); // Translated: 文字发布弹窗不存在
-      return;
-    }
-
-    console.log('[Friends Circle Debug] พบป๊อปอัปเผยแพร่ข้อความ'); // Translated: 找到文字发布弹窗
-
-    // ตรวจสอบสไตล์ป๊อปอัป
-    const modalStyle = window.getComputedStyle(modal);
-    console.log('[Friends Circle Debug] สไตล์ป๊อปอัปข้อความ:', { // Translated: 文字弹窗样式
-      display: modalStyle.display,
-      position: modalStyle.position,
-      zIndex: modalStyle.zIndex,
-      visibility: modalStyle.visibility,
-      opacity: modalStyle.opacity,
-      pointerEvents: modalStyle.pointerEvents,
-    });
-
-    // ตรวจสอบปุ่ม
-    const cancelBtn = modal.querySelector('.cancel-btn');
-    const sendBtn = modal.querySelector('.send-btn');
-    const closeBtn = modal.querySelector('.modal-close');
-    const textInput = modal.querySelector('.text-input');
-
-    console.log('[Friends Circle Debug] องค์ประกอบป๊อปอัปข้อความ:', { // Translated: 文字弹窗元素
-      cancelBtn: !!cancelBtn,
-      sendBtn: !!sendBtn,
-      closeBtn: !!closeBtn,
-      textInput: !!textInput,
-    });
-
-    // ทดสอบช่องป้อนข้อมูล
-    if (textInput) {
-      console.log('[Friends Circle Debug] ทดสอบช่องป้อนข้อมูล...'); // Translated: 测试输入框...
-      textInput.value = 'เนื้อหาข้อความทดสอบ'; // Translated: 测试文字内容
-      textInput.dispatchEvent(new Event('input'));
-      console.log('[Friends Circle Debug] ค่าช่องป้อนข้อมูล:', textInput.value); // Translated: 输入框值
-    }
-
-    // ทดสอบการคลิกปุ่ม
-    if (cancelBtn) {
-      setTimeout(() => {
-        console.log('[Friends Circle Debug] ทดสอบปุ่มยกเลิก'); // Translated: 测试取消按钮
-        cancelBtn.click();
-      }, 1000);
-    }
-  }
-
-  /**
-   * บังคับซ่อมแซมการโต้ตอบป๊อปอัป
-   */
-  fixModalInteraction() {
-    console.log('[Friends Circle Debug] บังคับซ่อมแซมการโต้ตอบป๊อปอัป...'); // Translated: 强制修复弹窗交互...
-
-    // ค้นหาป๊อปอัปทั้งหมด
-    const publishModal = document.querySelector('.friends-circle-publish-modal');
-    const textModal = document.querySelector('.friends-circle-text-publish-modal');
-
-    [publishModal, textModal].forEach((modal, index) => {
-      if (!modal) return;
-
-      const modalType = index === 0 ? 'เลือกเผยแพร่' : 'เผยแพร่ข้อความ'; // Translated: 发布选择, 文字发布
-      console.log(`[Friends Circle Debug] กำลังซ่อมแซมป๊อปอัป ${modalType}...`); // Translated: 修复${modalType}弹窗...
-
-      // บังคับตั้งค่าสไตล์
-      modal.style.zIndex = '99999';
-      modal.style.pointerEvents = 'auto';
-      modal.style.position = 'fixed';
-      modal.style.top = '0';
-      modal.style.left = '0';
-      modal.style.right = '0';
-      modal.style.bottom = '0';
-
-      // ซ่อมแซมพื้นที่เนื้อหา
-      const content = modal.querySelector('.modal-content');
-      if (content) {
-        content.style.pointerEvents = 'auto';
-        content.style.zIndex = '100000';
-        content.style.position = 'relative';
+      // ทดสอบช่องป้อนข้อมูล
+      if (textInput) {
+        console.log('[Friends Circle Debug] ทดสอบช่องป้อนข้อมูล...'); // Translated: 测试输入框...
+        textInput.value = 'เนื้อหาข้อความทดสอบ'; // Translated: 测试文字内容
+        textInput.dispatchEvent(new Event('input'));
+        console.log('[Friends Circle Debug] ค่าช่องป้อนข้อมูล:', textInput.value); // Translated: 输入框值
       }
 
-      // ซ่อมแซมปุ่มทั้งหมด
-      const buttons = modal.querySelectorAll('button');
-      buttons.forEach(btn => {
-        btn.style.pointerEvents = 'auto';
-        btn.style.zIndex = '100001';
-        btn.style.position = 'relative';
+      // ทดสอบการคลิกปุ่ม
+      if (cancelBtn) {
+        setTimeout(() => {
+          console.log('[Friends Circle Debug] ทดสอบปุ่มยกเลิก'); // Translated: 测试取消按钮
+          cancelBtn.click();
+        }, 1000);
+      }
+    }
 
-        // เพิ่มเหตุการณ์คลิกสำหรับดีบัก
-        btn.addEventListener(
-          'click',
-          e => {
-            console.log(`[Friends Circle Debug] ปุ่มถูกคลิก:`, btn.className, e); // Translated: 按钮被点击
-          },
-          true,
-        );
+    /**
+     * บังคับซ่อมแซมการโต้ตอบป๊อปอัป
+     */
+    fixModalInteraction() {
+      console.log('[Friends Circle Debug] บังคับซ่อมแซมการโต้ตอบป๊อปอัป...'); // Translated: 强制修复弹窗交互...
+
+      // ค้นหาป๊อปอัปทั้งหมด
+      const publishModal = document.querySelector('.friends-circle-publish-modal');
+      const textModal = document.querySelector('.friends-circle-text-publish-modal');
+
+      [publishModal, textModal].forEach((modal, index) => {
+        if (!modal) return;
+
+        const modalType = index === 0 ? 'เลือกเผยแพร่' : 'เผยแพร่ข้อความ'; // Translated: 发布选择, 文字发布
+        console.log(`[Friends Circle Debug] กำลังซ่อมแซมป๊อปอัป ${modalType}...`); // Translated: 修复${modalType}弹窗...
+
+        // บังคับตั้งค่าสไตล์
+        modal.style.zIndex = '99999';
+        modal.style.pointerEvents = 'auto';
+        modal.style.position = 'fixed';
+        modal.style.top = '0';
+        modal.style.left = '0';
+        modal.style.right = '0';
+        modal.style.bottom = '0';
+
+        // ซ่อมแซมพื้นที่เนื้อหา
+        const content = modal.querySelector('.modal-content');
+        if (content) {
+          content.style.pointerEvents = 'auto';
+          content.style.zIndex = '100000';
+          content.style.position = 'relative';
+        }
+
+        // ซ่อมแซมปุ่มทั้งหมด
+        const buttons = modal.querySelectorAll('button');
+        buttons.forEach(btn => {
+          btn.style.pointerEvents = 'auto';
+          btn.style.zIndex = '100001';
+          btn.style.position = 'relative';
+
+          // เพิ่มเหตุการณ์คลิกสำหรับดีบัก
+          btn.addEventListener(
+            'click',
+            e => {
+              console.log(`[Friends Circle Debug] ปุ่มถูกคลิก:`, btn.className, e); // Translated: 按钮被点击
+            },
+            true,
+          );
+        });
+
+        // ซ่อมแซมช่องป้อนข้อมูล
+        const inputs = modal.querySelectorAll('input, textarea');
+        inputs.forEach(input => {
+          input.style.pointerEvents = 'auto';
+          input.style.zIndex = '100001';
+        });
+
+        console.log(`[Friends Circle Debug] ป๊อปอัป ${modalType} ซ่อมแซมเสร็จสมบูรณ์`); // Translated: ${modalType}弹窗修复完成
       });
-
-      // ซ่อมแซมช่องป้อนข้อมูล
-      const inputs = modal.querySelectorAll('input, textarea');
-      inputs.forEach(input => {
-        input.style.pointerEvents = 'auto';
-        input.style.zIndex = '100001';
-      });
-
-      console.log(`[Friends Circle Debug] ป๊อปอัป ${modalType} ซ่อมแซมเสร็จสมบูรณ์`); // Translated: ${modalType}弹窗修复完成
-    });
     }
   }
 
@@ -4257,4 +4264,3 @@ if (typeof window.FriendsCircle === 'undefined') {
 
   console.log('[Friends Circle] โมดูลวงเพื่อนโหลดเสร็จสมบูรณ์'); // Translated: 朋友圈模块加载完成
 }
-
