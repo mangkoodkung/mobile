@@ -1,25 +1,25 @@
 /**
- * 增量渲染器 - Incremental Renderer
- * 专门用于增量渲染消息，避免界面跳动
- * 只渲染最新楼层的消息，历史消息使用缓存
+ * ตัวเรนเดอร์แบบเพิ่มส่วน - Incremental Renderer
+ * ใช้สำหรับการเรนเดอร์ข้อความแบบเพิ่มส่วนโดยเฉพาะ เพื่อหลีกเลี่ยงการกระตุกของอินเทอร์เฟซ
+ * เรนเดอร์เฉพาะข้อความในชั้นล่าสุดเท่านั้น ข้อความประวัติจะใช้แคช
  */
 
 class IncrementalRenderer {
   constructor() {
-    this.processedMessageIds = new Set(); // 已处理的消息ID
-    this.cachedRenderedMessages = new Map(); // 缓存已渲染的消息HTML
-    this.lastProcessedMessageIndex = -1; // 最后处理的消息索引
-    this.lastFloorCount = 0; // 最后的楼层数量
-    this.floorMonitor = null; // 楼层监控器实例
+    this.processedMessageIds = new Set(); // ID ข้อความที่ประมวลผลแล้ว
+    this.cachedRenderedMessages = new Map(); // แคช HTML ของข้อความที่เรนเดอร์แล้ว
+    this.lastProcessedMessageIndex = -1; // ดัชนีข้อความที่ประมวลผลล่าสุด
+    this.lastFloorCount = 0; // จำนวนชั้นล่าสุด
+    this.floorMonitor = null; // อินสแตนซ์ตัวตรวจสอบชั้น
     this.isEnabled = true;
-    this.renderingInProgress = false; // 防止重复渲染
+    this.renderingInProgress = false; // ป้องกันการเรนเดอร์ซ้ำ
 
-    // 使用统一的正则表达式管理器
+    // ใช้ตัวจัดการ Regular Expression แบบรวม
     this.contextMonitor =
       window['contextMonitor'] || (window['ContextMonitor'] ? new window['ContextMonitor']() : null);
 
     if (this.contextMonitor) {
-      // 从统一管理器获取格式配置
+      // รับการตั้งค่ารูปแบบจากตัวจัดการแบบรวม
       const formats = this.contextMonitor.getAllExtractorFormats();
       this.formatMatchers = {
         friend: {
@@ -49,8 +49,8 @@ class IncrementalRenderer {
         },
       };
     } else {
-      console.warn('[增量渲染器] 上下文监控器未初始化，使用默认格式匹配器');
-      // 保持原有的格式匹配器配置作为备用
+      console.warn('[ตัวเรนเดอร์แบบเพิ่มส่วน] ตัวตรวจสอบบริบทไม่ได้ถูกเริ่มต้น ใช้ตัวจับคู่รูปแบบเริ่มต้น');
+      // เก็บการตั้งค่าตัวจับคู่รูปแบบเดิมไว้เป็นสำรอง
       this.formatMatchers = {
         friend: {
           regex: /\[好友id\|([^|]+)\|([^|]+)\]/g,
@@ -84,45 +84,45 @@ class IncrementalRenderer {
   }
 
   init() {
-    console.log('[增量渲染器] 初始化...');
+    console.log('[ตัวเรนเดอร์แบบเพิ่มส่วน] กำลังเริ่มต้น...');
     this.setupFloorMonitor();
     this.initializeCache();
   }
 
-  // 设置楼层监控器
+  // ตั้งค่าตัวตรวจสอบชั้น
   setupFloorMonitor() {
     try {
-      // 使用现有的楼层监控器
+      // ใช้ตัวตรวจสอบชั้นที่มีอยู่
       if (window.MobileContext && window.MobileContext.addFloorListener) {
-        // 监听楼层增加事件
+        // ฟังเหตุการณ์การเพิ่มชั้น
         window.MobileContext.addFloorListener('onFloorAdded', data => {
           this.handleNewFloor(data);
         });
 
-        // 启动楼层监控
+        // เริ่มต้นการตรวจสอบชั้น
         if (window.MobileContext.startFloorMonitor) {
           window.MobileContext.startFloorMonitor();
         }
 
-        console.log('[增量渲染器] ✅ 楼层监控器已设置');
+        console.log('[ตัวเรนเดอร์แบบเพิ่มส่วน] ✅ ตั้งค่าตัวตรวจสอบชั้นเรียบร้อยแล้ว');
       } else {
-        console.warn('[增量渲染器] 楼层监控器不可用，使用备选方案');
+        console.warn('[ตัวเรนเดอร์แบบเพิ่มส่วน] ตัวตรวจสอบชั้นใช้งานไม่ได้ ใช้วิธีสำรอง');
         this.setupFallbackMonitor();
       }
     } catch (error) {
-      console.error('[增量渲染器] 设置楼层监控失败:', error);
+      console.error('[ตัวเรนเดอร์แบบเพิ่มส่วน] การตั้งค่าตัวตรวจสอบชั้นล้มเหลว:', error);
       this.setupFallbackMonitor();
     }
   }
 
-  // 备选监控方案
+  // แผนการตรวจสอบสำรอง
   setupFallbackMonitor() {
     setInterval(() => {
       this.checkForNewMessages();
-    }, 2000); // 2秒检查一次，比原来的频率更低
+    }, 2000); // ตรวจสอบทุก 2 วินาที ความถี่ต่ำกว่าเดิม
   }
 
-  // 检查新消息（备选方案）
+  // ตรวจสอบข้อความใหม่ (แผนสำรอง)
   checkForNewMessages() {
     try {
       const currentMessages = this.getCurrentMessages();
@@ -131,18 +131,18 @@ class IncrementalRenderer {
         this.processNewMessages(newMessages);
       }
     } catch (error) {
-      console.error('[增量渲染器] 检查新消息失败:', error);
+      console.error('[ตัวเรนเดอร์แบบเพิ่มส่วน] ตรวจสอบข้อความใหม่ล้มเหลว:', error);
     }
   }
 
-  // 初始化缓存
+  // เริ่มต้นแคช
   initializeCache() {
     try {
-      // 加载现有消息到缓存
+      // โหลดข้อความที่มีอยู่ลงในแคช
       const existingMessages = this.getCurrentMessages();
       this.lastProcessedMessageIndex = existingMessages.length - 1;
 
-      // 为现有消息创建缓存条目（但不实际渲染）
+      // สร้างรายการแคชสำหรับข้อความที่มีอยู่ (แต่ยังไม่เรนเดอร์จริง)
       existingMessages.forEach((message, index) => {
         if (message.id || message.send_date) {
           const messageId = this.generateMessageId(message, index);
@@ -150,34 +150,34 @@ class IncrementalRenderer {
         }
       });
 
-      console.log(`[增量渲染器] 缓存已初始化，已处理 ${this.processedMessageIds.size} 条消息`);
+      console.log(`[ตัวเรนเดอร์แบบเพิ่มส่วน] แคชเริ่มต้นแล้ว ประมวลผลแล้ว ${this.processedMessageIds.size} ข้อความ`);
     } catch (error) {
-      console.error('[增量渲染器] 初始化缓存失败:', error);
+      console.error('[ตัวเรนเดอร์แบบเพิ่มส่วน] การเริ่มต้นแคชล้มเหลว:', error);
     }
   }
 
-  // 处理新楼层
+  // จัดการชั้นใหม่
   handleNewFloor(floorData) {
     if (!this.isEnabled || this.renderingInProgress) {
       return;
     }
 
-    console.log('[增量渲染器] 检测到新楼层:', floorData);
+    console.log('[ตัวเรนเดอร์แบบเพิ่มส่วน] ตรวจพบชั้นใหม่:', floorData);
 
-    // 获取新增的消息
+    // รับข้อความที่เพิ่มใหม่
     const newMessages = this.getNewMessages();
     if (newMessages.length > 0) {
       this.processNewMessages(newMessages);
     }
   }
 
-  // 获取新消息
+  // รับข้อความใหม่
   getNewMessages() {
     try {
       const currentMessages = this.getCurrentMessages();
       const newMessages = [];
 
-      // 从最后处理的索引开始检查
+      // เริ่มตรวจสอบจากดัชนีที่ประมวลผลล่าสุด
       for (let i = this.lastProcessedMessageIndex + 1; i < currentMessages.length; i++) {
         const message = currentMessages[i];
         const messageId = this.generateMessageId(message, i);
@@ -193,12 +193,12 @@ class IncrementalRenderer {
 
       return newMessages;
     } catch (error) {
-      console.error('[增量渲染器] 获取新消息失败:', error);
+      console.error('[ตัวเรนเดอร์แบบเพิ่มส่วน] รับข้อความใหม่ล้มเหลว:', error);
       return [];
     }
   }
 
-  // 处理新消息
+  // ประมวลผลข้อความใหม่
   async processNewMessages(newMessages) {
     if (this.renderingInProgress) {
       return;
@@ -207,52 +207,55 @@ class IncrementalRenderer {
     this.renderingInProgress = true;
 
     try {
-      console.log(`[增量渲染器] 处理 ${newMessages.length} 条新消息`);
+      console.log(`[ตัวเรนเดอร์แบบเพิ่มส่วน] ประมวลผล ${newMessages.length} ข้อความใหม่`);
 
       for (const message of newMessages) {
         await this.processMessage(message);
 
-        // 更新处理状态
+        // อัปเดตสถานะการประมวลผล
         this.processedMessageIds.add(message.id);
         this.lastProcessedMessageIndex = Math.max(this.lastProcessedMessageIndex, message.index);
       }
 
-      // 触发界面更新（只更新新增部分）
+      // ทริกเกอร์การอัปเดตอินเทอร์เฟซ (อัปเดตเฉพาะส่วนที่เพิ่มใหม่)
       this.updateInterface();
     } catch (error) {
-      console.error('[增量渲染器] 处理新消息失败:', error);
+      console.error('[ตัวเรนเดอร์แบบเพิ่มส่วน] ประมวลผลข้อความใหม่ล้มเหลว:', error);
     } finally {
       this.renderingInProgress = false;
     }
   }
 
-  // 处理单条消息
+  // ประมวลผลข้อความเดียว
   async processMessage(message) {
     try {
       if (!message.mes) {
         return;
       }
 
-      // 检查消息中是否包含需要渲染的格式
+      // ตรวจสอบว่าข้อความมีรูปแบบที่ต้องเรนเดอร์หรือไม่
       const extractedData = this.extractFormatsFromMessage(message.mes);
 
       if (extractedData.length > 0) {
-        console.log(`[增量渲染器] 消息 ${message.index} 包含 ${extractedData.length} 个格式:`, extractedData);
+        console.log(
+          `[ตัวเรนเดอร์แบบเพิ่มส่วน] ข้อความ ${message.index} ประกอบด้วย ${extractedData.length} รูปแบบ:`,
+          extractedData,
+        );
 
-        // 处理每个提取的格式
+        // ประมวลผลแต่ละรูปแบบที่แยกออกมา
         for (const data of extractedData) {
           await this.renderFormat(data, message);
         }
 
-        // 缓存渲染结果
+        // แคชผลลัพธ์การเรนเดอร์
         this.cacheMessageRender(message, extractedData);
       }
     } catch (error) {
-      console.error('[增量渲染器] 处理消息失败:', error);
+      console.error('[ตัวเรนเดอร์แบบเพิ่มส่วน] ประมวลผลข้อความล้มเหลว:', error);
     }
   }
 
-  // 从消息中提取格式
+  // แยกรูปแบบออกจากข้อความ
   extractFormatsFromMessage(messageText) {
     const extractedData = [];
 
@@ -268,7 +271,7 @@ class IncrementalRenderer {
           fields: {},
         };
 
-        // 填充字段
+        // เติมฟิลด์
         matcher.fields.forEach((fieldName, index) => {
           data.fields[fieldName] = match[index + 1] || '';
         });
@@ -280,7 +283,7 @@ class IncrementalRenderer {
     return extractedData;
   }
 
-  // 渲染格式
+  // เรนเดอร์รูปแบบ
   async renderFormat(formatData, message) {
     try {
       switch (formatData.type) {
@@ -300,54 +303,54 @@ class IncrementalRenderer {
           await this.renderMyGroupMessage(formatData.fields, message);
           break;
         default:
-          console.warn('[增量渲染器] 未知的格式类型:', formatData.type);
+          console.warn('[ตัวเรนเดอร์แบบเพิ่มส่วน] ประเภทรูปแบบที่ไม่รู้จัก:', formatData.type);
       }
     } catch (error) {
-      console.error('[增量渲染器] 渲染格式失败:', error);
+      console.error('[ตัวเรนเดอร์แบบเพิ่มส่วน] เรนเดอร์รูปแบบล้มเหลว:', error);
     }
   }
 
-  // 渲染好友信息
+  // เรนเดอร์ข้อมูลเพื่อน
   async renderFriend(fields, message) {
     if (window.friendRenderer) {
       await window.friendRenderer.addFriend(fields.name, fields.number);
     }
-    console.log(`[增量渲染器] ✅ 好友已添加: ${fields.name} (${fields.number})`);
+    console.log(`[ตัวเรนเดอร์แบบเพิ่มส่วน] ✅ เพิ่มเพื่อนแล้ว: ${fields.name} (${fields.number})`);
   }
 
-  // 渲染我方消息
+  // เรนเดอร์ข้อความฝ่ายเรา
   async renderMyMessage(fields, message) {
     if (window.messageSender) {
       await window.messageSender.addMyMessage(fields.receiver, fields.number, fields.content);
     }
-    console.log(`[增量渲染器] ✅ 我方消息已添加: 给 ${fields.receiver} (${fields.number})`);
+    console.log(`[ตัวเรนเดอร์แบบเพิ่มส่วน] ✅ เพิ่มข้อความฝ่ายเราแล้ว: ถึง ${fields.receiver} (${fields.number})`);
   }
 
-  // 渲染对方消息
+  // เรนเดอร์ข้อความฝ่ายตรงข้าม
   async renderTheirMessage(fields, message) {
     if (window.messageSender) {
       await window.messageSender.addTheirMessage(fields.sender, fields.number, fields.content);
     }
-    console.log(`[增量渲染器] ✅ 对方消息已添加: 来自 ${fields.sender} (${fields.number})`);
+    console.log(`[ตัวเรนเดอร์แบบเพิ่มส่วน] ✅ เพิ่มข้อความฝ่ายตรงข้ามแล้ว: จาก ${fields.sender} (${fields.number})`);
   }
 
-  // 渲染群消息
+  // เรนเดอร์ข้อความกลุ่ม
   async renderGroupMessage(fields, message) {
     if (window.groupRenderer) {
       await window.groupRenderer.addGroupMessage(fields.groupId, fields.sender, fields.content);
     }
-    console.log(`[增量渲染器] ✅ 群消息已添加: 群 ${fields.groupId}, 发送者 ${fields.sender}`);
+    console.log(`[ตัวเรนเดอร์แบบเพิ่มส่วน] ✅ เพิ่มข้อความกลุ่มแล้ว: กลุ่ม ${fields.groupId}, ผู้ส่ง ${fields.sender}`);
   }
 
-  // 渲染我方群消息
+  // เรนเดอร์ข้อความกลุ่มฝ่ายเรา
   async renderMyGroupMessage(fields, message) {
     if (window.groupRenderer) {
       await window.groupRenderer.addMyGroupMessage(fields.groupId, fields.content);
     }
-    console.log(`[增量渲染器] ✅ 我方群消息已添加: 群 ${fields.groupId}`);
+    console.log(`[ตัวเรนเดอร์แบบเพิ่มส่วน] ✅ เพิ่มข้อความกลุ่มฝ่ายเราแล้ว: กลุ่ม ${fields.groupId}`);
   }
 
-  // 缓存消息渲染结果
+  // แคชผลลัพธ์การเรนเดอร์ข้อความ
   cacheMessageRender(message, extractedData) {
     const cacheKey = message.id;
     this.cachedRenderedMessages.set(cacheKey, {
@@ -358,7 +361,7 @@ class IncrementalRenderer {
     });
   }
 
-  // 生成消息HTML
+  // สร้าง HTML ของข้อความ
   generateMessageHTML(extractedData) {
     return extractedData
       .map(data => {
@@ -367,69 +370,69 @@ class IncrementalRenderer {
       .join('');
   }
 
-  // 更新界面（增量更新）
+  // อัปเดตอินเทอร์เฟซ (อัปเดตแบบเพิ่มส่วน)
   updateInterface() {
     try {
-      // 只更新 MessageApp 的特定部分，而不是全量刷新
+      // อัปเดตเฉพาะส่วนที่ระบุของ MessageApp แทนการรีเฟรชทั้งหมด
       if (window.messageApp) {
-        // 触发轻量级的界面更新
+        // ทริกเกอร์การอัปเดตอินเทอร์เฟซแบบเบา
         this.updateMessageAppIncremental();
       }
 
-      // 发送增量更新事件
+      // ส่งเหตุการณ์การอัปเดตแบบเพิ่มส่วน
       this.dispatchIncrementalUpdateEvent();
     } catch (error) {
-      console.error('[增量渲染器] 更新界面失败:', error);
+      console.error('[ตัวเรนเดอร์แบบเพิ่มส่วน] อัปเดตอินเทอร์เฟซล้มเหลว:', error);
     }
   }
 
-  // MessageApp增量更新
+  // การอัปเดต MessageApp แบบเพิ่มส่วน
   updateMessageAppIncremental() {
     try {
-      // 只更新好友列表的计数和最新消息预览
+      // อัปเดตเฉพาะจำนวนที่ยังไม่ได้อ่านและตัวอย่างข้อความล่าสุดของรายชื่อเพื่อน
       if (window.messageApp.currentView === 'list') {
         this.updateFriendListIncremental();
       }
 
-      // 如果在消息详情页面，只添加新消息
+      // หากอยู่ในหน้ารายละเอียดข้อความ ให้เพิ่มเฉพาะข้อความใหม่
       if (window.messageApp.currentView === 'messageDetail') {
         this.updateMessageDetailIncremental();
       }
     } catch (error) {
-      console.error('[增量渲染器] MessageApp增量更新失败:', error);
+      console.error('[ตัวเรนเดอร์แบบเพิ่มส่วน] การอัปเดต MessageApp แบบเพิ่มส่วนล้มเหลว:', error);
     }
   }
 
-  // 增量更新好友列表
+  // อัปเดตรายชื่อเพื่อนแบบเพิ่มส่วน
   updateFriendListIncremental() {
-    // 只更新未读计数和最新消息预览，不重新渲染整个列表
+    // อัปเดตเฉพาะจำนวนที่ยังไม่ได้อ่านและตัวอย่างข้อความล่าสุด ไม่เรนเดอร์รายการใหม่ทั้งหมด
     const friendItems = document.querySelectorAll('.message-item');
 
     friendItems.forEach(item => {
       const friendId = item.getAttribute('data-friend-id');
       if (friendId) {
-        // 更新未读计数
+        // อัปเดตจำนวนที่ยังไม่ได้อ่าน
         this.updateUnreadCount(item, friendId);
 
-        // 更新最新消息预览
+        // อัปเดตตัวอย่างข้อความล่าสุด
         this.updateLastMessagePreview(item, friendId);
       }
     });
   }
 
-  // 增量更新消息详情
+  // อัปเดตรายละเอียดข้อความแบบเพิ่มส่วน
   updateMessageDetailIncremental() {
-    // 在消息详情页面只添加新消息，不重新渲染历史消息
+    // ในหน้ารายละเอียดข้อความ เพิ่มเฉพาะข้อความใหม่ ไม่เรนเดอร์ข้อความประวัติใหม่
     const messageContainer = document.querySelector('.message-detail-content');
     if (messageContainer && window.messageApp.currentFriendId) {
-      // 只添加新的消息气泡到容器末尾
+      // เพิ่มบับเบิ้ลข้อความใหม่ไปที่ท้ายคอนเทนเนอร์เท่านั้น
       this.appendNewMessageBubbles(messageContainer, window.messageApp.currentFriendId);
     }
   }
 
-  // 添加新消息气泡
+  // เพิ่มบับเบิ้ลข้อความใหม่
   appendNewMessageBubbles(container, friendId) {
-    // 获取最近未渲染的消息
+    // รับข้อความล่าสุดที่ยังไม่ได้เรนเดอร์
     const recentMessages = this.getRecentMessagesForFriend(friendId);
 
     recentMessages.forEach(message => {
@@ -438,7 +441,7 @@ class IncrementalRenderer {
     });
   }
 
-  // 创建消息气泡
+  // สร้างบับเบิ้ลข้อความ
   createMessageBubble(messageData) {
     const bubble = document.createElement('div');
     bubble.className = `message-bubble ${messageData.type}`;
@@ -446,15 +449,15 @@ class IncrementalRenderer {
     return bubble;
   }
 
-  // 获取当前消息
+  // รับข้อความปัจจุบัน
   getCurrentMessages() {
     try {
-      // 从 window.chat 获取消息
+      // รับข้อความจาก window.chat
       if (window.chat && Array.isArray(window.chat)) {
         return window.chat;
       }
 
-      // 从 SillyTavern 上下文获取
+      // รับจากบริบทของ SillyTavern
       if (window.SillyTavern && typeof window.SillyTavern.getContext === 'function') {
         const context = window.SillyTavern.getContext();
         return context.chat || [];
@@ -462,35 +465,37 @@ class IncrementalRenderer {
 
       return [];
     } catch (error) {
-      console.error('[增量渲染器] 获取当前消息失败:', error);
+      console.error('[ตัวเรนเดอร์แบบเพิ่มส่วน] รับข้อความปัจจุบันล้มเหลว:', error);
       return [];
     }
   }
 
-  // 生成消息ID
+  // สร้าง ID ข้อความ
   generateMessageId(message, index) {
-    // 使用多种方式生成唯一ID
+    // พยายามใช้วิธีต่างๆ เพื่อสร้าง ID ที่ไม่ซ้ำกัน
     if (message.id) {
       return `msg_${message.id}`;
     }
     if (message.send_date) {
       return `msg_${message.send_date}_${index}`;
     }
-    // 使用消息内容的哈希作为备选
-    const contentHash = this.simpleHash(message.mes || '', index);
+    // ใช้แฮชของเนื้อหาข้อความเป้นทางเลือก
+    const content = message.mes || '';
+    const hash = this.simpleHash(content, index);
     return `msg_${contentHash}_${index}`;
   }
 
-  // 简单哈希函数
+  // ฟังก์ชันแฮชอย่างง่าย
   simpleHash(str, seed = 0) {
     let hash = seed;
     for (let i = 0; i < str.length; i++) {
-      hash = ((hash << 5) - hash + str.charCodeAt(i)) & 0xffffffff;
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash + char.charCodeAt(i)) & 0xffffffff;
     }
     return Math.abs(hash).toString(36);
   }
 
-  // 派发增量更新事件
+  // ส่งเหตุการณ์การอัปเดตแบบเพิ่มส่วน
   dispatchIncrementalUpdateEvent() {
     try {
       const event = new CustomEvent('incrementalRenderUpdate', {
@@ -503,25 +508,25 @@ class IncrementalRenderer {
       });
       window.dispatchEvent(event);
     } catch (error) {
-      console.error('[增量渲染器] 派发事件失败:', error);
+      console.error('[ตัวเรนเดอร์แบบเพิ่มส่วน] ส่งเหตุการณ์ล้มเหลว:', error);
     }
   }
 
-  // 启用/禁用增量渲染
+  // เปิด/ปิดใช้งานการเรนเดอร์แบบเพิ่มส่วน
   setEnabled(enabled) {
     this.isEnabled = enabled;
-    console.log(`[增量渲染器] ${enabled ? '启用' : '禁用'}`);
+    console.log(`[ตัวเรนเดอร์แบบเพิ่มส่วน] ${enabled ? 'เปิดใช้งาน' : 'ปิดใช้งาน'}`);
   }
 
-  // 清空缓存
+  // ล้างแคช
   clearCache() {
     this.processedMessageIds.clear();
     this.cachedRenderedMessages.clear();
     this.lastProcessedMessageIndex = -1;
-    console.log('[增量渲染器] 缓存已清空');
+    console.log('[ตัวเรนเดอร์แบบเพิ่มส่วน] ล้างแคชแล้ว');
   }
 
-  // 获取状态
+  // รับสถานะ
   getStatus() {
     return {
       isEnabled: this.isEnabled,
@@ -533,9 +538,9 @@ class IncrementalRenderer {
     };
   }
 
-  // 强制处理所有消息
+  // บังคับประมวลผลข้อความทั้งหมด
   async forceProcessAll() {
-    console.log('[增量渲染器] 强制处理所有消息...');
+    console.log('[ตัวเรนเดอร์แบบเพิ่มส่วน] บังคับประมวลผลข้อความทั้งหมด...');
     this.clearCache();
     this.initializeCache();
 
@@ -549,27 +554,27 @@ class IncrementalRenderer {
     await this.processNewMessages(newMessages);
   }
 
-  // 处理新消息（SillyTavern格式）
+  // ประมวลผลข้อความใหม่ (รูปแบบ SillyTavern)
   processNewMessages(sillyTavernMessages) {
     if (!Array.isArray(sillyTavernMessages)) {
-      console.warn('[Incremental Renderer] 无效的消息数组');
+      console.warn('[Incremental Renderer] อาร์เรย์ข้อความไม่ถูกต้อง');
       return;
     }
 
-    console.log(`[Incremental Renderer] 处理 ${sillyTavernMessages.length} 条SillyTavern消息`);
+    console.log(`[Incremental Renderer] ประมวลผล ${sillyTavernMessages.length} ข้อความ SillyTavern`);
 
     let newMessagesFound = 0;
 
     sillyTavernMessages.forEach((message, index) => {
       const messageId = this.generateMessageId(message, index);
 
-      // 检查是否是新消息
+      // ตรวจสอบว่าเป็นข้อความใหม่หรือไม่
       if (!this.processedMessageIds.has(messageId)) {
-        // 转换SillyTavern消息格式
+        // แปลงรูปแบบข้อความ SillyTavern
         const convertedMessage = this.convertSillyTavernMessage(message, index);
 
         if (convertedMessage) {
-          // 处理新消息
+          // ประมวลผลข้อความใหม่
           this.processMessage(convertedMessage);
           newMessagesFound++;
         }
@@ -577,9 +582,9 @@ class IncrementalRenderer {
     });
 
     if (newMessagesFound > 0) {
-      console.log(`[Incremental Renderer] ✅ 发现并处理了 ${newMessagesFound} 条新消息`);
+      console.log(`[Incremental Renderer] ✅ พบและประมวลผล ${newMessagesFound} ข้อความใหม่`);
 
-      // 触发更新事件
+      // ทริกเกอร์เหตุการณ์อัปเดต
       this.dispatchUpdateEvent({
         type: 'sillytavern_messages',
         newMessageCount: newMessagesFound,
@@ -588,13 +593,13 @@ class IncrementalRenderer {
     }
   }
 
-  // 转换SillyTavern消息格式
+  // แปลงรูปแบบข้อความ SillyTavern
   convertSillyTavernMessage(sillyMessage, index) {
     try {
-      // SillyTavern消息对象结构：
+      // โครงสร้างออบเจกต์ข้อความ SillyTavern:
       // {
-      //   mes: "消息内容",
-      //   name: "发送者名称",
+      //   mes: "เนื้อหาข้อความ",
+      //   name: "ชื่อผู้ส่ง",
       //   is_user: boolean,
       //   send_date: timestamp,
       //   extra: { ... }
@@ -602,11 +607,11 @@ class IncrementalRenderer {
 
       const messageText = sillyMessage.mes || '';
 
-      // 提取各种QQ格式
+      // แยกรูปแบบ QQ ต่างๆ
       const formats = this.extractAllFormats(messageText);
 
       if (formats.length === 0) {
-        // 如果没有QQ格式，仍然记录这个消息以避免重复处理
+        // หากไม่มีรูปแบบ QQ ให้บันทึกข้อความนี้เพื่อหลีกเลี่ยงการประมวลผลซ้ำ
         return {
           id: this.generateMessageId(sillyMessage, index),
           type: 'plain_text',
@@ -628,14 +633,14 @@ class IncrementalRenderer {
         formats: formats,
       };
     } catch (error) {
-      console.error('[Incremental Renderer] 转换SillyTavern消息失败:', error);
+      console.error('[Incremental Renderer] แปลงข้อความ SillyTavern ล้มเหลว:', error);
       return null;
     }
   }
 
-  // 为SillyTavern消息生成唯一ID
+  // สร้าง ID ที่ไม่ซ้ำกันสำหรับข้อความ SillyTavern
   generateMessageId(sillyMessage, index) {
-    // 尝试多种方式生成唯一ID
+    // พยายามใช้วิธีต่างๆ เพื่อสร้าง ID ที่ไม่ซ้ำกัน
     if (sillyMessage.send_date) {
       return `st_${sillyMessage.send_date}_${index}`;
     }
@@ -644,28 +649,28 @@ class IncrementalRenderer {
       return `st_${sillyMessage.id}`;
     }
 
-    // 基于内容和索引生成哈希
+    // สร้างแฮชตามเนื้อหาและดัชนี
     const content = sillyMessage.mes || '';
     const hash = this.simpleHash(content + index + (sillyMessage.name || ''));
     return `st_${hash}_${index}`;
   }
 
-  // 简单哈希函数
+  // ฟังก์ชันแฮชอย่างง่าย
   simpleHash(str) {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
       hash = (hash << 5) - hash + char;
-      hash = hash & hash; // 转换为32位整数
+      hash = hash & hash; // แปลงเป็น integer 32-bit
     }
     return Math.abs(hash).toString(36);
   }
 }
 
-// 创建全局实例
+// สร้างอินสแตนซ์ทั่วโลก
 window.IncrementalRenderer = IncrementalRenderer;
 
-// 为其他模块提供接口
+// จัดเตรียมอินเทอร์เฟซสำหรับโมดูลอื่น
 window.createIncrementalRenderer = function () {
   if (!window.incrementalRenderer) {
     window.incrementalRenderer = new IncrementalRenderer();
@@ -673,9 +678,9 @@ window.createIncrementalRenderer = function () {
   return window.incrementalRenderer;
 };
 
-console.log('[增量渲染器] 模块已加载完成');
+console.log('[ตัวเรนเดอร์แบบเพิ่มส่วน] โหลดโมดูลเสร็จสมบูรณ์');
 
-// 导出类
+// ส่งออกคลาส
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = IncrementalRenderer;
 }
