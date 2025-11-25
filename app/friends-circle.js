@@ -1,72 +1,75 @@
 /**
- * Friends Circle - 朋友圈功能
- * 为mobile-phone.js提供朋友圈功能，仿照QQ空间和微信朋友圈设计
+ * Friends Circle - ฟีเจอร์วงเพื่อน
+ * ให้ฟีเจอร์วงเพื่อนสำหรับ mobile-phone.js โดยจำลองมาจาก Qzone และ WeChat Moments
  */
 
-// 避免重复定义
+// ป้องกันการนิยามซ้ำ
 if (typeof window.FriendsCircle === 'undefined') {
   /**
-   * 朋友圈数据管理器
-   * 负责朋友圈数据的解析、存储和管理
+   * ตัวจัดการข้อมูลวงเพื่อน
+   * รับผิดชอบในการแยกวิเคราะห์, จัดเก็บ และจัดการข้อมูลวงเพื่อน
    */
   class FriendsCircleManager {
     constructor() {
-      this.friendsCircleData = new Map(); // 存储朋友圈数据
-      this.likesData = new Map(); // 存储点赞数据
+      this.friendsCircleData = new Map(); // จัดเก็บข้อมูลวงเพื่อน
+      this.likesData = new Map(); // จัดเก็บข้อมูลการกดถูกใจ
       this.lastProcessedMessageId = null;
-      this.lastProcessedMessageIndex = -1; // 记录上次处理到的消息索引
+      this.lastProcessedMessageIndex = -1; // บันทึกดัชนีข้อความที่ประมวลผลล่าสุด
 
-      // 朋友圈格式正则表达式 - 更精确的匹配，避免跨行匹配
+      // Regular Expression รูปแบบวงเพื่อน - การจับคู่ที่แม่นยำยิ่งขึ้น, หลีกเลี่ยงการจับคู่ข้ามบรรทัด
       this.patterns = {
-        // 文字朋友圈：[朋友圈|角色名|好友ID|w楼层ID|内容]
+        // วงเพื่อนแบบข้อความ: [朋友圈|角色名|好友ID|w楼层ID|内容]
         textCircle: /\[朋友圈\|([^|\]]+)\|([^|\]]+)\|(w\d+)\|([^\]]+?)\]/g,
-        // 视觉朋友圈（带文字）：[朋友圈|角色名|好友ID|s楼层ID|图片描述|文字内容]
+        // วงเพื่อนแบบภาพ (มีข้อความ): [朋友圈|角色名|好友ID|s楼层ID|图片描述|文字内容]
         visualCircle: /\[朋友圈\|([^|\]]+)\|([^|\]]+)\|(s\d+)\|([^|]+?)\|([^\]]+?)\]/g,
-        // 视觉朋友圈（无文字）：[朋友圈|角色名|好友ID|s楼层ID|图片描述]
+        // วงเพื่อนแบบภาพ (ไม่มีข้อความ): [朋友圈|角色名|好友ID|s楼层ID|图片描述]
         visualCircleNoText: /\[朋友圈\|([^|\]]+)\|([^|\]]+)\|(s\d+)\|([^\]]+?)\]/g,
-        // 🌟 新增：用户发送的图片朋友圈格式（6个部分）：[朋友圈|角色名|好友ID|s楼层ID|图片描述|文字内容]
+        // 🌟 ใหม่: รูปแบบวงเพื่อนรูปภาพที่ผู้ใช้ส่ง (6 ส่วน): [朋友圈|角色名|好友ID|s楼层ID|图片描述|文字内容]
         userVisualCircle: /\[朋友圈\|([^|\]]+)\|([^|\]]+)\|(s\d+)\|我的图片:\s*([^|]+?)\|([^\]]+?)\]/g,
-        // 朋友圈回复
+        // การตอบกลับวงเพื่อน
         circleReply: /\[朋友圈回复\|([^|\]]+)\|([^|\]]+)\|([ws]\d+)\|([^\]]+?)\]/g,
       };
 
-      console.log('[Friends Circle] 朋友圈数据管理器初始化完成');
+      console.log('[Friends Circle] ตัวจัดการข้อมูลวงเพื่อนเริ่มต้นเสร็จสมบูรณ์'); // Translated: 朋友圈数据管理器初始化完成
     }
 
     /**
-     * 验证朋友圈内容是否合理
-     * @param {string} content - 要验证的内容
-     * @returns {boolean} 是否为合理的朋友圈内容
+     * ตรวจสอบว่าเนื้อหาวงเพื่อนสมเหตุสมผลหรือไม่
+     * @param {string} content - เนื้อหาที่จะตรวจสอบ
+     * @returns {boolean} ว่าเป็นเนื้อหาวงเพื่อนที่สมเหตุสมผลหรือไม่
      */
     isValidCircleContent(content) {
       if (!content || typeof content !== 'string') {
         return false;
       }
 
-      // 检查是否包含明显的非朋友圈内容
+      // ตรวจสอบว่ามีเนื้อหาที่ไม่ใช่วงเพื่อนที่ชัดเจนหรือไม่
       const invalidPatterns = [
-        /^\s*-\s*序号:/, // 序号格式
-        /^\s*\|\s*名字\s*\|/, // 表格头
-        /^\s*\|\s*[^|]+\s*\|\s*[^|]+\s*\|/, // 表格行
-        /剧情总结:/, // 剧情总结
-        /^\s*<[^>]+>/, // HTML标签
-        /^\s*\[好友id\|/, // 好友ID格式
-        /^\s*<UpdateVariable>/, // 变量更新
-        /^\s*<content>/, // content标签
-        /^\s*<apple>/, // apple标签
+        /^\s*-\s*序号:/, // รูปแบบลำดับเลข (序号格式)
+        /^\s*\|\s*名字\s*\|/, // ส่วนหัวตาราง (表格头)
+        /^\s*\|\s*[^|]+\s*\|\s*[^|]+\s*\|/, // แถวตาราง (表格行)
+        /剧情总结:/, // สรุปเนื้อเรื่อง (剧情总结)
+        /^\s*<[^>]+>/, // แท็ก HTML (HTML标签)
+        /^\s*\[好友id\|/, // รูปแบบ ID เพื่อน (好友ID格式)
+        /^\s*<UpdateVariable>/, // การอัปเดตตัวแปร (变量更新)
+        /^\s*<content>/, // แท็ก content (content标签)
+        /^\s*<apple>/, // แท็ก apple (apple标签)
       ];
 
-      // 如果匹配到任何无效模式，返回false
+      // หากตรงกับรูปแบบที่ไม่ถูกต้องใดๆ ให้ส่งคืน false
       for (const pattern of invalidPatterns) {
         if (pattern.test(content)) {
-          console.log(`[Friends Circle] ❌ 内容验证失败，匹配到无效模式: ${pattern}`, content.substring(0, 100));
+          console.log(
+            `[Friends Circle] ❌ การตรวจสอบเนื้อหาล้มเหลว, ตรงกับรูปแบบที่ไม่ถูกต้อง: ${pattern}`,
+            content.substring(0, 100),
+          ); // Translated: 内容验证失败，匹配到无效模式
           return false;
         }
       }
 
-      // 检查内容长度是否合理（太长可能包含了其他内容）
+      // ตรวจสอบความยาวของเนื้อหาว่าสมเหตุสมผลหรือไม่ (ยาวเกินไปอาจมีเนื้อหาอื่นรวมอยู่ด้วย)
       if (content.length > 1000) {
-        console.log(`[Friends Circle] ❌ 内容过长，可能包含无关内容: ${content.length} 字符`);
+        console.log(`[Friends Circle] ❌ เนื้อหายาวเกินไป, อาจมีเนื้อหาที่ไม่เกี่ยวข้อง: ${content.length} อักขระ`); // Translated: 内容过长，可能包含无关内容
         return false;
       }
 
@@ -74,10 +77,10 @@ if (typeof window.FriendsCircle === 'undefined') {
     }
 
     /**
-     * 解析朋友圈数据
-     * @param {string} chatContent - 聊天内容
-     * @param {number} startIndex - 开始解析的消息索引（用于增量更新）
-     * @returns {Map} 解析后的朋友圈数据
+     * แยกวิเคราะห์ข้อมูลวงเพื่อน
+     * @param {string} chatContent - เนื้อหาการแชท
+     * @param {number} startIndex - ดัชนีข้อความเริ่มต้นการแยกวิเคราะห์ (สำหรับอัปเดตแบบเพิ่มหน่วย)
+     * @returns {Map} ข้อมูลวงเพื่อนที่แยกวิเคราะห์แล้ว
      */
     parseFriendsCircleData(chatContent, startIndex = 0) {
       const circles = new Map();
@@ -86,18 +89,18 @@ if (typeof window.FriendsCircle === 'undefined') {
         return circles;
       }
 
-      // 将聊天内容分割为消息数组，用于计算消息位置
+      // แยกเนื้อหาการแชทเป็นอาร์เรย์ข้อความ เพื่อใช้ในการคำนวณตำแหน่งข้อความ
       const messages = chatContent.split('\n');
 
-      // 解析文字朋友圈
+      // แยกวิเคราะห์วงเพื่อนแบบข้อความ
       let match;
       this.patterns.textCircle.lastIndex = 0;
       while ((match = this.patterns.textCircle.exec(chatContent)) !== null) {
         const [, author, friendId, floorId, content] = match;
 
-        // 验证内容是否合理（不包含表格格式或其他无关内容）
+        // ตรวจสอบความสมเหตุสมผลของเนื้อหา (ไม่รวมรูปแบบตารางหรือเนื้อหาที่ไม่เกี่ยวข้องอื่นๆ)
         if (this.isValidCircleContent(content) && !circles.has(floorId)) {
-          // 找到这条消息在聊天中的位置
+          // ค้นหาตำแหน่งของข้อความนี้ในการแชท
           const messageIndex = this.findMessageIndex(messages, match[0], startIndex);
 
           const circleData = {
@@ -117,21 +120,21 @@ if (typeof window.FriendsCircle === 'undefined') {
         }
       }
 
-      // 解析视觉朋友圈（带文字）
+      // แยกวิเคราะห์วงเพื่อนแบบภาพ (มีข้อความ)
       this.patterns.visualCircle.lastIndex = 0;
       while ((match = this.patterns.visualCircle.exec(chatContent)) !== null) {
         const [, author, friendId, floorId, imageDescription, textContent] = match;
 
-        // 验证图片描述和文字内容是否合理
+        // ตรวจสอบความสมเหตุสมผลของคำอธิบายภาพและเนื้อหาข้อความ
         if (
           this.isValidCircleContent(imageDescription) &&
           this.isValidCircleContent(textContent) &&
           !circles.has(floorId)
         ) {
-          // 找到这条消息在聊天中的位置
+          // ค้นหาตำแหน่งของข้อความนี้ในการแชท
           const messageIndex = this.findMessageIndex(messages, match[0], startIndex);
 
-          // 🌟 方案1：查找对应的SillyTavern消息并提取图片信息
+          // 🌟 วิธีที่ 1: ค้นหาข้อความ SillyTavern ที่สอดคล้องและดึงข้อมูลภาพ
           const imageInfo = this.extractImageFromMessage(match[0], imageDescription, author);
 
           const circleData = {
@@ -140,8 +143,8 @@ if (typeof window.FriendsCircle === 'undefined') {
             friendId: friendId,
             type: 'visual',
             imageDescription: imageDescription,
-            imageUrl: imageInfo.imageUrl, // 🌟 添加真实图片URL
-            imageFileName: imageInfo.fileName, // 🌟 添加真实文件名
+            imageUrl: imageInfo.imageUrl, // 🌟 เพิ่ม URL ภาพจริง
+            imageFileName: imageInfo.fileName, // 🌟 เพิ่มชื่อไฟล์จริง
             content: textContent,
             messageIndex: messageIndex,
             latestActivityIndex: messageIndex,
@@ -154,17 +157,17 @@ if (typeof window.FriendsCircle === 'undefined') {
         }
       }
 
-      // 解析视觉朋友圈（无文字）
+      // แยกวิเคราะห์วงเพื่อนแบบภาพ (ไม่มีข้อความ)
       this.patterns.visualCircleNoText.lastIndex = 0;
       while ((match = this.patterns.visualCircleNoText.exec(chatContent)) !== null) {
         const [, author, friendId, floorId, imageDescription] = match;
 
-        // 验证图片描述是否合理，且该楼层还未被处理
+        // ตรวจสอบความสมเหตุสมผลของคำอธิบายภาพ และชั้นยังไม่ได้รับการประมวลผล
         if (this.isValidCircleContent(imageDescription) && !circles.has(floorId)) {
-          // 找到这条消息在聊天中的位置
+          // ค้นหาตำแหน่งของข้อความนี้ในการแชท
           const messageIndex = this.findMessageIndex(messages, match[0], startIndex);
 
-          // 🌟 方案1：查找对应的SillyTavern消息并提取图片信息
+          // 🌟 วิธีที่ 1: ค้นหาข้อความ SillyTavern ที่สอดคล้องและดึงข้อมูลภาพ
           const imageInfo = this.extractImageFromMessage(match[0], imageDescription, author);
 
           const circleData = {
@@ -173,9 +176,9 @@ if (typeof window.FriendsCircle === 'undefined') {
             friendId: friendId,
             type: 'visual',
             imageDescription: imageDescription,
-            imageUrl: imageInfo.imageUrl, // 🌟 添加真实图片URL
-            imageFileName: imageInfo.fileName, // 🌟 添加真实文件名
-            content: '', // 无文字内容
+            imageUrl: imageInfo.imageUrl, // 🌟 เพิ่ม URL ภาพจริง
+            imageFileName: imageInfo.fileName, // 🌟 เพิ่มชื่อไฟล์จริง
+            content: '', // ไม่มีเนื้อหาข้อความ
             messageIndex: messageIndex,
             latestActivityIndex: messageIndex,
             replies: [],
@@ -187,17 +190,17 @@ if (typeof window.FriendsCircle === 'undefined') {
         }
       }
 
-      // 🌟 新增：解析用户发送的图片朋友圈格式
+      // 🌟 ใหม่: แยกวิเคราะห์รูปแบบวงเพื่อนรูปภาพที่ผู้ใช้ส่ง
       this.patterns.userVisualCircle.lastIndex = 0;
       while ((match = this.patterns.userVisualCircle.exec(chatContent)) !== null) {
         const [, author, friendId, floorId, fileName, textContent] = match;
 
-        // 验证内容是否合理，且该楼层还未被处理
+        // ตรวจสอบความสมเหตุสมผลของเนื้อหา และชั้นยังไม่ได้รับการประมวลผล
         if (this.isValidCircleContent(textContent) && !circles.has(floorId)) {
-          // 找到这条消息在聊天中的位置
+          // ค้นหาตำแหน่งของข้อความนี้ในการแชท
           const messageIndex = this.findMessageIndex(messages, match[0], startIndex);
 
-          // 🌟 方案1：查找对应的SillyTavern消息并提取图片信息
+          // 🌟 วิธีที่ 1: ค้นหาข้อความ SillyTavern ที่สอดคล้องและดึงข้อมูลภาพ
           const imageInfo = this.extractImageFromMessage(match[0], fileName, author);
 
           const circleData = {
@@ -205,9 +208,9 @@ if (typeof window.FriendsCircle === 'undefined') {
             author: author,
             friendId: friendId,
             type: 'visual',
-            imageDescription: `我的图片: ${fileName}`, // 构建图片描述
-            imageUrl: imageInfo.imageUrl, // 🌟 添加真实图片URL
-            imageFileName: imageInfo.fileName || fileName, // 🌟 添加真实文件名
+            imageDescription: `รูปภาพของฉัน: ${fileName}`, // Translated: 我的图片: ${fileName} -> รูปภาพของฉัน
+            imageUrl: imageInfo.imageUrl, // 🌟 เพิ่ม URL ภาพจริง
+            imageFileName: imageInfo.fileName || fileName, // 🌟 เพิ่มชื่อไฟล์จริง
             content: textContent,
             messageIndex: messageIndex,
             latestActivityIndex: messageIndex,
@@ -220,7 +223,7 @@ if (typeof window.FriendsCircle === 'undefined') {
         }
       }
 
-      // 解析回复
+      // แยกวิเคราะห์การตอบกลับ
       this.patterns.circleReply.lastIndex = 0;
       while ((match = this.patterns.circleReply.exec(chatContent)) !== null) {
         const [, replyAuthor, replyFriendId, floorId, replyContent] = match;
@@ -228,11 +231,11 @@ if (typeof window.FriendsCircle === 'undefined') {
         if (circles.has(floorId)) {
           const circle = circles.get(floorId);
 
-          // 检查是否已存在相同回复（去重）
+          // ตรวจสอบว่ามีการตอบกลับที่ซ้ำกันหรือไม่ (การล้างข้อมูลซ้ำ)
           const existingReply = circle.replies.find(r => r.author === replyAuthor && r.content === replyContent);
 
           if (!existingReply) {
-            // 找到回复消息在聊天中的位置
+            // ค้นหาตำแหน่งของข้อความตอบกลับในการแชท
             const replyMessageIndex = this.findMessageIndex(messages, match[0], startIndex);
 
             circle.replies.push({
@@ -245,31 +248,33 @@ if (typeof window.FriendsCircle === 'undefined') {
               isLiked: false,
             });
 
-            // 更新朋友圈的最新活动位置（有新回复）
+            // อัปเดตตำแหน่งกิจกรรมล่าสุดของวงเพื่อน (มีการตอบกลับใหม่)
             circle.latestActivityIndex = Math.max(circle.latestActivityIndex, replyMessageIndex);
 
-            console.log(`[Friends Circle] ✅ 解析到回复: ${replyAuthor} -> ${floorId} at index ${replyMessageIndex}`);
+            console.log(
+              `[Friends Circle] ✅ แยกวิเคราะห์การตอบกลับ: ${replyAuthor} -> ${floorId} ที่ดัชนี ${replyMessageIndex}`,
+            ); // Translated: 解析到回复
           }
         }
       }
 
-      console.log(`[Friends Circle] 解析到 ${circles.size} 条朋友圈`);
+      console.log(`[Friends Circle] แยกวิเคราะห์วงเพื่อนได้ ${circles.size} รายการ`); // Translated: 解析到 ${circles.size} 条朋友圈
       return circles;
     }
 
     /**
-     * 🌟 方案1：从SillyTavern消息中提取图片信息
-     * @param {string} circleContent - 朋友圈内容
-     * @param {string} fileName - 文件名
-     * @param {string} author - 作者
-     * @returns {Object} 图片信息 {imageUrl, fileName}
+     * 🌟 วิธีที่ 1: ดึงข้อมูลภาพจากข้อความ SillyTavern
+     * @param {string} circleContent - เนื้อหาวงเพื่อน
+     * @param {string} fileName - ชื่อไฟล์
+     * @param {string} author - ผู้เขียน
+     * @returns {Object} ข้อมูลภาพ {imageUrl, fileName}
      */
     extractImageFromMessage(circleContent, fileName, author) {
       try {
-        // 获取SillyTavern聊天数据
+        // รับข้อมูลการแชท SillyTavern
         let chatMessages = null;
 
-        // 优先使用SillyTavern.getContext().chat
+        // ให้ความสำคัญกับการใช้ SillyTavern.getContext().chat ก่อน
         if (
           typeof window !== 'undefined' &&
           window.SillyTavern &&
@@ -281,28 +286,28 @@ if (typeof window.FriendsCircle === 'undefined') {
           }
         }
 
-        // 备用方案：从全局变量获取
+        // ทางเลือกสำรอง: รับจากตัวแปรส่วนกลาง
         if (!chatMessages && window.chat && Array.isArray(window.chat)) {
           chatMessages = window.chat;
         }
 
         if (!chatMessages) {
-          console.warn('[Friends Circle] 无法获取SillyTavern聊天数据');
+          console.warn('[Friends Circle] ไม่สามารถรับข้อมูลการแชท SillyTavern ได้'); // Translated: 无法获取SillyTavern聊天数据
           return { imageUrl: null, fileName: fileName };
         }
 
-        // 🌟 关键：查找包含朋友圈内容的消息
+        // 🌟 กุญแจสำคัญ: ค้นหาข้อความที่มีเนื้อหาวงเพื่อน
         const targetMessage = chatMessages.find(message => {
           const content = message.mes || message.content || '';
           return content.includes(circleContent.trim());
         });
 
         if (!targetMessage) {
-          console.warn('[Friends Circle] 未找到对应的SillyTavern消息');
+          console.warn('[Friends Circle] ไม่พบข้อความ SillyTavern ที่สอดคล้อง'); // Translated: 未找到对应的SillyTavern消息
           return { imageUrl: null, fileName: fileName };
         }
 
-        // 🌟 方法1：从message.extra.image获取图片URL
+        // 🌟 วิธีที่ 1: ดึง URL ภาพจาก message.extra.image
         if (targetMessage.extra && targetMessage.extra.image) {
           const imageUrl = targetMessage.extra.image;
           const realFileName = imageUrl.split('/').pop();
@@ -310,7 +315,7 @@ if (typeof window.FriendsCircle === 'undefined') {
           return { imageUrl: imageUrl, fileName: realFileName };
         }
 
-        // 🌟 方法2：从detailedContent中提取<img>标签
+        // 🌟 วิธีที่ 2: ดึงแท็ก <img> จาก detailedContent
         if (targetMessage.detailedContent) {
           const imgMatch = targetMessage.detailedContent.match(/<img[^>]+src="([^"]+)"/);
           if (imgMatch) {
@@ -321,64 +326,66 @@ if (typeof window.FriendsCircle === 'undefined') {
           }
         }
 
-        // 🌟 方法3：使用AttachmentSender构建图片URL
+        // 🌟 วิธีที่ 3: ใช้ AttachmentSender สร้าง URL ภาพ
         if (window.attachmentSender && typeof window.attachmentSender.buildImageUrl === 'function') {
           const imageUrl = window.attachmentSender.buildImageUrl(author, fileName);
 
           return { imageUrl: imageUrl, fileName: fileName };
         }
 
-        console.warn('[Friends Circle] 所有方法都无法获取图片URL，使用占位符');
+        console.warn('[Friends Circle] ทุกวิธีไม่สามารถรับ URL ภาพได้, ใช้ตัวยึดตำแหน่ง'); // Translated: 所有方法都无法获取图片URL，使用占位符
         return { imageUrl: null, fileName: fileName };
       } catch (error) {
-        console.error('[Friends Circle] 提取图片信息失败:', error);
+        console.error('[Friends Circle] ดึงข้อมูลภาพล้มเหลว:', error); // Translated: 提取图片信息失败
         return { imageUrl: null, fileName: fileName };
       }
     }
 
     /**
-     * 查找消息在聊天中的位置索引
-     * @param {Array} messages - 消息数组
-     * @param {string} targetMessage - 目标消息内容
-     * @param {number} startIndex - 开始搜索的索引
-     * @returns {number} 消息位置索引
+     * ค้นหาดัชนีตำแหน่งของข้อความในการแชท
+     * @param {Array} messages - อาร์เรย์ข้อความ
+     * @param {string} targetMessage - เนื้อหาข้อความเป้าหมาย
+     * @param {number} startIndex - ดัชนีเริ่มต้นการค้นหา
+     * @returns {number} ดัชนีตำแหน่งข้อความ
      */
     findMessageIndex(messages, targetMessage, startIndex = 0) {
-      // 从指定位置开始搜索，找到包含目标消息的行
+      // เริ่มต้นค้นหาจากตำแหน่งที่ระบุ หาบรรทัดที่มีข้อความเป้าหมาย
       for (let i = startIndex; i < messages.length; i++) {
         if (messages[i].includes(targetMessage)) {
           return i;
         }
       }
 
-      // 如果没找到，从头开始搜索（兼容性处理）
+      // หากไม่พบ ให้เริ่มค้นหาตั้งแต่ต้น (การจัดการความเข้ากันได้)
       for (let i = 0; i < startIndex; i++) {
         if (messages[i].includes(targetMessage)) {
           return i;
         }
       }
 
-      // 如果还是没找到，返回一个基于当前时间的索引
+      // หากยังไม่พบ ให้ส่งคืนดัชนีตามเวลาปัจจุบัน
       return messages.length + (Math.floor(Date.now() / 1000) % 1000);
     }
 
     /**
-     * 增量解析朋友圈数据（专门用于增量更新）
-     * @param {string} fullChatContent - 完整的聊天内容
-     * @param {number} lastProcessedIndex - 上次处理到的消息索引
-     * @returns {Map} 新增或更新的朋友圈数据
+     * แยกวิเคราะห์ข้อมูลวงเพื่อนแบบเพิ่มหน่วย (ใช้สำหรับการอัปเดตแบบเพิ่มหน่วยโดยเฉพาะ)
+     * @param {string} fullChatContent - เนื้อหาการแชทฉบับเต็ม
+     * @param {number} lastProcessedIndex - ดัชนีข้อความที่ประมวลผลล่าสุด
+     * @returns {Map} ข้อมูลวงเพื่อนที่เพิ่มหรืออัปเดตใหม่
      */
     parseIncrementalData(fullChatContent, lastProcessedIndex) {
       const circles = new Map();
       const messages = fullChatContent.split('\n');
 
-      console.log(`[Friends Circle] 增量解析：总消息数 ${messages.length}，上次处理到 ${lastProcessedIndex}`);
+      console.log(
+        `[Friends Circle] การแยกวิเคราะห์แบบเพิ่มหน่วย: ข้อความรวม ${messages.length}, ประมวลผลล่าสุดที่ ${lastProcessedIndex}`,
+      ); // Translated: 增量解析：总消息数 ${messages.length}，上次处理到 ${lastProcessedIndex}
 
-      // 只查找新增消息中的朋友圈（原始朋友圈发布）
+      // ค้นหาวงเพื่อนใหม่เฉพาะในข้อความที่เพิ่มใหม่เท่านั้น (การเผยแพร่วงเพื่อนดั้งเดิม)
       for (let i = lastProcessedIndex; i < messages.length; i++) {
         const message = messages[i];
 
-        // 检查是否是新的朋友圈发布
+        // ตรวจสอบว่าเป็นการเผยแพร่วงเพื่อนใหม่หรือไม่
         const textMatch = this.patterns.textCircle.exec(message);
         if (textMatch) {
           const [, author, friendId, floorId, content] = textMatch;
@@ -395,14 +402,16 @@ if (typeof window.FriendsCircle === 'undefined') {
               likes: this.getLikeCount(floorId),
               isLiked: this.isLiked(floorId),
             });
-            console.log(`[Friends Circle] 增量解析到新文字朋友圈: ${author} (${floorId}) at index ${i}`);
+            console.log(
+              `[Friends Circle] แยกวิเคราะห์แบบเพิ่มหน่วยพบวงเพื่อนแบบข้อความใหม่: ${author} (${floorId}) ที่ดัชนี ${i}`,
+            ); // Translated: 增量解析到新文字朋友圈
           }
         }
 
-        // 重置正则表达式
+        // รีเซ็ต Regular Expression
         this.patterns.textCircle.lastIndex = 0;
 
-        // 检查视觉朋友圈（带文字）
+        // ตรวจสอบวงเพื่อนแบบภาพ (มีข้อความ)
         const visualMatch = this.patterns.visualCircle.exec(message);
         if (visualMatch) {
           const [, author, friendId, floorId, imageDescription, textContent] = visualMatch;
@@ -424,14 +433,16 @@ if (typeof window.FriendsCircle === 'undefined') {
               likes: this.getLikeCount(floorId),
               isLiked: this.isLiked(floorId),
             });
-            console.log(`[Friends Circle] 增量解析到新视觉朋友圈: ${author} (${floorId}) at index ${i}`);
+            console.log(
+              `[Friends Circle] แยกวิเคราะห์แบบเพิ่มหน่วยพบวงเพื่อนแบบภาพใหม่: ${author} (${floorId}) ที่ดัชนี ${i}`,
+            ); // Translated: 增量解析到新视觉朋友圈
           }
         }
 
-        // 重置正则表达式
+        // รีเซ็ต Regular Expression
         this.patterns.visualCircle.lastIndex = 0;
 
-        // 检查视觉朋友圈（无文字）
+        // ตรวจสอบวงเพื่อนแบบภาพ (ไม่มีข้อความ)
         const visualNoTextMatch = this.patterns.visualCircleNoText.exec(message);
         if (visualNoTextMatch) {
           const [, author, friendId, floorId, imageDescription] = visualNoTextMatch;
@@ -449,14 +460,16 @@ if (typeof window.FriendsCircle === 'undefined') {
               likes: this.getLikeCount(floorId),
               isLiked: this.isLiked(floorId),
             });
-            console.log(`[Friends Circle] 增量解析到新视觉朋友圈(无文字): ${author} (${floorId}) at index ${i}`);
+            console.log(
+              `[Friends Circle] แยกวิเคราะห์แบบเพิ่มหน่วยพบวงเพื่อนแบบภาพใหม่ (ไม่มีข้อความ): ${author} (${floorId}) ที่ดัชนี ${i}`,
+            ); // Translated: 增量解析到新视觉朋友圈(无文字)
           }
         }
 
-        // 重置正则表达式
+        // รีเซ็ต Regular Expression
         this.patterns.visualCircleNoText.lastIndex = 0;
 
-        // 🌟 新增：检查用户发送的图片朋友圈格式
+        // 🌟 ใหม่: ตรวจสอบรูปแบบวงเพื่อนรูปภาพที่ผู้ใช้ส่ง
         const userVisualMatch = this.patterns.userVisualCircle.exec(message);
         if (userVisualMatch) {
           const [, author, friendId, floorId, fileName, textContent] = userVisualMatch;
@@ -466,7 +479,7 @@ if (typeof window.FriendsCircle === 'undefined') {
               author: author,
               friendId: friendId,
               type: 'visual',
-              imageDescription: `我的图片: ${fileName}`,
+              imageDescription: `รูปภาพของฉัน: ${fileName}`, // Translated: 我的图片: ${fileName} -> รูปภาพของฉัน
               content: textContent,
               messageIndex: i,
               latestActivityIndex: i,
@@ -475,27 +488,27 @@ if (typeof window.FriendsCircle === 'undefined') {
               isLiked: this.isLiked(floorId),
             });
             console.log(
-              `[Friends Circle] 增量解析到用户图片朋友圈: ${author} (${floorId}) - ${fileName} at index ${i}`,
+              `[Friends Circle] แยกวิเคราะห์แบบเพิ่มหน่วยพบวงเพื่อนรูปภาพผู้ใช้: ${author} (${floorId}) - ${fileName} ที่ดัชนี ${i}`, // Translated: 增量解析到用户图片朋友圈
             );
           }
         }
 
-        // 重置正则表达式
+        // รีเซ็ต Regular Expression
         this.patterns.userVisualCircle.lastIndex = 0;
       }
 
-      // 处理所有回复（包括对已存在朋友圈的新回复）
+      // ประมวลผลการตอบกลับทั้งหมด (รวมถึงการตอบกลับใหม่ต่อวงเพื่อนที่มีอยู่แล้ว)
       this.patterns.circleReply.lastIndex = 0;
       let replyMatch;
       while ((replyMatch = this.patterns.circleReply.exec(fullChatContent)) !== null) {
         const [, replyAuthor, replyFriendId, floorId, replyContent] = replyMatch;
 
-        // 找到回复在消息中的位置
+        // ค้นหาตำแหน่งของการตอบกลับในข้อความ
         const replyMessageIndex = this.findMessageIndex(messages, replyMatch[0], 0);
 
-        // 只处理新增消息中的回复
+        // ประมวลผลเฉพาะการตอบกลับในข้อความที่เพิ่มใหม่
         if (replyMessageIndex >= lastProcessedIndex) {
-          // 检查是否是对新朋友圈的回复
+          // ตรวจสอบว่าเป็นการตอบกลับต่อวงเพื่อนใหม่หรือไม่
           if (circles.has(floorId)) {
             const circle = circles.get(floorId);
             const existingReply = circle.replies.find(r => r.author === replyAuthor && r.content === replyContent);
@@ -513,17 +526,17 @@ if (typeof window.FriendsCircle === 'undefined') {
 
               circle.latestActivityIndex = Math.max(circle.latestActivityIndex, replyMessageIndex);
               console.log(
-                `[Friends Circle] 增量解析到新回复: ${replyAuthor} -> ${floorId} at index ${replyMessageIndex}`,
+                `[Friends Circle] แยกวิเคราะห์แบบเพิ่มหน่วยพบการตอบกลับใหม่: ${replyAuthor} -> ${floorId} ที่ดัชนี ${replyMessageIndex}`, // Translated: 增量解析到新回复
               );
             }
           } else {
-            // 这是对已存在朋友圈的新回复，需要特殊处理
-            // 创建一个特殊的更新条目
+            // นี่คือการตอบกลับใหม่ต่อวงเพื่อนที่มีอยู่แล้ว, ต้องจัดการเป็นพิเศษ
+            // สร้างรายการอัปเดตพิเศษ
             const updateKey = `update_${floorId}`;
             if (!circles.has(updateKey)) {
               circles.set(updateKey, {
                 id: floorId,
-                isUpdate: true, // 标记这是一个更新条目
+                isUpdate: true, // ทำเครื่องหมายว่าเป็นรายการอัปเดต
                 newReplies: [],
                 latestActivityIndex: replyMessageIndex,
               });
@@ -542,66 +555,68 @@ if (typeof window.FriendsCircle === 'undefined') {
 
             updateEntry.latestActivityIndex = Math.max(updateEntry.latestActivityIndex, replyMessageIndex);
             console.log(
-              `[Friends Circle] 增量解析到对已存在朋友圈的新回复: ${replyAuthor} -> ${floorId} at index ${replyMessageIndex}`,
+              `[Friends Circle] แยกวิเคราะห์แบบเพิ่มหน่วยพบการตอบกลับใหม่ต่อวงเพื่อนที่มีอยู่แล้ว: ${replyAuthor} -> ${floorId} ที่ดัชนี ${replyMessageIndex}`, // Translated: 增量解析到对已存在朋友圈的新回复
             );
           }
         }
       }
 
-      console.log(`[Friends Circle] 增量解析完成，发现 ${circles.size} 个新增/更新项`);
+      console.log(
+        `[Friends Circle] การแยกวิเคราะห์แบบเพิ่มหน่วยเสร็จสมบูรณ์, พบ ${circles.size} รายการที่เพิ่ม/อัปเดต`,
+      ); // Translated: 增量解析完成，发现 ${circles.size} 个新增/更新项
       return circles;
     }
 
     /**
-     * 测试视觉朋友圈解析
-     * @param {string} testContent - 测试内容
+     * ทดสอบการแยกวิเคราะห์วงเพื่อนแบบภาพ
+     * @param {string} testContent - เนื้อหาทดสอบ
      */
     testVisualCircleParsing(testContent) {
-      console.log('[Friends Circle] 测试朋友圈解析...');
-      console.log('测试内容:', testContent);
+      console.log('[Friends Circle] กำลังทดสอบการแยกวิเคราะห์วงเพื่อน...'); // Translated: 测试朋友圈解析
+      console.log('เนื้อหาทดสอบ:', testContent); // Translated: 测试内容
 
-      // 测试文字朋友圈
+      // ทดสอบวงเพื่อนแบบข้อความ
       this.patterns.textCircle.lastIndex = 0;
       let match;
       while ((match = this.patterns.textCircle.exec(testContent)) !== null) {
         const [, author, friendId, floorId, content] = match;
-        console.log('文字朋友圈匹配:', { author, friendId, floorId, content });
+        console.log('การจับคู่วงเพื่อนแบบข้อความ:', { author, friendId, floorId, content }); // Translated: 文字朋友圈匹配
       }
 
-      // 测试视觉朋友圈（带文字）
+      // ทดสอบวงเพื่อนแบบภาพ (มีข้อความ)
       this.patterns.visualCircle.lastIndex = 0;
       while ((match = this.patterns.visualCircle.exec(testContent)) !== null) {
         const [, author, friendId, floorId, imageDescription, textContent] = match;
-        console.log('视觉朋友圈匹配:', { author, friendId, floorId, imageDescription, textContent });
+        console.log('การจับคู่วงเพื่อนแบบภาพ:', { author, friendId, floorId, imageDescription, textContent }); // Translated: 视觉朋友圈匹配
       }
 
-      // 测试视觉朋友圈（无文字）
+      // ทดสอบวงเพื่อนแบบภาพ (ไม่มีข้อความ)
       this.patterns.visualCircleNoText.lastIndex = 0;
       while ((match = this.patterns.visualCircleNoText.exec(testContent)) !== null) {
         const [, author, friendId, floorId, imageDescription] = match;
-        console.log('视觉朋友圈(无文字)匹配:', { author, friendId, floorId, imageDescription });
+        console.log('การจับคู่วงเพื่อนแบบภาพ (ไม่มีข้อความ):', { author, friendId, floorId, imageDescription }); // Translated: 视觉朋友圈(无文字)匹配
       }
 
-      // 测试回复
+      // ทดสอบการตอบกลับ
       this.patterns.circleReply.lastIndex = 0;
       while ((match = this.patterns.circleReply.exec(testContent)) !== null) {
         const [, replyAuthor, replyFriendId, floorId, replyContent] = match;
-        console.log('朋友圈回复匹配:', { replyAuthor, replyFriendId, floorId, replyContent });
+        console.log('การจับคู่การตอบกลับวงเพื่อน:', { replyAuthor, replyFriendId, floorId, replyContent }); // Translated: 朋友圈回复匹配
       }
     }
 
     /**
-     * 获取排序后的朋友圈列表
-     * @returns {Array} 按最新活动位置降序排序的朋友圈数组
+     * รับรายการวงเพื่อนที่จัดเรียงแล้ว
+     * @returns {Array} อาร์เรย์วงเพื่อนที่จัดเรียงตามตำแหน่งกิจกรรมล่าสุดจากมากไปน้อย
      */
     getSortedFriendsCircles() {
       const circles = Array.from(this.friendsCircleData.values());
 
-      // 计算每个朋友圈的最新活动位置（包括回复位置）
+      // คำนวณตำแหน่งกิจกรรมล่าสุดของวงเพื่อนแต่ละรายการ (รวมถึงตำแหน่งตอบกลับ)
       const circlesWithActivity = circles.map(circle => {
         let latestActivityIndex = circle.latestActivityIndex || circle.messageIndex || 0;
 
-        // 检查所有回复的位置，找到最新的
+        // ตรวจสอบตำแหน่งการตอบกลับทั้งหมด, ค้นหาตำแหน่งล่าสุด
         if (circle.replies && circle.replies.length > 0) {
           circle.replies.forEach(reply => {
             if (reply.messageIndex && reply.messageIndex > latestActivityIndex) {
@@ -616,14 +631,14 @@ if (typeof window.FriendsCircle === 'undefined') {
         };
       });
 
-      // 按最新活动位置降序排序（位置越大越新，排在前面）
+      // จัดเรียงตามตำแหน่งกิจกรรมล่าสุดจากมากไปน้อย (ตำแหน่งยิ่งมากยิ่งใหม่, ยิ่งอยู่ข้างหน้า)
       return circlesWithActivity.sort((a, b) => b.latestActivityIndex - a.latestActivityIndex);
     }
 
     /**
-     * 切换点赞状态
-     * @param {string} circleId - 朋友圈ID
-     * @returns {Object} 点赞数据
+     * สลับสถานะการกดถูกใจ
+     * @param {string} circleId - ID วงเพื่อน
+     * @returns {Object} ข้อมูลการกดถูกใจ
      */
     toggleLike(circleId) {
       const currentLikes = this.getLikeCount(circleId);
@@ -635,7 +650,7 @@ if (typeof window.FriendsCircle === 'undefined') {
         this.likesData.set(circleId, { likes: currentLikes + 1, isLiked: true });
       }
 
-      // 更新朋友圈数据中的点赞信息
+      // อัปเดตข้อมูลการกดถูกใจในข้อมูลวงเพื่อน
       if (this.friendsCircleData.has(circleId)) {
         const circle = this.friendsCircleData.get(circleId);
         const likeData = this.likesData.get(circleId);
@@ -647,49 +662,49 @@ if (typeof window.FriendsCircle === 'undefined') {
     }
 
     /**
-     * 获取点赞数量
-     * @param {string} circleId - 朋友圈ID
-     * @returns {number} 点赞数量
+     * รับจำนวนการกดถูกใจ
+     * @param {string} circleId - ID วงเพื่อน
+     * @returns {number} จำนวนการกดถูกใจ
      */
     getLikeCount(circleId) {
       if (this.likesData.has(circleId)) {
         return this.likesData.get(circleId).likes;
       }
-      // 初始化随机点赞数
+      // เริ่มต้นด้วยจำนวนการกดถูกใจแบบสุ่ม
       const initialLikes = Math.floor(Math.random() * 20) + 5;
       this.likesData.set(circleId, { likes: initialLikes, isLiked: false });
       return initialLikes;
     }
 
     /**
-     * 检查是否已点赞
-     * @param {string} circleId - 朋友圈ID
-     * @returns {boolean} 是否已点赞
+     * ตรวจสอบว่าได้กดถูกใจแล้วหรือไม่
+     * @param {string} circleId - ID วงเพื่อน
+     * @returns {boolean} ได้กดถูกใจแล้วหรือไม่
      */
     isLiked(circleId) {
       return this.likesData.get(circleId)?.isLiked || false;
     }
 
     /**
-     * 更新朋友圈数据（支持增量更新）
-     * @param {Map} newCircles - 新的朋友圈数据
-     * @param {boolean} isIncremental - 是否为增量更新
+     * อัปเดตข้อมูลวงเพื่อน (รองรับการอัปเดตแบบเพิ่มหน่วย)
+     * @param {Map} newCircles - ข้อมูลวงเพื่อนใหม่
+     * @param {boolean} isIncremental - เป็นการอัปเดตแบบเพิ่มหน่วยหรือไม่
      */
     updateFriendsCircleData(newCircles, isIncremental = false) {
       if (isIncremental) {
-        // 增量更新：合并新数据到现有数据
+        // อัปเดตแบบเพิ่มหน่วย: รวมข้อมูลใหม่เข้ากับข้อมูลที่มีอยู่
         let addedCount = 0;
         let updatedCount = 0;
 
         for (const [key, newData] of newCircles) {
           if (newData.isUpdate) {
-            // 这是一个更新条目，处理对已存在朋友圈的回复
+            // นี่คือรายการอัปเดต, จัดการการตอบกลับต่อวงเพื่อนที่มีอยู่แล้ว
             const circleId = newData.id;
             if (this.friendsCircleData.has(circleId)) {
               const existingCircle = this.friendsCircleData.get(circleId);
               const existingReplies = existingCircle.replies || [];
 
-              // 添加新回复（去重）
+              // เพิ่มการตอบกลับใหม่ (การล้างข้อมูลซ้ำ)
               for (const newReply of newData.newReplies) {
                 const exists = existingReplies.some(
                   r => r.author === newReply.author && r.content === newReply.content,
@@ -699,7 +714,7 @@ if (typeof window.FriendsCircle === 'undefined') {
                 }
               }
 
-              // 更新最新活动位置
+              // อัปเดตตำแหน่งกิจกรรมล่าสุด
               existingCircle.replies = existingReplies;
               existingCircle.latestActivityIndex = Math.max(
                 existingCircle.latestActivityIndex || existingCircle.messageIndex,
@@ -708,14 +723,14 @@ if (typeof window.FriendsCircle === 'undefined') {
 
               updatedCount++;
               console.log(
-                `[Friends Circle] 更新已存在朋友圈 ${circleId} 的回复，新增 ${newData.newReplies.length} 条回复`,
+                `[Friends Circle] อัปเดตการตอบกลับของวงเพื่อนที่มีอยู่ ${circleId}, เพิ่มการตอบกลับใหม่ ${newData.newReplies.length} รายการ`, // Translated: 更新已存在朋友圈 ${circleId} 的回复，新增 ${newData.newReplies.length} 条回复
               );
             }
           } else {
-            // 这是新朋友圈或对新朋友圈的回复
+            // นี่คือวงเพื่อนใหม่หรือการตอบกลับต่อวงเพื่อนใหม่
             const circleId = newData.id;
             if (this.friendsCircleData.has(circleId)) {
-              // 已存在的朋友圈，合并回复
+              // วงเพื่อนที่มีอยู่แล้ว, รวมการตอบกลับ
               const existingCircle = this.friendsCircleData.get(circleId);
               const existingReplies = existingCircle.replies || [];
               const newReplies = newData.replies || [];
@@ -729,7 +744,7 @@ if (typeof window.FriendsCircle === 'undefined') {
                 }
               }
 
-              // 更新最新活动位置
+              // อัปเดตตำแหน่งกิจกรรมล่าสุด
               existingCircle.replies = existingReplies;
               existingCircle.latestActivityIndex = Math.max(
                 existingCircle.latestActivityIndex || existingCircle.messageIndex,
@@ -738,7 +753,7 @@ if (typeof window.FriendsCircle === 'undefined') {
 
               updatedCount++;
             } else {
-              // 新朋友圈，直接添加
+              // วงเพื่อนใหม่, เพิ่มโดยตรง
               this.friendsCircleData.set(circleId, newData);
               addedCount++;
             }
@@ -746,81 +761,83 @@ if (typeof window.FriendsCircle === 'undefined') {
         }
 
         console.log(
-          `[Friends Circle] 增量更新完成：新增 ${addedCount} 条，更新 ${updatedCount} 条，总计 ${this.friendsCircleData.size} 条`,
+          `[Friends Circle] การอัปเดตแบบเพิ่มหน่วยเสร็จสมบูรณ์: เพิ่ม ${addedCount} รายการ, อัปเดต ${updatedCount} รายการ, รวมทั้งหมด ${this.friendsCircleData.size} รายการ`, // Translated: 增量更新完成：新增 ${addedCount} 条，更新 ${updatedCount} 条，总计 ${this.friendsCircleData.size} 条
         );
       } else {
-        // 全量更新：直接替换
+        // การอัปเดตแบบเต็ม: แทนที่โดยตรง
         this.friendsCircleData = newCircles;
-        console.log(`[Friends Circle] 全量更新完成，共 ${newCircles.size} 条`);
+        console.log(`[Friends Circle] การอัปเดตแบบเต็มเสร็จสมบูรณ์, รวม ${newCircles.size} รายการ`); // Translated: 全量更新完成，共 ${newCircles.size} 条
       }
     }
 
     /**
-     * 刷新朋友圈数据（用于事件监听器调用）
-     * @param {boolean} forceFullRefresh - 是否强制全量刷新
+     * รีเฟรชข้อมูลวงเพื่อน (ใช้สำหรับการเรียกจากตัวฟังเหตุการณ์)
+     * @param {boolean} forceFullRefresh - บังคับให้รีเฟรชแบบเต็มหรือไม่
      */
     async refreshData(forceFullRefresh = false) {
       try {
-        // 获取聊天内容
+        // รับเนื้อหาการแชท
         const chatContent = await this.getChatContent();
 
         if (!chatContent) {
-          console.log('[Friends Circle] 没有聊天内容，跳过刷新');
+          console.log('[Friends Circle] ไม่มีเนื้อหาการแชท, ข้ามการรีเฟรช'); // Translated: 没有聊天内容，跳过刷新
           return;
         }
 
         const messages = chatContent.split('\n');
         const currentMessageCount = messages.length;
 
-        // 判断是否需要增量更新
+        // ตัดสินใจว่าจะใช้การอัปเดตแบบเพิ่มหน่วยหรือไม่
         const shouldUseIncremental =
           !forceFullRefresh &&
           this.lastProcessedMessageIndex >= 0 &&
           currentMessageCount > this.lastProcessedMessageIndex &&
-          this.friendsCircleData.size > 0; // 确保有历史数据
+          this.friendsCircleData.size > 0; // ตรวจสอบให้แน่ใจว่ามีข้อมูลประวัติ
 
         if (shouldUseIncremental) {
-          // 增量更新：只解析新增的消息
+          // การอัปเดตแบบเพิ่มหน่วย: แยกวิเคราะห์เฉพาะข้อความที่เพิ่มใหม่
           console.log(
-            `[Friends Circle] 执行增量更新：从消息索引 ${this.lastProcessedMessageIndex} 到 ${currentMessageCount}`,
+            `[Friends Circle] ดำเนินการอัปเดตแบบเพิ่มหน่วย: จากดัชนีข้อความ ${this.lastProcessedMessageIndex} ถึง ${currentMessageCount}`, // Translated: 执行增量更新：从消息索引 ${this.lastProcessedMessageIndex} 到 ${currentMessageCount}
           );
 
-          // 使用新的增量解析方法
+          // ใช้วิธีการแยกวิเคราะห์แบบเพิ่มหน่วยใหม่
           const newCircles = this.parseIncrementalData(chatContent, this.lastProcessedMessageIndex);
 
-          // 增量更新数据
+          // อัปเดตข้อมูลแบบเพิ่มหน่วย
           if (newCircles.size > 0) {
             this.updateFriendsCircleData(newCircles, true);
-            console.log(`[Friends Circle] 增量更新成功，处理了 ${newCircles.size} 个新增/更新项`);
+            console.log(
+              `[Friends Circle] การอัปเดตแบบเพิ่มหน่วยสำเร็จ, ประมวลผล ${newCircles.size} รายการที่เพิ่ม/อัปเดต`,
+            ); // Translated: 增量更新成功，处理了 ${newCircles.size} 个新增/更新项
           } else {
-            console.log('[Friends Circle] 增量更新：没有发现新的朋友圈数据');
+            console.log('[Friends Circle] การอัปเดตแบบเพิ่มหน่วย: ไม่พบข้อมูลวงเพื่อนใหม่'); // Translated: 增量更新：没有发现新的朋友圈数据
           }
         } else {
-          // 全量更新：解析所有消息
-          console.log('[Friends Circle] 执行全量更新');
+          // การอัปเดตแบบเต็ม: แยกวิเคราะห์ข้อความทั้งหมด
+          console.log('[Friends Circle] ดำเนินการอัปเดตแบบเต็ม'); // Translated: 执行全量更新
 
-          // 解析所有朋友圈数据
+          // แยกวิเคราะห์ข้อมูลวงเพื่อนทั้งหมด
           const newCircles = this.parseFriendsCircleData(chatContent, 0);
 
-          // 全量更新数据
+          // อัปเดตข้อมูลแบบเต็ม
           this.updateFriendsCircleData(newCircles, false);
         }
 
-        // 更新已处理的消息索引
+        // อัปเดตดัชนีข้อความที่ประมวลผลแล้ว
         this.lastProcessedMessageIndex = currentMessageCount;
 
-        console.log('[Friends Circle] 数据刷新完成');
+        console.log('[Friends Circle] การรีเฟรชข้อมูลเสร็จสมบูรณ์'); // Translated: 数据刷新完成
       } catch (error) {
-        console.error('[Friends Circle] 刷新数据失败:', error);
+        console.error('[Friends Circle] การรีเฟรชข้อมูลล้มเหลว:', error); // Translated: 刷新数据失败
       }
     }
 
     /**
-     * 获取聊天内容（用于数据刷新）
+     * รับเนื้อหาการแชท (ใช้สำหรับการรีเฟรชข้อมูล)
      */
     async getChatContent() {
       try {
-        // 方法1: 使用SillyTavern.getContext
+        // วิธีที่ 1: ใช้ SillyTavern.getContext
         if (window.SillyTavern?.getContext) {
           const context = window.SillyTavern.getContext();
           if (context?.chat && Array.isArray(context.chat)) {
@@ -828,12 +845,12 @@ if (typeof window.FriendsCircle === 'undefined') {
           }
         }
 
-        // 方法2: 使用父窗口chat
+        // วิธีที่ 2: ใช้ chat ของ window แม่
         if (window.parent?.chat && Array.isArray(window.parent.chat)) {
           return window.parent.chat.map(msg => msg.mes || '').join('\n');
         }
 
-        // 方法3: 使用contextMonitor
+        // วิธีที่ 3: ใช้ contextMonitor
         if (window.contextMonitor?.getCurrentChatMessages) {
           const chatData = await window.contextMonitor.getCurrentChatMessages();
           if (chatData?.messages) {
@@ -843,15 +860,15 @@ if (typeof window.FriendsCircle === 'undefined') {
 
         return '';
       } catch (error) {
-        console.error('[Friends Circle] 获取聊天内容失败:', error);
+        console.error('[Friends Circle] รับเนื้อหาการแชทล้มเหลว:', error); // Translated: 获取聊天内容失败
         return '';
       }
     }
   }
 
   /**
-   * 朋友圈事件监听器
-   * 复用live-app的智能检测机制
+   * ตัวฟังเหตุการณ์วงเพื่อน
+   * ใช้กลไกการตรวจจับอัจฉริยะของ live-app ซ้ำ
    */
   class FriendsCircleEventListener {
     constructor(friendsCircle) {
@@ -863,19 +880,19 @@ if (typeof window.FriendsCircle === 'undefined') {
     }
 
     /**
-     * 开始监听SillyTavern事件
+     * เริ่มฟังเหตุการณ์ SillyTavern
      */
     startListening() {
       if (this.isListening) {
-        console.log('[Friends Circle] 监听器已经在运行中');
+        console.log('[Friends Circle] ตัวฟังกำลังทำงานอยู่แล้ว'); // Translated: 监听器已经在运行中
         return;
       }
 
-      console.log('[Friends Circle] 开始设置事件监听...');
+      console.log('[Friends Circle] เริ่มตั้งค่าตัวฟังเหตุการณ์...'); // Translated: 开始设置事件监听
       let eventListenerSet = false;
 
       try {
-        // 方法1: 优先使用SillyTavern.getContext().eventSource（iframe环境推荐）
+        // วิธีที่ 1: ให้ความสำคัญกับการใช้ SillyTavern.getContext().eventSource (แนะนำสำหรับสภาพแวดล้อม iframe)
         if (
           typeof window !== 'undefined' &&
           window.SillyTavern &&
@@ -883,106 +900,108 @@ if (typeof window.FriendsCircle === 'undefined') {
         ) {
           const context = window.SillyTavern.getContext();
           if (context && context.eventSource && typeof context.eventSource.on === 'function' && context.event_types) {
-            console.log('[Friends Circle] 使用SillyTavern.getContext().eventSource监听MESSAGE_RECEIVED事件');
+            console.log('[Friends Circle] ใช้ SillyTavern.getContext().eventSource ฟังเหตุการณ์ MESSAGE_RECEIVED'); // Translated: 使用SillyTavern.getContext().eventSource监听MESSAGE_RECEIVED事件
             context.eventSource.on(context.event_types.MESSAGE_RECEIVED, this.messageReceivedHandler);
             this.isListening = true;
             eventListenerSet = true;
-            console.log('[Friends Circle] ✅ 成功开始监听SillyTavern消息事件 (context.eventSource)');
+            console.log('[Friends Circle] ✅ เริ่มฟังเหตุการณ์ข้อความ SillyTavern สำเร็จ (context.eventSource)'); // Translated: 成功开始监听SillyTavern消息事件
             this.updateMessageCount();
             return;
           }
         }
 
-        // 方法2: 尝试使用全局eventOn函数（如果可用）
+        // วิธีที่ 2: ลองใช้ฟังก์ชัน eventOn ทั่วโลก (หากใช้งานได้)
         if (typeof eventOn === 'function' && typeof tavern_events !== 'undefined' && tavern_events.MESSAGE_RECEIVED) {
-          console.log('[Friends Circle] 使用全局eventOn监听MESSAGE_RECEIVED事件');
+          console.log('[Friends Circle] ใช้ eventOn ทั่วโลกฟังเหตุการณ์ MESSAGE_RECEIVED'); // Translated: 使用全局eventOn监听MESSAGE_RECEIVED事件
           eventOn(tavern_events.MESSAGE_RECEIVED, this.messageReceivedHandler);
           this.isListening = true;
           eventListenerSet = true;
-          console.log('[Friends Circle] ✅ 成功开始监听SillyTavern消息事件 (eventOn)');
+          console.log('[Friends Circle] ✅ เริ่มฟังเหตุการณ์ข้อความ SillyTavern สำเร็จ (eventOn)'); // Translated: 成功开始监听SillyTavern消息事件
           this.updateMessageCount();
           return;
         }
 
-        // 方法3: 尝试使用父窗口的事件系统
+        // วิธีที่ 3: ลองใช้ระบบเหตุการณ์ของ window แม่
         if (typeof window.parent !== 'undefined' && window.parent !== window) {
           try {
             const parentEventSource = window.parent.eventSource;
             const parentEventTypes = window.parent.event_types;
             if (parentEventSource && parentEventTypes && parentEventTypes.MESSAGE_RECEIVED) {
-              console.log('[Friends Circle] 使用父窗口事件系统监听MESSAGE_RECEIVED事件');
+              console.log('[Friends Circle] ใช้ระบบเหตุการณ์ของ window แม่ฟังเหตุการณ์ MESSAGE_RECEIVED'); // Translated: 使用父窗口事件系统监听MESSAGE_RECEIVED事件
               parentEventSource.on(parentEventTypes.MESSAGE_RECEIVED, this.messageReceivedHandler);
               this.isListening = true;
               eventListenerSet = true;
-              console.log('[Friends Circle] ✅ 成功开始监听SillyTavern消息事件 (parent)');
+              console.log('[Friends Circle] ✅ เริ่มฟังเหตุการณ์ข้อความ SillyTavern สำเร็จ (parent)'); // Translated: 成功开始监听SillyTavern消息事件
               this.updateMessageCount();
               return;
             }
           } catch (parentError) {
-            console.warn('[Friends Circle] 无法访问父窗口事件系统:', parentError);
+            console.warn('[Friends Circle] ไม่สามารถเข้าถึงระบบเหตุการณ์ของ window แม่:', parentError); // Translated: 无法访问父窗口事件系统
           }
         }
 
-        // 方法4: 尝试使用window.eventSource
+        // วิธีที่ 4: ลองใช้ window.eventSource
         if (typeof window.eventSource !== 'undefined' && typeof window.event_types !== 'undefined') {
           try {
             if (window.eventSource.on && window.event_types.MESSAGE_RECEIVED) {
-              console.log('[Friends Circle] 使用window.eventSource监听MESSAGE_RECEIVED事件');
+              console.log('[Friends Circle] ใช้ window.eventSource ฟังเหตุการณ์ MESSAGE_RECEIVED'); // Translated: 使用window.eventSource监听MESSAGE_RECEIVED事件
               window.eventSource.on(window.event_types.MESSAGE_RECEIVED, this.messageReceivedHandler);
               this.isListening = true;
               eventListenerSet = true;
-              console.log('[Friends Circle] ✅ 成功开始监听SillyTavern消息事件 (window.eventSource)');
+              console.log('[Friends Circle] ✅ เริ่มฟังเหตุการณ์ข้อความ SillyTavern สำเร็จ (window.eventSource)'); // Translated: 成功开始监听SillyTavern消息事件
               this.updateMessageCount();
               return;
             }
           } catch (windowError) {
-            console.warn('[Friends Circle] 无法使用window.eventSource:', windowError);
+            console.warn('[Friends Circle] ไม่สามารถใช้ window.eventSource ได้:', windowError); // Translated: 无法使用window.eventSource
           }
         }
       } catch (error) {
-        console.error('[Friends Circle] 设置事件监听时发生错误:', error);
+        console.error('[Friends Circle] เกิดข้อผิดพลาดขณะตั้งค่าตัวฟังเหตุการณ์:', error); // Translated: 设置事件监听时发生错误
       }
 
-      // 如果所有事件监听方法都失败，使用轮询备用方案
+      // หากวิธีการฟังเหตุการณ์ทั้งหมดล้มเหลว ให้ใช้แผนสำรองแบบ Polling
       if (!eventListenerSet) {
-        console.warn('[Friends Circle] 无法找到SillyTavern事件系统，使用轮询备用方案');
+        console.warn('[Friends Circle] ไม่พบระบบเหตุการณ์ SillyTavern, ใช้แผนสำรองแบบ Polling'); // Translated: 无法找到SillyTavern事件系统，使用轮询备用方案
         this.startPolling();
       }
     }
 
     /**
-     * 处理消息接收事件
-     * @param {number} messageId - 消息ID
+     * จัดการเหตุการณ์การรับข้อความ
+     * @param {number} messageId - ID ข้อความ
      */
     async onMessageReceived(messageId) {
       try {
-        console.log(`[Friends Circle] 收到MESSAGE_RECEIVED事件: ${messageId}`);
+        console.log(`[Friends Circle] ได้รับเหตุการณ์ MESSAGE_RECEIVED: ${messageId}`); // Translated: 收到MESSAGE_RECEIVED事件
 
-        // 获取当前消息数量
+        // รับจำนวนข้อความปัจจุบัน
         const currentMessageCount = this.getCurrentMessageCount();
         console.log(
-          `[Friends Circle] 消息计数检查: 当前=${currentMessageCount}, 上次=${this.lastMessageCount}, messageId=${messageId}`,
+          `[Friends Circle] ตรวจสอบจำนวนข้อความ: ปัจจุบัน=${currentMessageCount}, ล่าสุด=${this.lastMessageCount}, messageId=${messageId}`, // Translated: 消息计数检查: 当前=${currentMessageCount}, 上次=${this.lastMessageCount}
         );
 
         if (currentMessageCount <= this.lastMessageCount) {
-          console.log('[Friends Circle] 消息数量未增加，跳过处理');
-          console.log('[Friends Circle] 调试信息: 可能的原因是消息计数方法返回了错误的值');
+          console.log('[Friends Circle] จำนวนข้อความไม่เพิ่มขึ้น, ข้ามการประมวลผล'); // Translated: 消息数量未增加，跳过处理
+          console.log('[Friends Circle] ข้อมูลดีบัก: สาเหตุที่เป็นไปได้คือวิธีการนับข้อความส่งคืนค่าที่ไม่ถูกต้อง'); // Translated: 调试信息: 可能的原因是消息计数方法返回了错误的值
 
-          // 强制检查一下实际的消息数量
+          // บังคับตรวจสอบจำนวนข้อความจริง
           if (window.SillyTavern?.getContext) {
             const context = window.SillyTavern.getContext();
             console.log('[Friends Circle] SillyTavern context.chat.length:', context?.chat?.length);
           }
 
-          // 即使消息数量看起来没有增加，也尝试刷新一次（可能是计数方法的问题）
-          console.log('[Friends Circle] 强制执行一次数据刷新...');
+          // แม้ว่าจำนวนข้อความจะดูเหมือนไม่เพิ่มขึ้น ให้ลองรีเฟรชหนึ่งครั้ง (อาจเป็นปัญหาของวิธีการนับ)
+          console.log('[Friends Circle] บังคับดำเนินการรีเฟรชข้อมูล...'); // Translated: 强制执行一次数据刷新
           if (this.friendsCircle) {
             await this.friendsCircle.manager.refreshData();
 
-            // 如果刷新后有新数据，更新消息计数
+            // หากรีเฟรชแล้วมีข้อมูลใหม่ ให้อัปเดตจำนวนข้อความ
             const newCount = this.getCurrentMessageCount();
             if (newCount > this.lastMessageCount) {
-              console.log(`[Friends Circle] 强制刷新后发现新消息: ${this.lastMessageCount} → ${newCount}`);
+              console.log(
+                `[Friends Circle] พบข้อความใหม่หลังการรีเฟรชแบบบังคับ: ${this.lastMessageCount} → ${newCount}`,
+              ); // Translated: 强制刷新后发现新消息
               this.lastMessageCount = newCount;
             }
           }
@@ -990,35 +1009,37 @@ if (typeof window.FriendsCircle === 'undefined') {
         }
 
         console.log(
-          `[Friends Circle] ✅ 检测到新消息，消息数量从 ${this.lastMessageCount} 增加到 ${currentMessageCount}`,
+          `[Friends Circle] ✅ ตรวจพบข้อความใหม่, จำนวนข้อความเพิ่มขึ้นจาก ${this.lastMessageCount} เป็น ${currentMessageCount}`, // Translated: 检测到新消息，消息数量从 ${this.lastMessageCount} 增加到 ${currentMessageCount}
         );
         this.lastMessageCount = currentMessageCount;
 
-        // 更新朋友圈数据
+        // อัปเดตข้อมูลวงเพื่อน
         if (this.friendsCircle) {
-          console.log('[Friends Circle] 开始更新朋友圈数据...');
+          console.log('[Friends Circle] เริ่มอัปเดตข้อมูลวงเพื่อน...'); // Translated: 开始更新朋友圈数据
           await this.friendsCircle.manager.refreshData();
 
-          // 如果朋友圈页面处于活跃状态，立即更新界面
+          // หากหน้าวงเพื่อนอยู่ในสถานะทำงาน ให้รีบอัปเดต UI ทันที
           if (this.friendsCircle.isActive) {
-            console.log('[Friends Circle] 朋友圈页面处于活跃状态，立即更新界面');
+            console.log('[Friends Circle] หน้าวงเพื่อนอยู่ในสถานะทำงาน, อัปเดต UI ทันที'); // Translated: 朋友圈页面处于活跃状态，立即更新界面
             this.friendsCircle.updateDisplay();
           } else {
-            console.log('[Friends Circle] 朋友圈页面未激活，数据已更新，下次打开时会显示新内容');
+            console.log(
+              '[Friends Circle] หน้าวงเพื่อนไม่ได้เปิดใช้งาน, ข้อมูลได้รับการอัปเดตแล้ว, จะแสดงเนื้อหาใหม่ในการเปิดครั้งถัดไป',
+            ); // Translated: 朋友圈页面未激活，数据已更新，下次打开时会显示新内容
           }
         }
       } catch (error) {
-        console.error('[Friends Circle] 处理消息接收事件失败:', error);
+        console.error('[Friends Circle] จัดการเหตุการณ์การรับข้อความล้มเหลว:', error); // Translated: 处理消息接收事件失败
       }
     }
 
     /**
-     * 获取当前消息数量
-     * @returns {number} 消息数量
+     * รับจำนวนข้อความปัจจุบัน
+     * @returns {number} จำนวนข้อความ
      */
     getCurrentMessageCount() {
       try {
-        // 方法1: 使用SillyTavern.getContext().chat
+        // วิธีที่ 1: ใช้ SillyTavern.getContext().chat
         if (window.SillyTavern?.getContext) {
           const context = window.SillyTavern.getContext();
           if (context?.chat && Array.isArray(context.chat)) {
@@ -1026,7 +1047,7 @@ if (typeof window.FriendsCircle === 'undefined') {
           }
         }
 
-        // 方法2: 使用mobileContextEditor
+        // วิธีที่ 2: ใช้ mobileContextEditor
         if (window.mobileContextEditor?.getCurrentChatData) {
           const chatData = window.mobileContextEditor.getCurrentChatData();
           if (chatData?.messages && Array.isArray(chatData.messages)) {
@@ -1034,28 +1055,28 @@ if (typeof window.FriendsCircle === 'undefined') {
           }
         }
 
-        // 方法3: 使用父窗口chat变量
+        // วิธีที่ 3: ใช้ตัวแปร chat ของ window แม่
         if (window.parent?.chat && Array.isArray(window.parent.chat)) {
           return window.parent.chat.length;
         }
 
         return 0;
       } catch (error) {
-        console.warn('[Friends Circle] 获取消息数量失败:', error);
+        console.warn('[Friends Circle] รับจำนวนข้อความล้มเหลว:', error); // Translated: 获取消息数量失败
         return 0;
       }
     }
 
     /**
-     * 更新消息计数
+     * อัปเดตจำนวนข้อความ
      */
     updateMessageCount() {
       this.lastMessageCount = this.getCurrentMessageCount();
-      console.log(`[Friends Circle] 初始化消息计数: ${this.lastMessageCount}`);
+      console.log(`[Friends Circle] เริ่มต้นจำนวนข้อความ: ${this.lastMessageCount}`); // Translated: 初始化消息计数
     }
 
     /**
-     * 启动轮询方案
+     * เริ่มแผนสำรองแบบ Polling
      */
     startPolling() {
       if (this.pollingInterval) {
@@ -1065,48 +1086,50 @@ if (typeof window.FriendsCircle === 'undefined') {
       this.updateMessageCount();
       this.pollingInterval = setInterval(() => {
         this.checkForNewMessages();
-      }, 1000); // 改为1秒检查一次，更及时
+      }, 1000); // เปลี่ยนเป็นตรวจสอบทุก 1 วินาที เพื่อความทันเวลา
 
       this.isListening = true;
-      console.log('[Friends Circle] ✅ 启动轮询监听方案 (每1秒检查一次)');
+      console.log('[Friends Circle] ✅ เริ่มแผนสำรองแบบ Polling (ตรวจสอบทุก 1 วินาที)'); // Translated: 启动轮询监听方案 (每1秒检查一次)
     }
 
     /**
-     * 检查新消息
+     * ตรวจสอบข้อความใหม่
      */
     async checkForNewMessages() {
       try {
         const currentMessageCount = this.getCurrentMessageCount();
-        console.log(`[Friends Circle Debug] 检查消息: 当前=${currentMessageCount}, 上次=${this.lastMessageCount}`);
+        console.log(
+          `[Friends Circle Debug] ตรวจสอบข้อความ: ปัจจุบัน=${currentMessageCount}, ล่าสุด=${this.lastMessageCount}`,
+        ); // Translated: 检查消息: 当前=${currentMessageCount}, 上次=${this.lastMessageCount}
 
         if (currentMessageCount > this.lastMessageCount) {
-          console.log(`[Friends Circle] 轮询检测到新消息: ${this.lastMessageCount} → ${currentMessageCount}`);
+          console.log(`[Friends Circle] Polling ตรวจพบข้อความใหม่: ${this.lastMessageCount} → ${currentMessageCount}`); // Translated: 轮询检测到新消息
           await this.onMessageReceived(currentMessageCount);
         } else {
-          console.log(`[Friends Circle Debug] 没有新消息`);
+          console.log(`[Friends Circle Debug] ไม่มีข้อความใหม่`); // Translated: 没有新消息
         }
       } catch (error) {
-        console.error('[Friends Circle] 轮询检查消息失败:', error);
+        console.error('[Friends Circle] Polling ตรวจสอบข้อความล้มเหลว:', error); // Translated: 轮询检查消息失败
       }
     }
 
     /**
-     * 手动触发消息事件（用于测试）
+     * กระตุ้นเหตุการณ์ข้อความด้วยตนเอง (สำหรับทดสอบ)
      */
     triggerTestMessage() {
-      console.log('[Friends Circle Debug] 手动触发测试消息事件...');
+      console.log('[Friends Circle Debug] กระตุ้นเหตุการณ์ข้อความทดสอบด้วยตนเอง...'); // Translated: 手动触发测试消息事件
       const fakeMessageId = Date.now();
       this.onMessageReceived(fakeMessageId);
     }
 
     /**
-     * 停止监听
+     * หยุดฟัง
      */
     stopListening() {
       if (!this.isListening) return;
 
       try {
-        // 尝试移除事件监听器
+        // ลองลบตัวฟังเหตุการณ์
         if (window.SillyTavern?.getContext) {
           const context = window.SillyTavern.getContext();
           if (context?.eventSource?.off && context.event_types) {
@@ -1114,23 +1137,23 @@ if (typeof window.FriendsCircle === 'undefined') {
           }
         }
 
-        // 清除轮询
+        // ล้าง Polling
         if (this.pollingInterval) {
           clearInterval(this.pollingInterval);
           this.pollingInterval = null;
         }
 
         this.isListening = false;
-        console.log('[Friends Circle] 已停止监听事件');
+        console.log('[Friends Circle] หยุดฟังเหตุการณ์แล้ว'); // Translated: 已停止监听事件
       } catch (error) {
-        console.error('[Friends Circle] 停止监听失败:', error);
+        console.error('[Friends Circle] หยุดฟังล้มเหลว:', error); // Translated: 停止监听失败
       }
     }
   }
 
   /**
-   * 朋友圈UI渲染器
-   * 负责朋友圈界面的渲染和交互
+   * ตัวแสดงผล UI วงเพื่อน
+   * รับผิดชอบในการแสดงผลและการโต้ตอบของอินเทอร์เฟซวงเพื่อน
    */
   class FriendsCircleRenderer {
     constructor(friendsCircle) {
@@ -1139,28 +1162,28 @@ if (typeof window.FriendsCircle === 'undefined') {
     }
 
     /**
-     * 渲染朋友圈页面
-     * @returns {string} 朋友圈页面HTML
+     * แสดงผลหน้าวงเพื่อน
+     * @returns {string} HTML ของหน้าวงเพื่อน
      */
     renderFriendsCirclePage() {
       const userInfo = this.renderUserInfo();
       const circlesList = this.renderCirclesList();
 
       return `
-        <div class="friends-circle-page">
-          <div class="friends-circle-content">
-            ${userInfo}
-            <div class="circles-container">
-              ${circlesList}
-            </div>
+      <div class="friends-circle-page">
+        <div class="friends-circle-content">
+          ${userInfo}
+          <div class="circles-container">
+            ${circlesList}
           </div>
         </div>
-      `;
+      </div>
+    `;
     }
 
     /**
-     * 渲染用户信息区域
-     * @returns {string} 用户信息HTML
+     * แสดงผลส่วนข้อมูลผู้ใช้
+     * @returns {string} HTML ข้อมูลผู้ใช้
      */
     renderUserInfo() {
       const userName = this.getCurrentUserName();
@@ -1168,84 +1191,84 @@ if (typeof window.FriendsCircle === 'undefined') {
       const userSignature = this.friendsCircle.getUserSignature();
 
       return `
-        <div class="user-info-section">
-          <div class="user-cover">
-            <div class="user-avatar">
-              <img src="${userAvatar}" alt="${userName}" />
-            </div>
-            <div class="user-details">
-              <div class="user-name">${userName}</div>
-              <div class="user-signature" onclick="window.friendsCircle?.editUserSignature()">
-                <span class="signature-text">${userSignature}</span>
-                <i class="fas fa-edit signature-edit-icon"></i>
-              </div>
+      <div class="user-info-section">
+        <div class="user-cover">
+          <div class="user-avatar">
+            <img src="${userAvatar}" alt="${userName}" />
+          </div>
+          <div class="user-details">
+            <div class="user-name">${userName}</div>
+            <div class="user-signature" onclick="window.friendsCircle?.editUserSignature()">
+              <span class="signature-text">${userSignature}</span>
+              <i class="fas fa-edit signature-edit-icon"></i>
             </div>
           </div>
         </div>
-      `;
+      </div>
+    `;
     }
 
     /**
-     * 🌟 方案B+C：批量渲染朋友圈列表（懒加载）
-     * @returns {string} 朋友圈列表HTML
+     * 🌟 วิธีที่ B+C: แสดงผลรายการวงเพื่อนเป็นชุด (Lazy Loading)
+     * @returns {string} HTML รายการวงเพื่อน
      */
     renderCirclesList() {
       if (!this.friendsCircle.manager) {
-        return '<div class="empty-circles"><i class="fas fa-heart"></i><span>暂无朋友圈</span></div>';
+        return '<div class="empty-circles"><i class="fas fa-heart"></i><span>ไม่มีวงเพื่อน</span></div>'; // Translated: 暂无朋友圈
       }
 
       const circles = this.friendsCircle.manager.getSortedFriendsCircles();
 
       if (circles.length === 0) {
-        return '<div class="empty-circles"><i class="fas fa-heart"></i><span>暂无朋友圈</span></div>';
+        return '<div class="empty-circles"><i class="fas fa-heart"></i><span>ไม่มีวงเพื่อน</span></div>'; // Translated: 暂无朋友圈
       }
 
-      // 🌟 方案B：同步批量获取基础信息，避免重复调用
+      // 🌟 วิธีที่ B: เรียกใช้การรับข้อมูลพื้นฐานเป็นชุดแบบซิงโครนัส เพื่อหลีกเลี่ยงการเรียกซ้ำ
       try {
-        // 同步调用批量获取，如果缓存过期则更新
+        // เรียกใช้การรับข้อมูลเป็นชุดแบบซิงโครนัส, หากแคชหมดอายุจะทำการอัปเดต
         this.friendsCircle.batchGetBasicInfo();
       } catch (error) {
-        console.warn('[Friends Circle] 批量获取基础信息失败，使用降级处理:', error);
+        console.warn('[Friends Circle] รับข้อมูลพื้นฐานเป็นชุดล้มเหลว, ใช้การลดระดับ:', error); // Translated: 批量获取基础信息失败，使用降级处理
       }
 
-      // 🌟 方案C：懒加载 - 只渲染前10条朋友圈
+      // 🌟 วิธีที่ C: Lazy Loading - แสดงผลเฉพาะ 10 รายการแรกเท่านั้น
       const visibleCircles = circles.slice(0, 10);
       const remainingCount = circles.length - 10;
 
       let html = visibleCircles.map(circle => this.renderSingleCircle(circle)).join('');
 
-      // 如果还有更多朋友圈，添加加载更多按钮
+      // หากมีวงเพื่อนเพิ่มเติม ให้เพิ่มปุ่มโหลดเพิ่มเติม
       if (remainingCount > 0) {
         html += `
-          <div class="load-more-container" data-remaining="${remainingCount}" style="text-align: center; padding: 20px;">
-            <button class="load-more-btn" onclick="window.friendsCircle.loadMoreCircles()"
-                    style="background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-size: 14px;">
-              <i class="fas fa-chevron-down" style="margin-right: 5px;"></i>
-              加载更多 (还有${remainingCount}条)
-            </button>
-          </div>
-        `;
+        <div class="load-more-container" data-remaining="${remainingCount}" style="text-align: center; padding: 20px;">
+          <button class="load-more-btn" onclick="window.friendsCircle.loadMoreCircles()"
+              style="background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-size: 14px;">
+            <i class="fas fa-chevron-down" style="margin-right: 5px;"></i>
+            โหลดเพิ่มเติม (เหลืออีก ${remainingCount} รายการ)
+          </button>
+        </div>
+      `; // Translated: 加载更多 (还有${remainingCount}条)
       }
 
       return html;
     }
 
     /**
-     * 渲染单个朋友圈
-     * @param {Object} circle - 朋友圈数据
-     * @returns {string} 单个朋友圈HTML
+     * แสดงผลวงเพื่อนเดียว
+     * @param {Object} circle - ข้อมูลวงเพื่อน
+     * @returns {string} HTML วงเพื่อนเดียว
      */
     renderSingleCircle(circle) {
-      // 🌟 方案B：使用批量缓存的信息，避免重复调用
+      // 🌟 วิธีที่ B: ใช้ข้อมูลที่แคชไว้เป็นชุด เพื่อเพิ่มประสิทธิภาพ
       let friendAvatar;
       const cache = this.friendsCircle.batchCache;
       const currentUserName = cache.userName || this.getCurrentUserName();
 
       if (circle.author === currentUserName || circle.friendId === '483920') {
-        // 用户自己的朋友圈，使用缓存的用户头像
+        // วงเพื่อนของผู้ใช้เอง ใช้รูปประจำตัวผู้ใช้ที่แคชไว้
         friendAvatar = cache.userAvatar || this.getCurrentUserAvatar();
       } else {
-        // 其他好友的朋友圈，使用缓存的好友头像
+        // วงเพื่อนของเพื่อนคนอื่น ใช้รูปประจำตัวเพื่อนที่แคชไว้
         friendAvatar = cache.friendAvatars.get(circle.friendId) || this.getFriendAvatar(circle.friendId);
       }
 
@@ -1255,78 +1278,78 @@ if (typeof window.FriendsCircle === 'undefined') {
       const actionsHtml = this.renderCircleActions(circle);
 
       return `
-        <div class="circle-item" data-circle-id="${circle.id}">
-          <div class="circle-header">
-            <div class="friend-avatar">
-              <img src="${friendAvatar}" alt="${circle.author}" />
-            </div>
-            <div class="friend-info">
-              <div class="friend-name">${circle.author}</div>
-              <div class="circle-time">${timeStr}</div>
-            </div>
+      <div class="circle-item" data-circle-id="${circle.id}">
+        <div class="circle-header">
+          <div class="friend-avatar">
+            <img src="${friendAvatar}" alt="${circle.author}" />
           </div>
-
-          <div class="circle-content">
-            ${contentHtml}
-          </div>
-
-          <div class="circle-actions">
-            ${actionsHtml}
-          </div>
-
-          ${repliesHtml}
-
-          <div class="reply-input-container" id="reply-input-${circle.id}" style="display: none;">
-            <input type="text" class="reply-input" placeholder="写下你的想法..." />
-            <button class="reply-send-btn" onclick="window.friendsCircle?.sendCircleReply('${circle.id}')">
-              <i class="fas fa-paper-plane"></i>
-            </button>
+          <div class="friend-info">
+            <div class="friend-name">${circle.author}</div>
+            <div class="circle-time">${timeStr}</div>
           </div>
         </div>
-      `;
+
+        <div class="circle-content">
+          ${contentHtml}
+        </div>
+
+        <div class="circle-actions">
+          ${actionsHtml}
+        </div>
+
+        ${repliesHtml}
+
+        <div class="reply-input-container" id="reply-input-${circle.id}" style="display: none;">
+          <input type="text" class="reply-input" placeholder="เขียนความคิดของคุณ..." />
+          <button class="reply-send-btn" onclick="window.friendsCircle?.sendCircleReply('${circle.id}')">
+            <i class="fas fa-paper-plane"></i>
+          </button>
+        </div>
+      </div>
+    `; // Translated: 写下你的想法...
     }
 
     /**
-     * 渲染朋友圈内容
-     * @param {Object} circle - 朋友圈数据
-     * @returns {string} 朋友圈内容HTML
+     * แสดงผลเนื้อหาวงเพื่อน
+     * @param {Object} circle - ข้อมูลวงเพื่อน
+     * @returns {string} HTML เนื้อหาวงเพื่อน
      */
     renderCircleContent(circle) {
       if (circle.type === 'visual') {
-        // 检查是否有真实图片URL
+        // ตรวจสอบว่ามี URL ภาพจริงหรือไม่
         const hasRealImage = circle.imageUrl && circle.imageUrl.trim();
 
         let imageHtml;
         if (hasRealImage) {
-          // 显示真实图片
+          // แสดงภาพจริง
           imageHtml = `
-            <div class="circle-image-container">
-              <img src="${circle.imageUrl}"
-                   alt="${circle.imageDescription || '朋友圈图片'}"
-                   class="circle-image"
-                   onclick="this.style.transform=this.style.transform?'':'scale(2)'; setTimeout(()=>this.style.transform='', 3000);"
-                   loading="lazy"
-                   onerror="this.parentElement.innerHTML='<div class=\\'image-placeholder\\'><i class=\\'fas fa-image\\'></i><span class=\\'image-description\\'>${
-                     circle.imageDescription || '图片加载失败'
-                   }</span></div>'">
-            </div>
-          `;
+          <div class="circle-image-container">
+            <img src="${circle.imageUrl}"
+                alt="${circle.imageDescription || 'รูปภาพวงเพื่อน'}"
+                class="circle-image"
+                onclick="this.style.transform=this.style.transform?'':'scale(2)'; setTimeout(()=>this.style.transform='', 3000);"
+                loading="lazy"
+                onerror="this.parentElement.innerHTML='<div class=\\'image-placeholder\\'><i class=\\'fas fa-image\\'></i><span class=\\'image-description\\'>${
+                  circle.imageDescription || 'โหลดรูปภาพล้มเหลว'
+                }</span></div>'">
+          </div>
+        `; // Translated: 朋友圈图片, 图片加载失败
         } else {
-          // 显示占位符
+          // แสดงตัวยึดตำแหน่ง
           imageHtml = `
-            <div class="image-placeholder">
-              <i class="fas fa-image"></i>
-              <span class="image-description">${circle.imageDescription || '图片描述缺失'}</span>
-            </div>
-          `;
+          <div class="image-placeholder">
+            <i class="fas fa-image"></i>
+            <span class="image-description">${circle.imageDescription || 'ไม่มีคำอธิบายรูปภาพ'}</span>
+          </div>
+        `; // Translated: 图片描述缺失
         }
 
         const visualHtml = `
-          <div class="visual-circle-content">
-            ${circle.content ? `<div class="text-content">${circle.content}</div>` : ''}
-            ${imageHtml}
-          </div>
-        `;
+        <div class="visual-circle-content">
+          ${circle.content ? `<div class="text-content">${circle.content}</div>` : ''}
+          ${imageHtml}
+        </div>
+      `;
         return visualHtml;
       } else {
         const textHtml = `<div class="text-circle-content">${circle.content}</div>`;
@@ -1335,32 +1358,32 @@ if (typeof window.FriendsCircle === 'undefined') {
     }
 
     /**
-     * 渲染朋友圈操作按钮
-     * @param {Object} circle - 朋友圈数据
-     * @returns {string} 操作按钮HTML
+     * แสดงผลปุ่มการกระทำวงเพื่อน
+     * @param {Object} circle - ข้อมูลวงเพื่อน
+     * @returns {string} HTML ปุ่มการกระทำ
      */
     renderCircleActions(circle) {
       const likeIcon = circle.isLiked ? 'fas fa-heart liked' : 'far fa-heart';
 
       return `
-        <div class="actions-bar">
-          <button class="action-btn like-btn" onclick="window.friendsCircle?.toggleCircleLike('${circle.id}')">
-            <i class="${likeIcon}"></i>
-            <span class="like-count">${circle.likes}</span>
-          </button>
-          <button class="action-btn reply-btn" onclick="window.friendsCircle?.toggleReplyInput('${circle.id}')">
-            <i class="fas fa-comment"></i>
-            <span>回复</span>
-          </button>
-        </div>
-      `;
+      <div class="actions-bar">
+        <button class="action-btn like-btn" onclick="window.friendsCircle?.toggleCircleLike('${circle.id}')">
+          <i class="${likeIcon}"></i>
+          <span class="like-count">${circle.likes}</span>
+        </button>
+        <button class="action-btn reply-btn" onclick="window.friendsCircle?.toggleReplyInput('${circle.id}')">
+          <i class="fas fa-comment"></i>
+          <span>ตอบกลับ</span>
+        </button>
+      </div>
+    `; // Translated: 回复
     }
 
     /**
-     * 渲染朋友圈回复
-     * @param {Array} replies - 回复数组
-     * @param {string} circleId - 朋友圈ID
-     * @returns {string} 回复HTML
+     * แสดงผลการตอบกลับวงเพื่อน
+     * @param {Array} replies - อาร์เรย์การตอบกลับ
+     * @param {string} circleId - ID วงเพื่อน
+     * @returns {string} HTML การตอบกลับ
      */
     renderCircleReplies(replies, circleId) {
       if (!replies || replies.length === 0) {
@@ -1369,16 +1392,16 @@ if (typeof window.FriendsCircle === 'undefined') {
 
       const repliesHtml = replies
         .map(reply => {
-          // 🔧 修复用户回复头像显示问题 + 使用批量缓存优化性能
+          // 🔧 แก้ไขปัญหาการแสดงรูปประจำตัวของผู้ใช้ในการตอบกลับ + ใช้แคชแบบกลุ่มเพื่อเพิ่มประสิทธิภาพ
           let replyAvatar;
           const cache = this.friendsCircle.batchCache;
           const currentUserName = cache.userName || this.getCurrentUserName();
 
           if (reply.author === currentUserName || reply.friendId === '483920') {
-            // 用户自己的回复，使用缓存的用户头像
+            // การตอบกลับของผู้ใช้เอง ใช้รูปประจำตัวผู้ใช้ที่แคชไว้
             replyAvatar = cache.userAvatar || this.getCurrentUserAvatar();
           } else {
-            // 其他好友的回复，使用缓存的好友头像
+            // การตอบกลับของเพื่อนคนอื่น ใช้รูปประจำตัวเพื่อนที่แคชไว้
             replyAvatar = cache.friendAvatars.get(reply.friendId) || this.getFriendAvatar(reply.friendId);
           }
 
@@ -1405,26 +1428,26 @@ if (typeof window.FriendsCircle === 'undefined') {
         .join('');
 
       return `
-        <div class="replies-section">
-          <div class="replies-list">
-            ${repliesHtml}
-          </div>
+      <div class="replies-section">
+        <div class="replies-list">
+          ${repliesHtml}
         </div>
-      `;
+      </div>
+    `;
     }
 
     /**
-     * 获取好友头像
-     * @param {string} friendId - 好友ID
-     * @returns {string} 头像URL
+     * รับรูปประจำตัวเพื่อน
+     * @param {string} friendId - ID เพื่อน
+     * @returns {string} URL รูปประจำตัว
      */
     getFriendAvatar(friendId) {
-      // 尝试从StyleConfigManager获取头像配置
+      // ลองรับการกำหนดค่ารูปประจำตัวจาก StyleConfigManager
       if (window.styleConfigManager) {
         try {
           const config = window.styleConfigManager.getConfig();
           if (config && config.messageReceivedAvatars) {
-            // 查找匹配的好友头像配置
+            // ค้นหาการกำหนดค่ารูปประจำตัวเพื่อนที่ตรงกัน
             const avatarConfig = config.messageReceivedAvatars.find(avatar => avatar.friendId === friendId);
 
             if (avatarConfig) {
@@ -1435,21 +1458,21 @@ if (typeof window.FriendsCircle === 'undefined') {
             }
           }
         } catch (error) {
-          console.warn('[Friends Circle] 获取头像配置失败:', error);
+          console.warn('[Friends Circle] รับการกำหนดค่ารูปประจำตัวล้มเหลว:', error); // Translated: 获取头像配置失败
         }
       }
 
-      // 备用方案：使用默认头像
+      // แผนสำรอง: ใช้รูปประจำตัวเริ่มต้น
       return this.getDefaultAvatar(friendId);
     }
 
     /**
-     * 获取默认头像
-     * @param {string} friendId - 好友ID
-     * @returns {string} 默认头像URL
+     * รับรูปประจำตัวเริ่มต้น
+     * @param {string} friendId - ID เพื่อน
+     * @returns {string} URL รูปประจำตัวเริ่มต้น
      */
     getDefaultAvatar(friendId) {
-      // 根据好友ID生成不同颜色的默认头像
+      // สร้างรูปประจำตัวเริ่มต้นที่มีสีต่างกันตาม ID เพื่อน
       const colors = [
         '#FF6B9D',
         '#4ECDC4',
@@ -1468,128 +1491,127 @@ if (typeof window.FriendsCircle === 'undefined') {
         : 0;
       const color = colors[colorIndex];
 
-      // 生成SVG头像
+      // สร้างรูปประจำตัว SVG
       const svg = `
-        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="20" cy="20" r="20" fill="${color}"/>
-          <circle cx="20" cy="16" r="6" fill="white" opacity="0.9"/>
-          <path d="M10 32C10 26.4771 14.4771 22 19 22H21C25.5229 22 30 26.4771 30 32V34H10V32Z" fill="white" opacity="0.9"/>
-        </svg>
-      `;
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="20" cy="20" r="20" fill="${color}"/>
+        <circle cx="20" cy="16" r="6" fill="white" opacity="0.9"/>
+        <path d="M10 32C10 26.4771 14.4771 22 19 22H21C25.5229 22 30 26.4771 30 32V34H10V32Z" fill="white" opacity="0.9"/>
+      </svg>
+    `;
 
       return 'data:image/svg+xml;base64,' + btoa(svg);
     }
 
     /**
-     * 获取当前用户信息
-     * @returns {string} 用户名
+     * รับข้อมูลผู้ใช้ปัจจุบัน
+     * @returns {string} ชื่อผู้ใช้
      */
     getCurrentUserName() {
       try {
-        // 方法1: 尝试从SillyTavern的persona系统获取当前选中的用户角色名称
+        // วิธีที่ 1: ลองรับชื่อตัวละครผู้ใช้ที่เลือกอยู่ในปัจจุบันจากระบบ persona ของ SillyTavern
         const selectedPersona = this.getSelectedPersonaName();
         if (selectedPersona && selectedPersona !== '{{user}}' && selectedPersona !== 'User') {
           return selectedPersona;
         }
 
-        // 方法2: 从SillyTavern的全局变量获取
+        // วิธีที่ 2: รับจากตัวแปรส่วนกลางของ SillyTavern
         if (typeof window.name1 !== 'undefined' && window.name1 && window.name1.trim() && window.name1 !== '{{user}}') {
           return window.name1.trim();
         }
 
-        // 方法3: 从power_user获取
+        // วิธีที่ 3: รับจาก power_user
         if (
           window.power_user &&
           window.power_user.name &&
           window.power_user.name.trim() &&
           window.power_user.name !== '{{user}}'
         ) {
-          console.log('[Friends Circle] 从power_user获取用户名:', window.power_user.name);
+          console.log('[Friends Circle] รับชื่อผู้ใช้จาก power_user:', window.power_user.name); // Translated: 从power_user获取用户名
           return window.power_user.name.trim();
         }
 
-        // 方法4: 从SillyTavern的getContext获取
+        // วิธีที่ 4: รับจาก SillyTavern getContext
         if (window.SillyTavern && typeof window.SillyTavern.getContext === 'function') {
           const context = window.SillyTavern.getContext();
           if (context && context.name1 && context.name1.trim() && context.name1 !== '{{user}}') {
-            console.log('[Friends Circle] 从SillyTavern context获取用户名:', context.name1);
+            console.log('[Friends Circle] รับชื่อผู้ใช้จาก SillyTavern context:', context.name1); // Translated: 从SillyTavern context获取用户名
             return context.name1.trim();
           }
         }
 
-        // 方法5: 从localStorage获取
+        // วิธีที่ 5: รับจาก localStorage
         const storedName = localStorage.getItem('name1');
         if (storedName && storedName.trim() && storedName !== '{{user}}') {
-          console.log('[Friends Circle] 从localStorage获取用户名:', storedName);
+          console.log('[Friends Circle] รับชื่อผู้ใช้จาก localStorage:', storedName); // Translated: 从localStorage获取用户名
           return storedName.trim();
         }
 
-        console.log('[Friends Circle] 所有方法都未能获取到有效用户名，使用默认值');
-        console.log('[Friends Circle] 调试信息:');
+        console.log('[Friends Circle] ทุกวิธีไม่สามารถรับชื่อผู้ใช้ที่ถูกต้องได้, ใช้ค่าเริ่มต้น'); // Translated: 所有方法都未能获取到有效用户名，使用默认值
+        console.log('[Friends Circle] ข้อมูลดีบัก:'); // Translated: 调试信息
         console.log('- window.name1:', window.name1);
         console.log('- window.power_user:', window.power_user);
         console.log('- localStorage name1:', localStorage.getItem('name1'));
       } catch (error) {
-        console.warn('[Friends Circle] 获取用户名失败:', error);
+        console.warn('[Friends Circle] รับชื่อผู้ใช้ล้มเหลว:', error); // Translated: 获取用户名失败
       }
 
-      return '我';
+      return 'ฉัน'; // 我
     }
-
     /**
-     * 获取当前选中的persona名称
-     * @returns {string|null} persona名称
+     * รับชื่อ persona ที่เลือกอยู่ในปัจจุบัน
+     * @returns {string|null} ชื่อ persona
      */
     getSelectedPersonaName() {
       try {
-        console.log('[Friends Circle] 尝试获取选中的persona名称...');
+        console.log('[Friends Circle] กำลังพยายามรับชื่อ persona ที่เลือก...'); // Translated: 尝试获取选中的persona名称...
 
-        // 方法1: 从DOM中查找选中的persona
+        // วิธีที่ 1: ค้นหา persona ที่เลือกจาก DOM
         const selectedPersonaElement = document.querySelector('#user_avatar_block .avatar-container.selected .ch_name');
         if (selectedPersonaElement) {
           const personaName = selectedPersonaElement.textContent?.trim();
           if (personaName && personaName !== '{{user}}' && personaName !== 'User') {
-            console.log('[Friends Circle] 从DOM获取选中persona名称:', personaName);
+            console.log('[Friends Circle] รับชื่อ persona ที่เลือกจาก DOM:', personaName); // Translated: 从DOM获取选中persona名称
             return personaName;
           }
         }
 
-        // 方法2: 从SillyTavern的全局变量获取当前persona
+        // วิธีที่ 2: รับ persona ปัจจุบันจากตัวแปรส่วนกลางของ SillyTavern
         if (window.user_avatar && window.user_avatar.name) {
           const personaName = window.user_avatar.name.trim();
           if (personaName && personaName !== '{{user}}' && personaName !== 'User') {
-            console.log('[Friends Circle] 从user_avatar获取persona名称:', personaName);
+            console.log('[Friends Circle] รับชื่อ persona จาก user_avatar:', personaName); // Translated: 从user_avatar获取persona名称
             return personaName;
           }
         }
 
-        // 方法3: 从power_user的persona设置获取
+        // วิธีที่ 3: รับจากการตั้งค่า persona ของ power_user
         if (window.power_user && window.power_user.persona_description) {
-          // 尝试从persona描述中提取名称（通常在开头）
+          // ลองแยกชื่อจากคำอธิบาย persona (มักจะอยู่ตรงจุดเริ่มต้น)
           const personaDesc = window.power_user.persona_description;
           const nameMatch = personaDesc.match(/^([^\n\r]+)/);
           if (nameMatch) {
             const personaName = nameMatch[1].trim();
             if (personaName && personaName !== '{{user}}' && personaName !== 'User') {
-              console.log('[Friends Circle] 从persona描述获取名称:', personaName);
+              console.log('[Friends Circle] รับชื่อจากคำอธิบาย persona:', personaName); // Translated: 从persona描述获取名称
               return personaName;
             }
           }
         }
 
-        // 方法4: 尝试从其他可能的全局变量获取
+        // วิธีที่ 4: ลองรับจากตัวแปรส่วนกลางอื่นๆ ที่เป็นไปได้
         const possibleVars = ['persona_name', 'current_persona', 'selected_persona'];
         for (const varName of possibleVars) {
           if (window[varName] && typeof window[varName] === 'string') {
             const personaName = window[varName].trim();
             if (personaName && personaName !== '{{user}}' && personaName !== 'User') {
-              console.log(`[Friends Circle] 从${varName}获取persona名称:`, personaName);
+              console.log(`[Friends Circle] รับชื่อ persona จาก ${varName}:`, personaName); // Translated: 从${varName}获取persona名称
               return personaName;
             }
           }
         }
 
-        // 方法5: 尝试其他DOM选择器
+        // วิธีที่ 5: ลองใช้ DOM Selector อื่นๆ
         const alternativeSelectors = [
           '.avatar-container.selected .character_name_block .ch_name',
           '.avatar-container.selected span.ch_name',
@@ -1602,47 +1624,50 @@ if (typeof window.FriendsCircle === 'undefined') {
           if (element) {
             const personaName = element.textContent?.trim();
             if (personaName && personaName !== '{{user}}' && personaName !== 'User') {
-              console.log(`[Friends Circle] 从DOM选择器 ${selector} 获取persona名称:`, personaName);
+              console.log(`[Friends Circle] รับชื่อ persona จาก DOM Selector ${selector}:`, personaName); // Translated: 从DOM选择器 ${selector} 获取persona名称
               return personaName;
             }
           }
         }
 
-        // 方法6: 尝试从SillyTavern的personas数组获取
+        // วิธีที่ 6: ลองรับจากอาร์เรย์ personas ของ SillyTavern
         if (window.personas && Array.isArray(window.personas)) {
           const selectedPersona = window.personas.find(p => p.selected || p.active);
           if (selectedPersona && selectedPersona.name) {
             const personaName = selectedPersona.name.trim();
             if (personaName && personaName !== '{{user}}' && personaName !== 'User') {
-              console.log('[Friends Circle] 从personas数组获取persona名称:', personaName);
+              console.log('[Friends Circle] รับชื่อ persona จากอาร์เรย์ personas:', personaName); // Translated: 从personas数组获取persona名称
               return personaName;
             }
           }
         }
 
-        console.log('[Friends Circle] 未能从任何来源获取到有效的persona名称');
-        console.log('[Friends Circle] 调试信息:');
-        console.log('- DOM选中元素:', document.querySelector('#user_avatar_block .avatar-container.selected'));
+        console.log('[Friends Circle] ไม่สามารถรับชื่อ persona ที่ถูกต้องจากแหล่งใดๆ ได้'); // Translated: 未能从任何来源获取到有效的persona名称
+        console.log('[Friends Circle] ข้อมูลดีบัก:'); // Translated: 调试信息
+        console.log(
+          '- องค์ประกอบ DOM ที่เลือก:',
+          document.querySelector('#user_avatar_block .avatar-container.selected'),
+        ); // Translated: DOM选中元素
         console.log('- window.user_avatar:', window.user_avatar);
         console.log('- window.personas:', window.personas);
         console.log('- window.power_user.persona_description:', window.power_user?.persona_description);
 
         return null;
       } catch (error) {
-        console.warn('[Friends Circle] 获取persona名称失败:', error);
+        console.warn('[Friends Circle] รับชื่อ persona ล้มเหลว:', error); // Translated: 获取persona名称失败
         return null;
       }
     }
 
     /**
-     * 调试函数：测试所有可能的用户名获取方法
-     * 在浏览器控制台中调用 window.friendsCircle.debugUserNameMethods() 来测试
+     * ฟังก์ชันดีบัก: ทดสอบวิธีการรับชื่อผู้ใช้ที่เป็นไปได้ทั้งหมด
+     * เรียกใช้ window.friendsCircle.debugUserNameMethods() ในคอนโซลเบราว์เซอร์เพื่อทดสอบ
      */
     debugUserNameMethods() {
-      console.log('=== 调试用户名获取方法 ===');
+      console.log('=== กำลังดีบักวิธีการรับชื่อผู้ใช้ ==='); // Translated: === 调试用户名获取方法 ===
 
-      // 测试DOM方法
-      console.log('\n1. DOM方法测试:');
+      // ทดสอบวิธีการ DOM
+      console.log('\n1. การทดสอบวิธีการ DOM:'); // Translated: DOM方法测试
       const domSelectors = [
         '#user_avatar_block .avatar-container.selected .ch_name',
         '.avatar-container.selected .character_name_block .ch_name',
@@ -1653,52 +1678,52 @@ if (typeof window.FriendsCircle === 'undefined') {
 
       domSelectors.forEach(selector => {
         const element = document.querySelector(selector);
-        console.log(`  ${selector}:`, element ? element.textContent?.trim() : 'null');
+        console.log(`  ${selector}:`, element ? element.textContent?.trim() : 'null');
       });
 
-      // 测试全局变量
-      console.log('\n2. 全局变量测试:');
+      // ทดสอบตัวแปรส่วนกลาง
+      console.log('\n2. การทดสอบตัวแปรส่วนกลาง:'); // Translated: 全局变量测试
       const globalVars = ['name1', 'user_name', 'persona_name', 'current_persona', 'selected_persona', 'user_persona'];
 
       globalVars.forEach(varName => {
-        console.log(`  window.${varName}:`, window[varName]);
+        console.log(`  window.${varName}:`, window[varName]);
       });
 
-      // 测试对象属性
-      console.log('\n3. 对象属性测试:');
-      console.log('  window.power_user:', window.power_user);
-      console.log('  window.user_avatar:', window.user_avatar);
-      console.log('  window.personas:', window.personas);
+      // ทดสอบคุณสมบัติของอ็อบเจกต์
+      console.log('\n3. การทดสอบคุณสมบัติของอ็อบเจกต์:'); // Translated: 对象属性测试
+      console.log('  window.power_user:', window.power_user);
+      console.log('  window.user_avatar:', window.user_avatar);
+      console.log('  window.personas:', window.personas);
 
-      // 测试SillyTavern context
-      console.log('\n4. SillyTavern Context测试:');
+      // ทดสอบ SillyTavern context
+      console.log('\n4. การทดสอบ SillyTavern Context:'); // Translated: SillyTavern Context测试
       if (window.SillyTavern && typeof window.SillyTavern.getContext === 'function') {
         const context = window.SillyTavern.getContext();
-        console.log('  SillyTavern context:', context);
-        console.log('  context.name1:', context?.name1);
+        console.log('  SillyTavern context:', context);
+        console.log('  context.name1:', context?.name1);
       } else {
-        console.log('  SillyTavern.getContext 不可用');
+        console.log('  SillyTavern.getContext ไม่พร้อมใช้งาน'); // Translated: SillyTavern.getContext 不可用
       }
 
-      // 测试localStorage
-      console.log('\n5. LocalStorage测试:');
-      console.log('  localStorage.name1:', localStorage.getItem('name1'));
-      console.log('  localStorage.persona_name:', localStorage.getItem('persona_name'));
+      // ทดสอบ localStorage
+      console.log('\n5. การทดสอบ LocalStorage:'); // Translated: LocalStorage测试
+      console.log('  localStorage.name1:', localStorage.getItem('name1'));
+      console.log('  localStorage.persona_name:', localStorage.getItem('persona_name'));
 
-      console.log('\n=== 调试完成 ===');
+      console.log('\n=== การดีบักเสร็จสมบูรณ์ ==='); // Translated: === 调试完成 ===
 
-      // 测试当前实际获取的用户名
-      console.log('\n6. 当前获取结果:');
-      console.log('  getCurrentUserName():', this.getCurrentUserName());
-      console.log('  getSelectedPersonaName():', this.getSelectedPersonaName());
+      // ทดสอบชื่อผู้ใช้ที่ได้รับจริงในปัจจุบัน
+      console.log('\n6. ผลลัพธ์การรับในปัจจุบัน:'); // Translated: 当前获取结果
+      console.log('  getCurrentUserName():', this.getCurrentUserName());
+      console.log('  getSelectedPersonaName():', this.getSelectedPersonaName());
     }
 
     /**
-     * 获取当前用户头像
-     * @returns {string} 用户头像URL
+     * รับรูปประจำตัวผู้ใช้ปัจจุบัน
+     * @returns {string} URL รูปประจำตัวผู้ใช้
      */
     getCurrentUserAvatar() {
-      // 尝试从StyleConfigManager获取用户头像配置
+      // ลองรับการกำหนดค่ารูปประจำตัวผู้ใช้จาก StyleConfigManager
       if (window.styleConfigManager) {
         try {
           const config = window.styleConfigManager.getConfig();
@@ -1709,75 +1734,75 @@ if (typeof window.FriendsCircle === 'undefined') {
             }
           }
         } catch (error) {
-          console.warn('[Friends Circle] 获取用户头像配置失败:', error);
+          console.warn('[Friends Circle] รับการกำหนดค่ารูปประจำตัวผู้ใช้ล้มเหลว:', error); // Translated: 获取用户头像配置失败
         }
       }
 
-      // 备用方案：使用默认用户头像
+      // แผนสำรอง: ใช้รูปประจำตัวผู้ใช้เริ่มต้น
       const svg = `
-        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="20" cy="20" r="20" fill="#74B9FF"/>
-          <circle cx="20" cy="16" r="6" fill="white" opacity="0.9"/>
-          <path d="M10 32C10 26.4771 14.4771 22 19 22H21C25.5229 22 30 26.4771 30 32V34H10V32Z" fill="white" opacity="0.9"/>
-        </svg>
-      `;
+      <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="20" cy="20" r="20" fill="#74B9FF"/>
+        <circle cx="20" cy="16" r="6" fill="white" opacity="0.9"/>
+        <path d="M10 32C10 26.4771 14.4771 22 19 22H21C25.5229 22 30 26.4771 30 32V34H10V32Z" fill="white" opacity="0.9"/>
+      </svg>
+    `;
 
       return 'data:image/svg+xml;base64,' + btoa(svg);
     }
 
     /**
-     * 格式化时间（基于消息位置显示相对时间）
-     * @param {number} messageIndex - 消息位置索引
-     * @param {number} totalMessages - 总消息数
-     * @returns {string} 格式化后的时间
+     * จัดรูปแบบเวลา (แสดงเวลาสัมพัทธ์ตามตำแหน่งข้อความ)
+     * @param {number} messageIndex - ดัชนีตำแหน่งข้อความ
+     * @param {number} totalMessages - จำนวนข้อความทั้งหมด
+     * @returns {string} เวลาที่จัดรูปแบบแล้ว
      */
     formatTime(messageIndex, totalMessages = null) {
-      // 如果传入的是旧的时间戳格式，尝试兼容处理
+      // หากส่งรูปแบบ timestamp เก่ามา ลองจัดการความเข้ากันได้
       if (messageIndex > 1000000000000) {
-        // 这是一个时间戳，使用原来的逻辑
+        // นี่คือ timestamp ใช้ตรรกะเดิม
         const date = new Date(messageIndex);
         const now = new Date();
         const diffMs = now - date;
         const diffMins = Math.floor(diffMs / 60000);
 
         if (diffMins < 1) {
-          return '刚刚';
+          return 'เมื่อกี้'; // Translated: 刚刚
         } else if (diffMins < 60) {
-          return `${diffMins}分钟前`;
+          return `${diffMins} นาทีที่แล้ว`; // Translated: 分钟前
         } else {
-          return '较早';
+          return 'ก่อนหน้านี้'; // Translated: 较早
         }
       }
 
-      // 基于消息位置的相对时间显示
+      // การแสดงเวลาสัมพัทธ์ตามตำแหน่งข้อความ
       if (totalMessages === null) {
-        // 尝试获取当前总消息数
+        // ลองรับจำนวนข้อความทั้งหมดปัจจุบัน
         totalMessages = this.friendsCircle?.manager?.lastProcessedMessageIndex || 1000;
       }
 
       const positionFromEnd = totalMessages - messageIndex;
 
       if (positionFromEnd <= 1) {
-        return '刚刚';
+        return 'เมื่อกี้'; // Translated: 刚刚
       } else if (positionFromEnd <= 5) {
-        return '几分钟前';
+        return 'เมื่อไม่กี่นาทีที่แล้ว'; // Translated: 几分钟前
       } else if (positionFromEnd <= 20) {
-        return '半小时前';
+        return 'ครึ่งชั่วโมงที่แล้ว'; // Translated: 半小时前
       } else if (positionFromEnd <= 50) {
-        return '1小时前';
+        return '1 ชั่วโมงที่แล้ว'; // Translated: 1小时前
       } else if (positionFromEnd <= 100) {
-        return '几小时前';
+        return 'หลายชั่วโมงที่แล้ว'; // Translated: 几小时前
       } else if (positionFromEnd <= 200) {
-        return '今天';
+        return 'วันนี้'; // Translated: 今天
       } else if (positionFromEnd <= 500) {
-        return '昨天';
+        return 'เมื่อวานนี้'; // Translated: 昨天
       } else {
-        return '较早';
+        return 'ก่อนหน้านี้'; // Translated: 较早
       }
     }
 
     /**
-     * 显示发布选择弹窗
+     * แสดงป๊อปอัปเลือกเผยแพร่
      */
     showPublishModal() {
       if (this.publishModal) {
@@ -1787,92 +1812,94 @@ if (typeof window.FriendsCircle === 'undefined') {
       this.publishModal = document.createElement('div');
       this.publishModal.className = 'friends-circle-publish-modal';
       this.publishModal.innerHTML = `
-        <div class="modal-overlay"></div>
-        <div class="modal-content">
-          <div class="modal-header">
-            <h3>发布朋友圈</h3>
-            <button class="modal-close">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-          <div class="publish-options">
-            <button class="publish-option-btn text-btn">
-              <i class="fas fa-font"></i>
-              <span>发文字</span>
-            </button>
-            <button class="publish-option-btn image-btn">
-              <i class="fas fa-image"></i>
-              <span>发图片</span>
-            </button>
-          </div>
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>เผยแพร่วงเพื่อน</h3>
+          <button class="modal-close">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
-      `;
+        <div class="publish-options">
+          <button class="publish-option-btn text-btn">
+            <i class="fas fa-font"></i>
+            <span>เผยแพร่ข้อความ</span>
+          </button>
+          <button class="publish-option-btn image-btn">
+            <i class="fas fa-image"></i>
+            <span>เผยแพร่รูปภาพ</span>
+          </button>
+        </div>
+      </div>
+    `; // Translated: 发布朋友圈, 发文字, 发图片
 
-      // 查找元素
+      // ค้นหาองค์ประกอบ
       const overlay = this.publishModal.querySelector('.modal-overlay');
       const closeBtn = this.publishModal.querySelector('.modal-close');
       const textBtn = this.publishModal.querySelector('.text-btn');
       const imageBtn = this.publishModal.querySelector('.image-btn');
 
-      console.log('[Friends Circle Debug] 元素查找结果:', {
+      console.log('[Friends Circle Debug] ผลลัพธ์การค้นหาองค์ประกอบ:', {
+        // Translated: 元素查找结果
         overlay: !!overlay,
         closeBtn: !!closeBtn,
         textBtn: !!textBtn,
         imageBtn: !!imageBtn,
       });
 
-      // 绑定事件
+      // ผูกเหตุการณ์
       if (overlay) {
         overlay.addEventListener('click', () => {
-          console.log('[Friends Circle Debug] 点击了遮罩层');
+          console.log('[Friends Circle Debug] คลิกที่เลเยอร์ซ้อนทับ'); // Translated: 点击了遮罩层
           this.hidePublishModal();
         });
       }
 
       if (closeBtn) {
         closeBtn.addEventListener('click', () => {
-          console.log('[Friends Circle Debug] 点击了关闭按钮');
+          console.log('[Friends Circle Debug] คลิกที่ปุ่มปิด'); // Translated: 点击了关闭按钮
           this.hidePublishModal();
         });
       }
 
       if (textBtn) {
         textBtn.addEventListener('click', () => {
-          console.log('[Friends Circle Debug] 点击了发文字按钮');
+          console.log('[Friends Circle Debug] คลิกที่ปุ่มเผยแพร่ข้อความ'); // Translated: 点击了发文字按钮
           this.showTextPublishModal();
         });
       }
 
       if (imageBtn) {
         imageBtn.addEventListener('click', () => {
-          console.log('[Friends Circle Debug] 点击了发图片按钮');
+          console.log('[Friends Circle Debug] คลิกที่ปุ่มเผยแพร่รูปภาพ'); // Translated: 点击了发图片按钮
           this.showImagePublishModal();
         });
       }
 
-      // 使用手机容器定位
+      // ใช้คอนเทนเนอร์โทรศัพท์มือถือในการวางตำแหน่ง
       const mobileContainer = document.querySelector('.mobile-phone-container');
-      console.log('[Friends Circle Debug] 手机容器查找结果:', !!mobileContainer);
+      console.log('[Friends Circle Debug] ผลลัพธ์การค้นหาคอนเทนเนอร์โทรศัพท์มือถือ:', !!mobileContainer); // Translated: 手机容器查找结果
 
       if (mobileContainer) {
         mobileContainer.appendChild(this.publishModal);
-        console.log('[Friends Circle Debug] 弹窗已添加到手机容器');
+        console.log('[Friends Circle Debug] ป๊อปอัปถูกเพิ่มไปยังคอนเทนเนอร์โทรศัพท์มือถือแล้ว'); // Translated: 弹窗已添加到手机容器
       } else {
         document.body.appendChild(this.publishModal);
-        console.log('[Friends Circle Debug] 弹窗已添加到body');
+        console.log('[Friends Circle Debug] ป๊อปอัปถูกเพิ่มไปยัง body แล้ว'); // Translated: 弹窗已添加到body
       }
 
-      // 检查弹窗是否可见
+      // ตรวจสอบว่าป๊อปอัปมองเห็นได้หรือไม่
       setTimeout(() => {
         if (!this.publishModal) {
-          console.log('[Friends Circle Debug] 弹窗已被移除，跳过调试');
+          console.log('[Friends Circle Debug] ป๊อปอัปถูกลบออกแล้ว, ข้ามการดีบัก'); // Translated: 弹窗已被移除，跳过调试
           return;
         }
 
         const modalRect = this.publishModal.getBoundingClientRect();
         const modalStyle = window.getComputedStyle(this.publishModal);
-        console.log('[Friends Circle Debug] 弹窗位置和大小:', modalRect);
-        console.log('[Friends Circle Debug] 弹窗关键样式:', {
+        console.log('[Friends Circle Debug] ตำแหน่งและขนาดป๊อปอัป:', modalRect); // Translated: 弹窗位置和大小
+        console.log('[Friends Circle Debug] สไตล์สำคัญของป๊อปอัป:', {
+          // Translated: 弹窗关键样式
           display: modalStyle.display,
           position: modalStyle.position,
           zIndex: modalStyle.zIndex,
@@ -1881,12 +1908,13 @@ if (typeof window.FriendsCircle === 'undefined') {
           pointerEvents: modalStyle.pointerEvents,
         });
 
-        // 检查弹窗内部元素
+        // ตรวจสอบองค์ประกอบภายในป๊อปอัป
         const overlay = this.publishModal.querySelector('.modal-overlay');
         const content = this.publishModal.querySelector('.modal-content');
         const buttons = this.publishModal.querySelectorAll('button');
 
-        console.log('[Friends Circle Debug] 弹窗内部元素:', {
+        console.log('[Friends Circle Debug] องค์ประกอบภายในป๊อปอัป:', {
+          // Translated: 弹窗内部元素
           overlay: !!overlay,
           overlayRect: overlay?.getBoundingClientRect(),
           content: !!content,
@@ -1894,9 +1922,10 @@ if (typeof window.FriendsCircle === 'undefined') {
           buttonsCount: buttons.length,
         });
 
-        // 测试点击事件
+        // ทดสอบเหตุการณ์คลิก
         buttons.forEach((btn, index) => {
-          console.log(`[Friends Circle Debug] 按钮 ${index}:`, {
+          console.log(`[Friends Circle Debug] ปุ่ม ${index}:`, {
+            // Translated: 按钮
             className: btn.className,
             rect: btn.getBoundingClientRect(),
             style: {
@@ -1907,11 +1936,11 @@ if (typeof window.FriendsCircle === 'undefined') {
         });
       }, 100);
 
-      console.log('[Friends Circle Debug] 发布弹窗显示完成');
+      console.log('[Friends Circle Debug] แสดงป๊อปอัปเผยแพร่เสร็จสมบูรณ์'); // Translated: 发布弹窗显示完成
     }
 
     /**
-     * 隐藏发布弹窗
+     * ซ่อนป๊อปอัปเผยแพร่
      */
     hidePublishModal() {
       if (this.publishModal) {
@@ -1921,7 +1950,7 @@ if (typeof window.FriendsCircle === 'undefined') {
     }
 
     /**
-     * 显示文字发布弹窗
+     * แสดงป๊อปอัปเผยแพร่ข้อความ
      */
     showTextPublishModal() {
       this.hidePublishModal();
@@ -1929,26 +1958,26 @@ if (typeof window.FriendsCircle === 'undefined') {
       const modal = document.createElement('div');
       modal.className = 'friends-circle-text-publish-modal';
       modal.innerHTML = `
-        <div class="modal-overlay"></div>
-        <div class="modal-content">
-          <div class="modal-header">
-            <h3>发布文字朋友圈</h3>
-            <button class="modal-close">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-          <div class="modal-body">
-            <textarea class="text-input" placeholder="分享新鲜事..." maxlength="500"></textarea>
-            <div class="char-count">0/500</div>
-          </div>
-          <div class="modal-footer">
-            <button class="cancel-btn">取消</button>
-            <button class="send-btn">发布</button>
-          </div>
+      <div class="modal-overlay"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>เผยแพร่วงเพื่อนแบบข้อความ</h3>
+          <button class="modal-close">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
-      `;
+        <div class="modal-body">
+          <textarea class="text-input" placeholder="แชร์เรื่องราวใหม่ๆ..." maxlength="500"></textarea>
+          <div class="char-count">0/500</div>
+        </div>
+        <div class="modal-footer">
+          <button class="cancel-btn">ยกเลิก</button>
+          <button class="send-btn">เผยแพร่</button>
+        </div>
+      </div>
+    `; // Translated: 发布文字朋友圈, 分享新鲜事..., 取消, 发布
 
-      // 绑定事件
+      // ผูกเหตุการณ์
       const overlay = modal.querySelector('.modal-overlay');
       const closeBtn = modal.querySelector('.modal-close');
       const cancelBtn = modal.querySelector('.cancel-btn');
@@ -1960,8 +1989,9 @@ if (typeof window.FriendsCircle === 'undefined') {
       closeBtn.addEventListener('click', closeModal);
       cancelBtn.addEventListener('click', closeModal);
       sendBtn.addEventListener('click', () => {
-        console.log('[Friends Circle] 文字发布按钮被点击');
-        console.log('[Friends Circle] this上下文检查:', {
+        console.log('[Friends Circle] คลิกที่ปุ่มเผยแพร่ข้อความ'); // Translated: 文字发布按钮被点击
+        console.log('[Friends Circle] ตรวจสอบ this context:', {
+          // Translated: this上下文检查
           thisExists: !!this,
           thisConstructorName: this?.constructor?.name,
           hasHandleTextPublish: typeof this?.handleTextPublish === 'function',
@@ -1970,25 +2000,25 @@ if (typeof window.FriendsCircle === 'undefined') {
         if (this && typeof this.handleTextPublish === 'function') {
           this.handleTextPublish(modal);
         } else {
-          console.error('[Friends Circle] handleTextPublish方法不存在或this上下文丢失');
-          // 备用方案：直接处理文字发布
+          console.error('[Friends Circle] เมธอด handleTextPublish ไม่มีอยู่หรือ this context หายไป'); // Translated: handleTextPublish方法不存在或this上下文丢失
+          // แผนสำรอง: จัดการการเผยแพร่ข้อความโดยตรง
           const textInput = modal.querySelector('.text-input');
           if (textInput) {
             const content = textInput.value.trim();
             if (content) {
-              // 直接调用全局朋友圈实例的方法
+              // เรียกใช้เมธอดของอินสแตนซ์วงเพื่อนส่วนกลางโดยตรง
               if (window.friendsCircle && typeof window.friendsCircle.sendTextCircle === 'function') {
                 window.friendsCircle.sendTextCircle(content);
                 modal.remove();
               } else {
-                console.error('[Friends Circle] 无法找到全局朋友圈实例');
+                console.error('[Friends Circle] ไม่พบอินสแตนซ์วงเพื่อนส่วนกลาง'); // Translated: 无法找到全局朋友圈实例
               }
             }
           }
         }
       });
 
-      // 使用手机容器定位
+      // ใช้คอนเทนเนอร์โทรศัพท์มือถือในการวางตำแหน่ง
       const mobileContainer = document.querySelector('.mobile-phone-container');
       if (mobileContainer) {
         mobileContainer.appendChild(modal);
@@ -1996,7 +2026,7 @@ if (typeof window.FriendsCircle === 'undefined') {
         document.body.appendChild(modal);
       }
 
-      // 绑定字数统计
+      // ผูกการนับจำนวนตัวอักษร
       const textInput = modal.querySelector('.text-input');
       const charCount = modal.querySelector('.char-count');
       if (textInput && charCount) {
@@ -2012,11 +2042,11 @@ if (typeof window.FriendsCircle === 'undefined') {
         textInput.focus();
       }
 
-      console.log('[Friends Circle] 文字发布弹窗已显示，事件已绑定');
+      console.log('[Friends Circle] แสดงป๊อปอัปเผยแพร่ข้อความแล้ว, ผูกเหตุการณ์แล้ว'); // Translated: 文字发布弹窗已显示，事件已绑定
     }
 
     /**
-     * 显示图片发布弹窗
+     * แสดงป๊อปอัปเผยแพร่รูปภาพ
      */
     showImagePublishModal() {
       this.hidePublishModal();
@@ -2024,63 +2054,63 @@ if (typeof window.FriendsCircle === 'undefined') {
       const modal = document.createElement('div');
       modal.className = 'friends-circle-image-publish-modal';
       modal.innerHTML = `
-        <div class="modal-overlay" onclick="this.parentElement.remove()"></div>
-        <div class="modal-content">
-          <div class="modal-header">
-            <h3>发布图片朋友圈</h3>
-            <button class="modal-close" onclick="this.parentElement.parentElement.remove()">
-              <i class="fas fa-times"></i>
-            </button>
+      <div class="modal-overlay" onclick="this.parentElement.remove()"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>เผยแพร่วงเพื่อนแบบรูปภาพ</h3>
+          <button class="modal-close" onclick="this.parentElement.parentElement.remove()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>คำอธิบายรูปภาพ</label>
+            <textarea class="image-desc-input" placeholder="อธิบายเนื้อหารูปภาพ..." maxlength="200"></textarea>
+            <div class="char-count">0/200</div>
           </div>
-          <div class="modal-body">
-            <div class="form-group">
-              <label>图片描述</label>
-              <textarea class="image-desc-input" placeholder="描述图片内容..." maxlength="200"></textarea>
-              <div class="char-count">0/200</div>
-            </div>
-            <div class="form-group">
-              <label>配文（必填！！！）</label>
-              <textarea class="text-input" placeholder="说点什么..." maxlength="300"></textarea>
-              <div class="char-count">0/300</div>
-            </div>
-            <div class="form-group">
-              <label>上传图片</label>
-              <div class="attachment-upload-area">
-                <div class="file-drop-zone" id="friends-circle-drop-zone">
-                  <div class="drop-zone-content">
-                    <i class="fas fa-image"></i>
-                    <div class="upload-text">点击选择图片或拖拽图片到此处</div>
-                    <div class="upload-hint">支持jpg、png、gif、webp等格式，最大10MB</div>
-                  </div>
-                  <input type="file" class="hidden-file-input" accept="image/*" id="friends-circle-file-input">
+          <div class="form-group">
+            <label>คำบรรยายภาพ (จำเป็น!!!)</label>
+            <textarea class="text-input" placeholder="พูดอะไรสักอย่าง..." maxlength="300"></textarea>
+            <div class="char-count">0/300</div>
+          </div>
+          <div class="form-group">
+            <label>อัปโหลดรูปภาพ</label>
+            <div class="attachment-upload-area">
+              <div class="file-drop-zone" id="friends-circle-drop-zone">
+                <div class="drop-zone-content">
+                  <i class="fas fa-image"></i>
+                  <div class="upload-text">คลิกเพื่อเลือกรูปภาพหรือลากรูปภาพมาที่นี่</div>
+                  <div class="upload-hint">รองรับรูปแบบ jpg, png, gif, webp และอื่นๆ, สูงสุด 10MB</div>
                 </div>
-                <div class="image-preview-area" id="friends-circle-preview-area" style="display: none;">
-                  <div class="preview-image-container">
-                    <img class="preview-image" alt="预览图片" id="friends-circle-preview-image">
-                    <button class="remove-image-btn" id="friends-circle-remove-image">×</button>
-                    <div class="image-info">
-                      <span class="image-name" id="friends-circle-image-name"></span>
-                      <span class="image-size" id="friends-circle-image-size"></span>
-                    </div>
+                <input type="file" class="hidden-file-input" accept="image/*" id="friends-circle-file-input">
+              </div>
+              <div class="image-preview-area" id="friends-circle-preview-area" style="display: none;">
+                <div class="preview-image-container">
+                  <img class="preview-image" alt="รูปภาพตัวอย่าง" id="friends-circle-preview-image">
+                  <button class="remove-image-btn" id="friends-circle-remove-image">×</button>
+                  <div class="image-info">
+                    <span class="image-name" id="friends-circle-image-name"></span>
+                    <span class="image-size" id="friends-circle-image-size"></span>
                   </div>
                 </div>
-                <div class="upload-status" id="friends-circle-upload-status" style="display: none;">
-                  <div class="upload-progress">
-                    <div class="progress-bar" id="friends-circle-progress-bar"></div>
-                  </div>
-                  <div class="upload-text" id="friends-circle-upload-text">上传中...</div>
+              </div>
+              <div class="upload-status" id="friends-circle-upload-status" style="display: none;">
+                <div class="upload-progress">
+                  <div class="progress-bar" id="friends-circle-progress-bar"></div>
                 </div>
+                <div class="upload-text" id="friends-circle-upload-text">กำลังอัปโหลด...</div>
               </div>
             </div>
           </div>
-          <div class="modal-footer">
-            <button class="cancel-btn" onclick="this.parentElement.parentElement.parentElement.remove()">取消</button>
-            <button class="send-btn" id="friends-circle-publish-btn">发布</button>
-          </div>
         </div>
-      `;
+        <div class="modal-footer">
+          <button class="cancel-btn" onclick="this.parentElement.parentElement.parentElement.remove()">ยกเลิก</button>
+          <button class="send-btn" id="friends-circle-publish-btn">เผยแพร่</button>
+        </div>
+      </div>
+    `; // Translated: 发布图片朋友圈, 图片描述, 描述图片内容..., 配文（必填！！！）, 说点什么..., 上传图片, 点击选择图片或拖拽图片到此处, 支持jpg、png、gif、webp等格式，最大10MB, 预览图片, 取消, 发布, 上传中...
 
-      // 使用手机容器定位
+      // ใช้คอนเทนเนอร์โทรศัพท์มือถือในการวางตำแหน่ง
       const mobileContainer = document.querySelector('.mobile-phone-container');
       if (mobileContainer) {
         mobileContainer.appendChild(modal);
@@ -2088,9 +2118,8 @@ if (typeof window.FriendsCircle === 'undefined') {
         document.body.appendChild(modal);
       }
 
-      // 绑定字数统计
+      // ผูกการนับจำนวนตัวอักษรสำหรับคำอธิบายรูปภาพ
       const imageDescInput = modal.querySelector('.image-desc-input');
-      const textInput = modal.querySelector('.text-input');
       const charCounts = modal.querySelectorAll('.char-count');
 
       if (imageDescInput && charCounts[0]) {
@@ -2105,6 +2134,8 @@ if (typeof window.FriendsCircle === 'undefined') {
         });
       }
 
+      // ผูกการนับจำนวนตัวอักษรสำหรับคำบรรยายภาพ
+      const textInput = modal.querySelector('.text-input');
       if (textInput && charCounts[1]) {
         textInput.addEventListener('input', () => {
           const count = textInput.value.length;
@@ -2117,7 +2148,7 @@ if (typeof window.FriendsCircle === 'undefined') {
         });
       }
 
-      // 绑定图片上传功能
+      // ผูกการอัปโหลดรูปภาพ
       this.bindImageUploadEvents(modal);
 
       if (imageDescInput) {
@@ -2126,7 +2157,7 @@ if (typeof window.FriendsCircle === 'undefined') {
     }
 
     /**
-     * 绑定图片上传相关事件
+     * ผูกเหตุการณ์ที่เกี่ยวข้องกับการอัปโหลดรูปภาพ
      */
     bindImageUploadEvents(modal) {
       const dropZone = modal.querySelector('#friends-circle-drop-zone');
@@ -2140,16 +2171,16 @@ if (typeof window.FriendsCircle === 'undefined') {
       const publishBtn = modal.querySelector('#friends-circle-publish-btn');
 
       if (!dropZone || !fileInput) {
-        console.warn('[Friends Circle] 上传区域元素未找到');
+        console.warn('[Friends Circle] ไม่พบองค์ประกอบพื้นที่อัปโหลด'); // Translated: 上传区域元素未找到
         return;
       }
 
-      // 点击上传区域触发文件选择
+      // คลิกพื้นที่อัปโหลดเพื่อเรียกการเลือกไฟล์
       dropZone.addEventListener('click', () => {
         fileInput.click();
       });
 
-      // 文件选择事件
+      // เหตุการณ์การเลือกไฟล์
       fileInput.addEventListener('change', e => {
         const file = e.target.files[0];
         if (file) {
@@ -2165,7 +2196,7 @@ if (typeof window.FriendsCircle === 'undefined') {
         }
       });
 
-      // 拖拽事件
+      // เหตุการณ์ลากและวาง
       dropZone.addEventListener('dragover', e => {
         e.preventDefault();
         dropZone.classList.add('drag-over');
@@ -2195,7 +2226,7 @@ if (typeof window.FriendsCircle === 'undefined') {
         }
       });
 
-      // 移除图片事件
+      // เหตุการณ์ลบรูปภาพ
       if (removeBtn) {
         removeBtn.addEventListener('click', () => {
           this.clearImageSelection({
@@ -2208,64 +2239,69 @@ if (typeof window.FriendsCircle === 'undefined') {
         });
       }
 
-      // 绑定发布按钮事件 - 使用全局引用确保正确调用
+      // ผูกเหตุการณ์ปุ่มเผยแพร่ - ใช้การอ้างอิงส่วนกลางเพื่อให้แน่ใจว่าเรียกใช้ถูกต้อง
       if (publishBtn) {
         publishBtn.addEventListener('click', () => {
-          console.log('[Friends Circle] 发布按钮被点击');
-          console.log('[Friends Circle] 检查全局朋友圈实例:', !!window.friendsCircle);
-          console.log('[Friends Circle] 检查handleImagePublish方法:', typeof window.friendsCircle?.handleImagePublish);
+          console.log('[Friends Circle] คลิกที่ปุ่มเผยแพร่'); // Translated: 发布按钮被点击
+          console.log('[Friends Circle] ตรวจสอบอินสแตนซ์วงเพื่อนส่วนกลาง:', !!window.friendsCircle); // Translated: 检查全局朋友圈实例
+          console.log(
+            '[Friends Circle] ตรวจสอบเมธอด handleImagePublish:',
+            typeof window.friendsCircle?.handleImagePublish,
+          ); // Translated: 检查handleImagePublish方法
 
           if (window.friendsCircle && typeof window.friendsCircle.handleImagePublish === 'function') {
             window.friendsCircle.handleImagePublish();
           } else {
-            console.error('[Friends Circle] 无法调用handleImagePublish方法');
+            console.error('[Friends Circle] ไม่สามารถเรียกใช้เมธอด handleImagePublish ได้'); // Translated: 无法调用handleImagePublish方法
           }
         });
-        console.log('[Friends Circle] 发布按钮事件已绑定');
+        console.log('[Friends Circle] ผูกเหตุการณ์ปุ่มเผยแพร่แล้ว'); // Translated: 发布按钮事件已绑定
       } else {
-        console.warn('[Friends Circle] 发布按钮未找到，无法绑定事件');
+        console.warn('[Friends Circle] ไม่พบปุ่มเผยแพร่, ไม่สามารถผูกเหตุการณ์ได้'); // Translated: 发布按钮未找到，无法绑定事件
       }
     }
 
     /**
-     * 处理图片文件选择
+     * จัดการการเลือกไฟล์รูปภาพ
      */
     async handleImageFileSelection(file, elements) {
-      console.log('[Friends Circle] 处理图片文件选择:', {
+      console.log('[Friends Circle] กำลังจัดการการเลือกไฟล์รูปภาพ:', {
+        // Translated: 处理图片文件选择
         fileName: file.name,
         fileSize: file.size,
         fileType: file.type,
         elementsProvided: !!elements,
       });
 
-      // 确保AttachmentSender可用
+      // ตรวจสอบให้แน่ใจว่า AttachmentSender พร้อมใช้งาน
       if (!window.attachmentSender) {
-        console.error('[Friends Circle] AttachmentSender未找到');
-        this.showToast('图片上传功能未就绪', 'error');
+        console.error('[Friends Circle] ไม่พบ AttachmentSender'); // Translated: AttachmentSender未找到
+        this.showToast('ฟังก์ชันอัปโหลดรูปภาพไม่พร้อมใช้งาน', 'error'); // Translated: 图片上传功能未就绪
         return;
       }
 
-      // 验证文件
-      console.log('[Friends Circle] 开始验证文件...');
+      // ตรวจสอบไฟล์
+      console.log('[Friends Circle] เริ่มตรวจสอบไฟล์...'); // Translated: 开始验证文件...
       const validation = window.attachmentSender.validateFile(file);
-      console.log('[Friends Circle] 文件验证结果:', validation);
+      console.log('[Friends Circle] ผลการตรวจสอบไฟล์:', validation); // Translated: 文件验证结果
 
       if (!validation.isValid) {
-        console.warn('[Friends Circle] 文件验证失败:', validation.errors);
+        console.warn('[Friends Circle] ตรวจสอบไฟล์ล้มเหลว:', validation.errors); // Translated: 文件验证失败
         this.showToast(validation.errors.join(', '), 'error');
         return;
       }
 
-      console.log('[Friends Circle] 文件验证成功，开始显示预览...');
+      console.log('[Friends Circle] ตรวจสอบไฟล์สำเร็จ, เริ่มแสดงตัวอย่าง...'); // Translated: 文件验证成功，开始显示预览...
 
-      // 显示预览
+      // แสดงตัวอย่าง
       this.showImagePreview(file, elements);
 
-      // 存储文件信息供后续上传使用
+      // จัดเก็บข้อมูลไฟล์เพื่อใช้อัปโหลดในภายหลัง
       this.selectedImageFile = file;
       this.selectedImageElements = elements;
 
-      console.log('[Friends Circle] 文件信息已存储:', {
+      console.log('[Friends Circle] ข้อมูลไฟล์ถูกจัดเก็บแล้ว:', {
+        // Translated: 文件信息已存储
         selectedImageFile: !!this.selectedImageFile,
         selectedImageFileName: this.selectedImageFile ? this.selectedImageFile.name : 'none',
         thisInstanceId: this.constructor.name,
@@ -2273,34 +2309,34 @@ if (typeof window.FriendsCircle === 'undefined') {
         globalInstanceSame: window.friendsCircle === this,
       });
 
-      // 同时存储到全局实例中，确保数据不丢失
+      // จัดเก็บไปยังอินสแตนซ์ส่วนกลางด้วยเพื่อให้แน่ใจว่าข้อมูลไม่สูญหาย
       if (window.friendsCircle && window.friendsCircle !== this) {
-        console.warn('[Friends Circle] 检测到不同的实例，同步文件信息到全局实例');
+        console.warn('[Friends Circle] ตรวจพบอินสแตนซ์ที่แตกต่างกัน, ซิงค์ข้อมูลไฟล์ไปยังอินสแตนซ์ส่วนกลาง'); // Translated: 检测到不同的实例，同步文件信息到全局实例
         window.friendsCircle.selectedImageFile = file;
         window.friendsCircle.selectedImageElements = elements;
       }
 
-      // 更新发布按钮状态
+      // อัปเดตสถานะปุ่มเผยแพร่
       if (elements.publishBtn) {
         elements.publishBtn.disabled = false;
-        elements.publishBtn.textContent = '发布';
-        console.log('[Friends Circle] 发布按钮已启用');
+        elements.publishBtn.textContent = 'เผยแพร่'; // Translated: 发布
+        console.log('[Friends Circle] ปุ่มเผยแพร่ถูกเปิดใช้งานแล้ว'); // Translated: 发布按钮已启用
       } else {
-        console.warn('[Friends Circle] 发布按钮未找到');
+        console.warn('[Friends Circle] ไม่พบปุ่มเผยแพร่'); // Translated: 发布按钮未找到
       }
 
-      console.log('[Friends Circle] 图片文件选择处理完成');
+      console.log('[Friends Circle] จัดการการเลือกไฟล์รูปภาพเสร็จสมบูรณ์'); // Translated: 图片文件选择处理完成
     }
-
     /**
-     * 显示图片预览
+     * แสดงภาพตัวอย่าง
      */
     showImagePreview(file, elements) {
-      console.log('[Friends Circle] 开始显示图片预览:', file.name);
+      console.log('[Friends Circle] เริ่มแสดงภาพตัวอย่าง:', file.name); // Translated: 开始显示图片预览
 
       const { previewArea, previewImage, imageName, imageSize, dropZone } = elements;
 
-      console.log('[Friends Circle] 预览元素检查:', {
+      console.log('[Friends Circle] ตรวจสอบองค์ประกอบตัวอย่าง:', {
+        // Translated: 预览元素检查
         previewArea: !!previewArea,
         previewImage: !!previewImage,
         imageName: !!imageName,
@@ -2309,70 +2345,70 @@ if (typeof window.FriendsCircle === 'undefined') {
       });
 
       if (!previewArea || !previewImage) {
-        console.warn('[Friends Circle] 预览区域或预览图片元素未找到');
+        console.warn('[Friends Circle] ไม่พบพื้นที่ตัวอย่างหรือองค์ประกอบภาพตัวอย่าง'); // Translated: 预览区域或预览图片元素未找到
         return;
       }
 
-      // 创建预览URL
+      // สร้าง URL ตัวอย่าง
       const previewUrl = URL.createObjectURL(file);
-      console.log('[Friends Circle] 创建预览URL:', previewUrl);
+      console.log('[Friends Circle] สร้าง URL ตัวอย่าง:', previewUrl); // Translated: 创建预览URL
 
-      // 设置预览图片
+      // ตั้งค่าภาพตัวอย่าง
       previewImage.src = previewUrl;
       previewImage.onload = () => {
-        console.log('[Friends Circle] 预览图片加载完成');
-        URL.revokeObjectURL(previewUrl); // 释放内存
+        console.log('[Friends Circle] โหลดภาพตัวอย่างเสร็จสมบูรณ์'); // Translated: 预览图片加载完成
+        URL.revokeObjectURL(previewUrl); // ปล่อยหน่วยความจำ
       };
 
-      // 设置文件信息
+      // ตั้งค่าข้อมูลไฟล์
       if (imageName) {
         imageName.textContent = file.name;
-        console.log('[Friends Circle] 设置文件名:', file.name);
+        console.log('[Friends Circle] ตั้งค่าชื่อไฟล์:', file.name); // Translated: 设置文件名
       }
       if (imageSize) {
         const sizeText = this.formatFileSize(file.size);
         imageSize.textContent = sizeText;
-        console.log('[Friends Circle] 设置文件大小:', sizeText);
+        console.log('[Friends Circle] ตั้งค่าขนาดไฟล์:', sizeText); // Translated: 设置文件大小
       }
 
-      // 显示预览区域，隐藏上传区域
+      // แสดงพื้นที่ตัวอย่าง ซ่อนพื้นที่อัปโหลด
       previewArea.style.display = 'block';
       if (dropZone) {
         dropZone.style.display = 'none';
       }
 
-      console.log('[Friends Circle] 图片预览显示完成');
+      console.log('[Friends Circle] แสดงภาพตัวอย่างเสร็จสมบูรณ์'); // Translated: 图片预览显示完成
     }
 
     /**
-     * 清除图片选择
+     * ล้างการเลือกรูปภาพ
      */
     clearImageSelection(elements) {
       const { previewArea, uploadStatus, publishBtn, dropZone, fileInput } = elements;
 
-      // 隐藏预览和上传状态
+      // ซ่อนตัวอย่างและสถานะการอัปโหลด
       if (previewArea) previewArea.style.display = 'none';
       if (uploadStatus) uploadStatus.style.display = 'none';
 
-      // 显示上传区域
+      // แสดงพื้นที่อัปโหลด
       if (dropZone) dropZone.style.display = 'block';
 
-      // 清除文件输入
+      // ล้างอินพุตไฟล์
       if (fileInput) fileInput.value = '';
 
-      // 重置按钮状态
+      // รีเซ็ตสถานะปุ่ม
       if (publishBtn) {
         publishBtn.disabled = false;
-        publishBtn.textContent = '发布';
+        publishBtn.textContent = 'เผยแพร่'; // Translated: 发布
       }
 
-      // 清除存储的文件
+      // ล้างไฟล์ที่จัดเก็บไว้
       this.selectedImageFile = null;
       this.selectedImageElements = null;
     }
 
     /**
-     * 格式化文件大小
+     * จัดรูปแบบขนาดไฟล์
      */
     formatFileSize(bytes) {
       if (bytes === 0) return '0 B';
@@ -2384,8 +2420,8 @@ if (typeof window.FriendsCircle === 'undefined') {
   }
 
   /**
-   * 朋友圈主类
-   * 整合所有朋友圈功能
+   * คลาสหลักของวงเพื่อน
+   * รวมฟังก์ชันวงเพื่อนทั้งหมด
    */
   class FriendsCircle {
     constructor() {
@@ -2394,40 +2430,41 @@ if (typeof window.FriendsCircle === 'undefined') {
       this.renderer = new FriendsCircleRenderer(this);
       this.isActive = false;
 
-      // 🌟 方案B：批量处理缓存
+      // 🌟 วิธีที่ B: แคชการประมวลผลเป็นชุด
       this.batchCache = {
         userName: null,
         userAvatar: null,
         friendAvatars: new Map(),
         lastCacheTime: 0,
-        cacheTimeout: 30000, // 30秒缓存过期
+        cacheTimeout: 30000, // 30 วินาที แคชหมดอายุ
       };
-      this.userSignature = localStorage.getItem('friendsCircle_userSignature') || '这个人很懒，什么都没留下';
+      this.userSignature =
+        localStorage.getItem('friendsCircle_userSignature') || 'คนนี้ขี้เกียจมาก ไม่ได้ทิ้งอะไรไว้เลย'; // Translated: 这个人很懒，什么都没留下
 
-      // 初始化AttachmentSender用于图片上传
+      // เริ่มต้น AttachmentSender สำหรับการอัปโหลดรูปภาพ
       this.initializeAttachmentSender();
 
-      // 存储选中的图片文件信息
+      // จัดเก็บข้อมูลไฟล์รูปภาพที่เลือก
       this.selectedImageFile = null;
       this.selectedImageElements = null;
 
-      console.log('[Friends Circle] 朋友圈功能初始化完成');
+      console.log('[Friends Circle] เริ่มต้นฟังก์ชันวงเพื่อนเสร็จสมบูรณ์'); // Translated: 朋友圈功能初始化完成
     }
 
     /**
-     * 🌟 方案B：批量获取基础信息
-     * 一次性获取用户名、用户头像和所有好友头像，避免重复调用
+     * 🌟 วิธีที่ B: รับข้อมูลพื้นฐานเป็นชุด
+     * รับชื่อผู้ใช้ รูปประจำตัวผู้ใช้ และรูปประจำตัวเพื่อนทั้งหมดในคราวเดียว เพื่อหลีกเลี่ยงการเรียกซ้ำ
      */
     batchGetBasicInfo() {
       const now = Date.now();
 
-      // 检查缓存是否过期
+      // ตรวจสอบว่าแคชหมดอายุหรือไม่
       if (this.batchCache.lastCacheTime && now - this.batchCache.lastCacheTime < this.batchCache.cacheTimeout) {
         return this.batchCache;
       }
 
       try {
-        // 批量获取用户信息
+        // รับข้อมูลผู้ใช้เป็นชุด
         if (!this.batchCache.userName) {
           this.batchCache.userName = this.renderer.getCurrentUserName();
         }
@@ -2435,16 +2472,16 @@ if (typeof window.FriendsCircle === 'undefined') {
           this.batchCache.userAvatar = this.renderer.getCurrentUserAvatar();
         }
 
-        // 批量获取好友头像（从现有朋友圈数据中提取好友ID）
+        // รับรูปประจำตัวเพื่อนเป็นชุด (ดึง ID เพื่อนจากข้อมูลวงเพื่อนที่มีอยู่)
         const friendIds = new Set();
         for (const circle of this.manager.friendsCircleData.values()) {
           if (circle.friendId && circle.friendId !== '483920') {
-            // 排除用户自己的ID
+            // ไม่รวม ID ของผู้ใช้เอง
             friendIds.add(circle.friendId);
           }
         }
 
-        // 批量获取所有好友头像
+        // รับรูปประจำตัวเพื่อนทั้งหมดเป็นชุด
         for (const friendId of friendIds) {
           if (!this.batchCache.friendAvatars.has(friendId)) {
             const avatar = this.renderer.getFriendAvatar(friendId);
@@ -2457,14 +2494,14 @@ if (typeof window.FriendsCircle === 'undefined') {
         this.batchCache.lastCacheTime = now;
         return this.batchCache;
       } catch (error) {
-        console.error('[Friends Circle] 批量获取基础信息失败:', error);
-        // 返回当前缓存状态，即使部分失败也能继续工作
+        console.error('[Friends Circle] รับข้อมูลพื้นฐานเป็นชุดล้มเหลว:', error); // Translated: 批量获取基础信息失败
+        // ส่งคืนสถานะแคชปัจจุบัน แม้ว่าบางส่วนจะล้มเหลวก็ยังสามารถทำงานต่อไปได้
         return this.batchCache;
       }
     }
 
     /**
-     * 🌟 方案B：清空缓存（用户切换角色时调用）
+     * 🌟 วิธีที่ B: ล้างแคช (เรียกใช้เมื่อผู้ใช้เปลี่ยนตัวละคร)
      */
     clearBatchCache() {
       this.batchCache.userName = null;
@@ -2474,7 +2511,7 @@ if (typeof window.FriendsCircle === 'undefined') {
     }
 
     /**
-     * 🌟 方案C：加载更多朋友圈（懒加载）
+     * 🌟 วิธีที่ C: โหลดวงเพื่อนเพิ่มเติม (Lazy Loading)
      */
     loadMoreCircles() {
       try {
@@ -2487,48 +2524,48 @@ if (typeof window.FriendsCircle === 'undefined') {
         const circlesContainer = document.querySelector('.circles-container');
         if (!circlesContainer) return;
 
-        // 获取所有朋友圈数据
+        // รับข้อมูลวงเพื่อนทั้งหมด
         const allCircles = this.manager.getSortedFriendsCircles();
-        const currentCount = circlesContainer.querySelectorAll('.circle-item').length; // 当前已显示的朋友圈数量
+        const currentCount = circlesContainer.querySelectorAll('.circle-item').length; // จำนวนวงเพื่อนที่แสดงอยู่ปัจจุบัน
 
-        // 加载下一批（最多10条）
+        // โหลดชุดถัดไป (สูงสุด 10 รายการ)
         const nextBatch = allCircles.slice(currentCount, currentCount + 10);
         const newRemaining = remaining - nextBatch.length;
 
-        // 渲染新的朋友圈
+        // แสดงผลวงเพื่อนใหม่
         const newHtml = nextBatch.map(circle => this.renderer.renderSingleCircle(circle)).join('');
 
-        // 插入到加载更多按钮之前
+        // แทรกก่อนปุ่มโหลดเพิ่มเติม
         loadMoreContainer.insertAdjacentHTML('beforebegin', newHtml);
 
-        // 更新或移除加载更多按钮
+        // อัปเดตหรือลบปุ่มโหลดเพิ่มเติม
         if (newRemaining > 0) {
           loadMoreContainer.dataset.remaining = newRemaining;
           loadMoreContainer.querySelector('.load-more-btn').innerHTML = `
-            <i class="fas fa-chevron-down"></i>
-            加载更多 (还有${newRemaining}条)
-          `;
+          <i class="fas fa-chevron-down"></i>
+          โหลดเพิ่มเติม (เหลืออีก ${newRemaining} รายการ)
+        `; // Translated: 加载更多 (还有${newRemaining}条)
         } else {
           loadMoreContainer.remove();
         }
       } catch (error) {
-        console.error('[Friends Circle] 加载更多朋友圈失败:', error);
+        console.error('[Friends Circle] โหลดวงเพื่อนเพิ่มเติมล้มเหลว:', error); // Translated: 加载更多朋友圈失败
       }
     }
 
     /**
-     * 获取当前用户名
-     * @returns {string} 用户名
+     * รับชื่อผู้ใช้ปัจจุบัน
+     * @returns {string} ชื่อผู้ใช้
      */
     getCurrentUserName() {
-      // 委托给renderer的方法
+      // มอบหมายให้เมธอดของ renderer
       if (this.renderer && typeof this.renderer.getCurrentUserName === 'function') {
         return this.renderer.getCurrentUserName();
       }
 
-      // 备用方案：直接获取
+      // แผนสำรอง: รับโดยตรง
       try {
-        // 方法1: 从persona系统获取
+        // วิธีที่ 1: รับจากระบบ persona
         if (typeof getSelectedPersona === 'function') {
           const persona = getSelectedPersona();
           if (persona && persona.name && persona.name.trim() && persona.name !== '{{user}}') {
@@ -2536,7 +2573,7 @@ if (typeof window.FriendsCircle === 'undefined') {
           }
         }
 
-        // 方法2: 从DOM获取选中的persona名称
+        // วิธีที่ 2: รับชื่อ persona ที่เลือกจาก DOM
         const personaSelect = document.querySelector('#persona-management-block .persona_name_block .menu_button');
         if (
           personaSelect &&
@@ -2547,81 +2584,81 @@ if (typeof window.FriendsCircle === 'undefined') {
           return personaSelect.textContent.trim();
         }
 
-        // 方法3: 从SillyTavern的全局变量获取
+        // วิธีที่ 3: รับจากตัวแปรส่วนกลางของ SillyTavern
         if (typeof window.name1 !== 'undefined' && window.name1 && window.name1.trim() && window.name1 !== '{{user}}') {
           return window.name1.trim();
         }
       } catch (error) {
-        console.warn('[Friends Circle] 获取用户名失败:', error);
+        console.warn('[Friends Circle] รับชื่อผู้ใช้ล้มเหลว:', error); // Translated: 获取用户名失败
       }
 
-      // 默认返回
-      return '用户';
+      // ค่าเริ่มต้น
+      return 'ผู้ใช้'; // Translated: 用户
     }
 
     /**
-     * 初始化AttachmentSender
+     * เริ่มต้น AttachmentSender
      */
     initializeAttachmentSender() {
       try {
         if (window.attachmentSender) {
-          // 设置朋友圈为当前聊天对象
-          window.attachmentSender.setCurrentChat('friends_circle', '朋友圈', false);
-          console.log('[Friends Circle] AttachmentSender已配置为朋友圈模式');
+          // ตั้งค่าวงเพื่อนเป็นเป้าหมายการแชทปัจจุบัน
+          window.attachmentSender.setCurrentChat('friends_circle', '朋友圈', false); // Note: '朋友圈' is kept as a functional identifier
+          console.log('[Friends Circle] AttachmentSender ถูกกำหนดค่าเป็นโหมดวงเพื่อนแล้ว'); // Translated: AttachmentSender已配置为朋友圈模式
         } else {
-          console.warn('[Friends Circle] AttachmentSender未找到，图片上传功能可能不可用');
+          console.warn('[Friends Circle] ไม่พบ AttachmentSender, ฟังก์ชันอัปโหลดรูปภาพอาจไม่พร้อมใช้งาน'); // Translated: AttachmentSender未找到，图片上传功能可能不可用
         }
       } catch (error) {
-        console.error('[Friends Circle] 初始化AttachmentSender失败:', error);
+        console.error('[Friends Circle] เริ่มต้น AttachmentSender ล้มเหลว:', error); // Translated: 初始化AttachmentSender失败
       }
     }
 
     /**
-     * 激活朋友圈功能
+     * เปิดใช้งานฟังก์ชันวงเพื่อน
      */
     activate() {
-      console.log('[Friends Circle] 开始激活朋友圈功能...');
+      console.log('[Friends Circle] เริ่มเปิดใช้งานฟังก์ชันวงเพื่อน...'); // Translated: 开始激活朋友圈功能
 
       this.isActive = true;
-      console.log('[Friends Circle] 朋友圈状态已设置为激活');
+      console.log('[Friends Circle] สถานะวงเพื่อนถูกตั้งค่าเป็นเปิดใช้งาน'); // Translated: 朋友圈状态已设置为激活
 
-      // 启动事件监听器
+      // เริ่มตัวฟังเหตุการณ์
       if (this.eventListener) {
         this.eventListener.startListening();
-        console.log('[Friends Circle] 事件监听器已启动');
+        console.log('[Friends Circle] ตัวฟังเหตุการณ์ถูกเริ่มแล้ว'); // Translated: 事件监听器已启动
       } else {
-        console.error('[Friends Circle] 事件监听器不存在！');
+        console.error('[Friends Circle] ตัวฟังเหตุการณ์ไม่มีอยู่!'); // Translated: 事件监听器不存在！
       }
 
-      // 确保header正确显示
+      // ตรวจสอบให้แน่ใจว่าส่วนหัวแสดงผลถูกต้อง
       this.updateHeader();
 
-      // 刷新朋友圈数据
+      // รีเฟรชข้อมูลวงเพื่อน
       this.refreshFriendsCircle();
-      console.log('[Friends Circle] 朋友圈功能激活完成');
+      console.log('[Friends Circle] เปิดใช้งานฟังก์ชันวงเพื่อนเสร็จสมบูรณ์'); // Translated: 朋友圈功能激活完成
     }
 
     /**
-     * 停用朋友圈功能
+     * ปิดใช้งานฟังก์ชันวงเพื่อน
      */
     deactivate() {
       this.isActive = false;
       this.eventListener.stopListening();
-      console.log('[Friends Circle] 朋友圈功能已停用');
+      console.log('[Friends Circle] ฟังก์ชันวงเพื่อนถูกปิดใช้งานแล้ว'); // Translated: 朋友圈功能已停用
     }
 
     /**
-     * 更新朋友圈header
+     * อัปเดตส่วนหัวของวงเพื่อน
      */
     updateHeader() {
-      console.log('[Friends Circle] 更新朋友圈header...');
+      console.log('[Friends Circle] กำลังอัปเดตส่วนหัวของวงเพื่อน...'); // Translated: 更新朋友圈header...
 
-      // 通知主框架更新应用状态
+      // แจ้งกรอบงานหลักเพื่ออัปเดตสถานะแอป
       if (window.mobilePhone) {
         const friendsCircleState = {
           app: 'messages',
           view: 'friendsCircle',
-          title: '朋友圈',
+          title: 'วงเพื่อน', // Translated: 朋友圈
           showBackButton: false,
           showAddButton: true,
           addButtonIcon: 'fas fa-plus',
@@ -2634,59 +2671,59 @@ if (typeof window.FriendsCircle === 'undefined') {
 
         window.mobilePhone.currentAppState = friendsCircleState;
         window.mobilePhone.updateAppHeader(friendsCircleState);
-        console.log('[Friends Circle] Header更新完成');
+        console.log('[Friends Circle] อัปเดตส่วนหัวเสร็จสมบูรณ์'); // Translated: Header更新完成
       } else {
-        console.warn('[Friends Circle] mobilePhone不存在，无法更新header');
+        console.warn('[Friends Circle] mobilePhone ไม่มีอยู่, ไม่สามารถอัปเดตส่วนหัวได้'); // Translated: mobilePhone不存在，无法更新header
       }
     }
 
     /**
-     * 刷新朋友圈数据
+     * รีเฟรชข้อมูลวงเพื่อน
      */
     async refreshFriendsCircle() {
       try {
-        console.log('[Friends Circle] 开始刷新朋友圈数据...');
-        console.log('[Friends Circle] 当前激活状态:', this.isActive);
+        console.log('[Friends Circle] เริ่มรีเฟรชข้อมูลวงเพื่อน...'); // Translated: 开始刷新朋友圈数据...
+        console.log('[Friends Circle] สถานะเปิดใช้งานปัจจุบัน:', this.isActive); // Translated: 当前激活状态
 
-        // 使用新的refreshData方法，首次激活时强制全量刷新
+        // ใช้เมธอด refreshData ใหม่, บังคับรีเฟรชแบบเต็มเมื่อเปิดใช้งานครั้งแรก
         const forceFullRefresh = this.manager.lastProcessedMessageIndex < 0;
         await this.manager.refreshData(forceFullRefresh);
 
-        // 只有在激活状态下才触发界面更新
+        // ทริกเกอร์การอัปเดต UI เฉพาะเมื่ออยู่ในสถานะเปิดใช้งานเท่านั้น
         if (this.isActive) {
-          console.log('[Friends Circle] 朋友圈已激活，触发界面更新');
+          console.log('[Friends Circle] วงเพื่อนเปิดใช้งานอยู่, ทริกเกอร์การอัปเดต UI'); // Translated: 朋友圈已激活，触发界面更新
           this.dispatchUpdateEvent();
         } else {
-          console.log('[Friends Circle] 朋友圈未激活，仅更新数据');
+          console.log('[Friends Circle] วงเพื่อนไม่ได้เปิดใช้งาน, อัปเดตข้อมูลเท่านั้น'); // Translated: 朋友圈未激活，仅更新数据
         }
       } catch (error) {
-        console.error('[Friends Circle] 刷新朋友圈数据失败:', error);
+        console.error('[Friends Circle] รีเฟรชข้อมูลวงเพื่อนล้มเหลว:', error); // Translated: 刷新朋友圈数据失败
       }
     }
 
     /**
-     * 更新朋友圈显示
+     * อัปเดตการแสดงผลวงเพื่อน
      */
     updateDisplay() {
       try {
-        console.log('[Friends Circle] 更新朋友圈显示...');
+        console.log('[Friends Circle] อัปเดตการแสดงผลวงเพื่อน...'); // Translated: 更新朋友圈显示...
 
-        // 触发界面更新事件
+        // ทริกเกอร์เหตุการณ์การอัปเดต UI
         this.dispatchUpdateEvent();
 
-        console.log('[Friends Circle] 朋友圈显示更新完成');
+        console.log('[Friends Circle] อัปเดตการแสดงผลวงเพื่อนเสร็จสมบูรณ์'); // Translated: 朋友圈显示更新完成
       } catch (error) {
-        console.error('[Friends Circle] 更新显示失败:', error);
+        console.error('[Friends Circle] อัปเดตการแสดงผลล้มเหลว:', error); // Translated: 更新显示失败
       }
     }
 
     /**
-     * 获取聊天内容
-     * @returns {Promise<string>} 聊天内容
+     * รับเนื้อหาการแชท
+     * @returns {Promise<string>} เนื้อหาการแชท
      */
     async getChatContent() {
       try {
-        // 方法1: 使用contextMonitor
+        // วิธีที่ 1: ใช้ contextMonitor
         if (window.contextMonitor?.getCurrentChatMessages) {
           const chatData = await window.contextMonitor.getCurrentChatMessages();
           if (chatData?.messages) {
@@ -2694,7 +2731,7 @@ if (typeof window.FriendsCircle === 'undefined') {
           }
         }
 
-        // 方法2: 使用SillyTavern.getContext
+        // วิธีที่ 2: ใช้ SillyTavern.getContext
         if (window.SillyTavern?.getContext) {
           const context = window.SillyTavern.getContext();
           if (context?.chat && Array.isArray(context.chat)) {
@@ -2702,29 +2739,29 @@ if (typeof window.FriendsCircle === 'undefined') {
           }
         }
 
-        // 方法3: 使用父窗口chat
+        // วิธีที่ 3: ใช้ chat ของ window แม่
         if (window.parent?.chat && Array.isArray(window.parent.chat)) {
           return window.parent.chat.map(msg => msg.mes || '').join('\n');
         }
 
         return '';
       } catch (error) {
-        console.error('[Friends Circle] 获取聊天内容失败:', error);
+        console.error('[Friends Circle] รับเนื้อหาการแชทล้มเหลว:', error); // Translated: 获取聊天内容失败
         return '';
       }
     }
 
     /**
-     * 获取用户签名
-     * @returns {string} 用户签名
+     * รับลายเซ็นผู้ใช้
+     * @returns {string} ลายเซ็นผู้ใช้
      */
     getUserSignature() {
       return this.userSignature;
     }
 
     /**
-     * 设置用户签名
-     * @param {string} signature - 新签名
+     * ตั้งค่าลายเซ็นผู้ใช้
+     * @param {string} signature - ลายเซ็นใหม่
      */
     setUserSignature(signature) {
       this.userSignature = signature;
@@ -2733,38 +2770,38 @@ if (typeof window.FriendsCircle === 'undefined') {
     }
 
     /**
-     * 编辑用户签名
+     * แก้ไขลายเซ็นผู้ใช้
      */
     editUserSignature() {
-      const newSignature = prompt('请输入新的个性签名:', this.userSignature);
+      const newSignature = prompt('กรุณาป้อนลายเซ็นส่วนตัวใหม่:', this.userSignature); // Translated: 请输入新的个性签名:
       if (newSignature !== null && newSignature.trim() !== '') {
         this.setUserSignature(newSignature.trim());
       }
     }
 
     /**
-     * 切换朋友圈点赞
-     * @param {string} circleId - 朋友圈ID
+     * สลับการกดถูกใจวงเพื่อน
+     * @param {string} circleId - ID วงเพื่อน
      */
     toggleCircleLike(circleId) {
       const likeData = this.manager.toggleLike(circleId);
 
-      // 直接更新DOM，避免重新渲染整个页面
+      // อัปเดต DOM โดยตรง เพื่อหลีกเลี่ยงการเรนเดอร์หน้าใหม่ทั้งหมด
       this.updateLikeButtonUI(circleId, likeData);
 
-      // 不调用dispatchUpdateEvent()，避免页面重新加载
+      // ไม่เรียก dispatchUpdateEvent() เพื่อหลีกเลี่ยงการโหลดหน้าใหม่
       console.log(
-        `[Friends Circle] 点赞状态已更新: ${circleId}, 点赞数: ${likeData.likes}, 已点赞: ${likeData.isLiked}`,
+        `[Friends Circle] สถานะการถูกใจได้รับการอัปเดต: ${circleId}, จำนวนถูกใจ: ${likeData.likes}, ถูกใจแล้ว: ${likeData.isLiked}`, // Translated: 点赞状态已更新
       );
     }
 
     /**
-     * 更新点赞按钮UI
-     * @param {string} circleId - 朋友圈ID
-     * @param {Object} likeData - 点赞数据
+     * อัปเดต UI ปุ่มถูกใจ
+     * @param {string} circleId - ID วงเพื่อน
+     * @param {Object} likeData - ข้อมูลการถูกใจ
      */
     updateLikeButtonUI(circleId, likeData) {
-      // 查找对应的点赞按钮
+      // ค้นหาปุ่มถูกใจที่เกี่ยวข้อง
       const circleElement = document.querySelector(`[data-circle-id="${circleId}"]`);
       if (!circleElement) return;
 
@@ -2773,12 +2810,12 @@ if (typeof window.FriendsCircle === 'undefined') {
       const likeCount = likeBtn?.querySelector('.like-count');
 
       if (likeBtn && likeIcon && likeCount) {
-        // 更新图标
+        // อัปเดตไอคอน
         if (likeData.isLiked) {
           likeIcon.className = 'fas fa-heart liked';
           likeBtn.classList.add('liked');
 
-          // 添加点赞动画效果
+          // เพิ่มเอฟเฟกต์แอนิเมชันถูกใจ
           likeBtn.classList.add('liked-animation');
           setTimeout(() => {
             likeBtn.classList.remove('liked-animation');
@@ -2788,39 +2825,39 @@ if (typeof window.FriendsCircle === 'undefined') {
           likeBtn.classList.remove('liked');
         }
 
-        // 更新点赞数
+        // อัปเดตจำนวนถูกใจ
         likeCount.textContent = likeData.likes;
       }
     }
 
     /**
-     * 切换回复输入框
-     * @param {string} circleId - 朋友圈ID
+     * สลับช่องป้อนข้อมูลการตอบกลับ
+     * @param {string} circleId - ID วงเพื่อน
      */
     toggleReplyInput(circleId) {
       const inputContainer = document.getElementById(`reply-input-${circleId}`);
-      if (inputContainer) {
-        const isVisible = inputContainer.style.display !== 'none';
+      if (!inputContainer) return;
 
-        // 隐藏所有其他回复输入框
-        document.querySelectorAll('.reply-input-container').forEach(container => {
-          container.style.display = 'none';
-        });
+      const isVisible = inputContainer.style.display !== 'none';
 
-        // 切换当前输入框
-        if (!isVisible) {
-          inputContainer.style.display = 'flex';
-          const input = inputContainer.querySelector('.reply-input');
-          if (input) {
-            input.focus();
-          }
+      // ซ่อนช่องป้อนข้อมูลการตอบกลับอื่นๆ ทั้งหมด
+      document.querySelectorAll('.reply-input-container').forEach(container => {
+        container.style.display = 'none';
+      });
+
+      // สลับช่องป้อนข้อมูลปัจจุบัน
+      if (!isVisible) {
+        inputContainer.style.display = 'flex';
+        const input = inputContainer.querySelector('.reply-input');
+        if (input) {
+          input.focus();
         }
       }
     }
 
     /**
-     * 发送朋友圈回复
-     * @param {string} circleId - 朋友圈ID
+     * ส่งการตอบกลับวงเพื่อน
+     * @param {string} circleId - ID วงเพื่อน
      */
     async sendCircleReply(circleId) {
       const inputContainer = document.getElementById(`reply-input-${circleId}`);
@@ -2831,64 +2868,64 @@ if (typeof window.FriendsCircle === 'undefined') {
 
       const content = input.value.trim();
       if (!content) {
-        alert('请输入回复内容');
+        alert('กรุณาป้อนเนื้อหาการตอบกลับ'); // Translated: 请输入回复内容
         return;
       }
 
       try {
-        // 检查是否是回复评论
+        // ตรวจสอบว่าเป็นตอบกลับความคิดเห็นหรือไม่
         const replyToAuthor = input.dataset.replyToAuthor;
 
         if (replyToAuthor) {
-          // 发送回复评论
+          // ส่งตอบกลับความคิดเห็น
           await this.sendReplyToComment(circleId, content, replyToAuthor);
         } else {
-          // 构建普通回复格式
+          // สร้างรูปแบบการตอบกลับปกติ
           const replyFormat = `[朋友圈回复|{{user}}|483920|${circleId}|${content}]`;
 
-          // 发送给AI
+          // ส่งไปยัง AI
           await this.sendToAI(
-            `用户正在回复朋友圈。请为用户的回复生成1-3个他人的响应回复，只生成回复，不要重新生成整个帖子，也不要重新生成用户的回复，用户回复已完成。\n${replyFormat}`,
+            `ผู้ใช้กำลังตอบกลับวงเพื่อน โปรดสร้างการตอบกลับ 1-3 รายการจากผู้อื่นสำหรับการตอบกลับของผู้ใช้ โปรดสร้างการตอบกลับเท่านั้น อย่าสร้างโพสต์ทั้งหมดใหม่ และอย่าสร้างการตอบกลับของผู้ใช้ซ้ำ การตอบกลับของผู้ใช้เสร็จสมบูรณ์แล้ว\n${replyFormat}`, // Translated: 用户正在回复朋友圈。请为用户的回复生成1-3个他人的响应回复，只生成回复，不要重新生成整个帖子，也不要重新生成用户的回复，用户回复已完成。\n${replyFormat}
           );
 
-          this.showToast('回复已发送', 'success');
+          this.showToast('ส่งการตอบกลับแล้ว', 'success'); // Translated: 回复已发送
         }
 
-        // 清空输入框并隐藏
+        // ล้างช่องป้อนข้อมูลและซ่อน
         input.value = '';
-        input.placeholder = '写下你的想法...';
+        input.placeholder = 'เขียนความคิดของคุณ...'; // Translated: 写下你的想法...
         input.removeAttribute('data-reply-to-author');
         input.removeAttribute('data-reply-to-id');
         inputContainer.style.display = 'none';
       } catch (error) {
-        console.error('[Friends Circle] 发送回复失败:', error);
-        this.showToast('发送失败，请重试', 'error');
+        console.error('[Friends Circle] ส่งการตอบกลับล้มเหลว:', error); // Translated: 发送回复失败
+        this.showToast('ส่งล้มเหลว, กรุณาลองใหม่', 'error'); // Translated: 发送失败，请重试
       }
     }
 
     /**
-     * 显示回复评论输入框
-     * @param {string} circleId - 朋友圈ID
-     * @param {string} replyId - 被回复的评论ID
-     * @param {string} replyAuthor - 被回复的评论作者
+     * แสดงช่องป้อนข้อมูลการตอบกลับความคิดเห็น
+     * @param {string} circleId - ID วงเพื่อน
+     * @param {string} replyId - ID ความคิดเห็นที่ถูกตอบกลับ
+     * @param {string} replyAuthor - ชื่อผู้เขียนความคิดเห็นที่ถูกตอบกลับ
      */
     showReplyToComment(circleId, replyId, replyAuthor) {
-      // 隐藏所有其他回复输入框
+      // ซ่อนช่องป้อนข้อมูลการตอบกลับอื่นๆ ทั้งหมด
       document.querySelectorAll('.reply-input-container').forEach(container => {
         container.style.display = 'none';
       });
 
-      // 显示主回复输入框
+      // แสดงช่องป้อนข้อมูลการตอบกลับหลัก
       const inputContainer = document.getElementById(`reply-input-${circleId}`);
       if (inputContainer) {
         inputContainer.style.display = 'flex';
         const input = inputContainer.querySelector('.reply-input');
         if (input) {
-          // 设置占位符提示回复对象
-          input.placeholder = `回复 ${replyAuthor}...`;
+          // ตั้งค่าตัวยึดตำแหน่งเพื่อแจ้งเตือนวัตถุที่ถูกตอบกลับ
+          input.placeholder = `ตอบกลับ ${replyAuthor}...`; // Translated: 回复 ${replyAuthor}...
           input.focus();
 
-          // 存储回复目标信息
+          // จัดเก็บข้อมูลเป้าหมายการตอบกลับ
           input.dataset.replyToAuthor = replyAuthor;
           input.dataset.replyToId = replyId;
         }
@@ -2896,35 +2933,35 @@ if (typeof window.FriendsCircle === 'undefined') {
     }
 
     /**
-     * 发送回复评论
-     * @param {string} circleId - 朋友圈ID
-     * @param {string} content - 回复内容
-     * @param {string} replyToAuthor - 被回复的评论作者
+     * ส่งตอบกลับความคิดเห็น
+     * @param {string} circleId - ID วงเพื่อน
+     * @param {string} content - เนื้อหาการตอบกลับ
+     * @param {string} replyToAuthor - ชื่อผู้เขียนความคิดเห็นที่ถูกตอบกลับ
      */
     async sendReplyToComment(circleId, content, replyToAuthor) {
       try {
-        // 构建回复评论格式
-        const replyFormat = `[朋友圈回复|{{user}}|483920|${circleId}|回复${replyToAuthor}：${content}]`;
+        // สร้างรูปแบบการตอบกลับความคิดเห็น
+        const replyFormat = `[朋友圈回复|{{user}}|483920|${circleId}|回复${replyToAuthor}：${content}]`; // Note: '回复' is kept as part of the functional format
 
-        // 发送给AI
+        // ส่งไปยัง AI
         await this.sendToAI(
-          `用户正在回复朋友圈的评论。请为用户的回复生成1-3个他人的响应回复，只生成回复，不要重新生成整个帖子，也不要重新生成用户的回复，用户回复已完成。\n${replyFormat}`,
+          `ผู้ใช้กำลังตอบกลับความคิดเห็นในวงเพื่อน โปรดสร้างการตอบกลับ 1-3 รายการจากผู้อื่นสำหรับการตอบกลับของผู้ใช้ โปรดสร้างการตอบกลับเท่านั้น อย่าสร้างโพสต์ทั้งหมดใหม่ และอย่าสร้างการตอบกลับของผู้ใช้ซ้ำ การตอบกลับของผู้ใช้เสร็จสมบูรณ์แล้ว\n${replyFormat}`, // Translated: 用户正在回复朋友圈的评论。请为用户的回复生成1-3个他人的响应回复，只生成回复，不要重新生成整个帖子，也不要重新生成用户的回复，用户回复已完成。\n${replyFormat}
         );
 
-        this.showToast('回复已发送', 'success');
+        this.showToast('ส่งการตอบกลับแล้ว', 'success'); // Translated: 回复已发送
       } catch (error) {
-        console.error('[Friends Circle] 发送回复评论失败:', error);
-        this.showToast('发送失败，请重试', 'error');
+        console.error('[Friends Circle] ส่งตอบกลับความคิดเห็นล้มเหลว:', error); // Translated: 发送回复评论失败
+        this.showToast('ส่งล้มเหลว, กรุณาลองใหม่', 'error'); // Translated: 发送失败，请重试
       }
     }
 
     /**
-     * 发送消息给AI
-     * @param {string} message - 消息内容
+     * ส่งข้อความไปยัง AI
+     * @param {string} message - เนื้อหาข้อความ
      */
     async sendToAI(message) {
       try {
-        console.log('[Friends Circle] 发送消息给AI:', message);
+        console.log('[Friends Circle] ส่งข้อความไปยัง AI:', message); // Translated: 发送消息给AI
 
         const chatMessage = {
           role: 'user',
@@ -2936,25 +2973,27 @@ if (typeof window.FriendsCircle === 'undefined') {
           window.parent.document.querySelector('#send_textarea').value = message;
           window.parent.document.querySelector('#send_but').click();
 
-          // 显示成功提示
-          this.showToast('消息已准备好，请在主界面点击发送', 'success');
+          // แสดงข้อความแจ้งเตือนความสำเร็จ
+          this.showToast('ข้อความพร้อมแล้ว, กรุณาคลิกส่งในหน้าหลัก', 'success'); // Translated: 消息已准备好，请在主界面点击发送
         } catch (error) {
-          console.error('[Friends Circle] 发送数据到父窗口时出错:', error);
-          console.error('[Friends Circle] 此功能需要页面被嵌入到正确配置的父窗口中才能工作。');
-          console.log('[Friends Circle] 生成的消息:', message);
-          this.showToast('无法自动发送。消息已输出到控制台，请手动复制。', 'warning');
+          console.error('[Friends Circle] เกิดข้อผิดพลาดขณะส่งข้อมูลไปยัง window แม่:', error); // Translated: 发送数据到父窗口时出错
+          console.error(
+            '[Friends Circle] ฟังก์ชันนี้ต้องให้หน้าถูกฝังใน window แม่ที่กำหนดค่าอย่างถูกต้องจึงจะทำงานได้',
+          ); // Translated: 此功能需要页面被嵌入到正确配置的父窗口中才能工作。
+          console.log('[Friends Circle] ข้อความที่สร้าง:', message); // Translated: 生成的消息
+          this.showToast('ไม่สามารถส่งอัตโนมัติได้ ข้อความถูกส่งออกไปยังคอนโซลแล้ว, กรุณาคัดลอกด้วยตนเอง', 'warning'); // Translated: 无法自动发送。消息已输出到控制台，请手动复制。
         }
       } catch (error) {
-        console.error('[Friends Circle] 发送消息失败:', error);
-        this.showToast('发送失败，请重试', 'error');
+        console.error('[Friends Circle] ส่งข้อความล้มเหลว:', error); // Translated: 发送消息失败
+        this.showToast('ส่งล้มเหลว, กรุณาลองใหม่', 'error'); // Translated: 发送失败，请重试
         throw error;
       }
     }
 
     /**
-     * 显示提示消息
-     * @param {string} message - 提示消息
-     * @param {string} type - 消息类型
+     * แสดงข้อความแจ้งเตือน
+     * @param {string} message - ข้อความแจ้งเตือน
+     * @param {string} type - ประเภทข้อความ
      */
     showToast(message, type = 'info') {
       if (window.showMobileToast) {
@@ -2965,7 +3004,7 @@ if (typeof window.FriendsCircle === 'undefined') {
     }
 
     /**
-     * 显示发布弹窗
+     * แสดงป๊อปอัปเผยแพร่
      */
     showPublishModal() {
       if (this.renderer) {
@@ -2974,7 +3013,7 @@ if (typeof window.FriendsCircle === 'undefined') {
     }
 
     /**
-     * 隐藏发布弹窗
+     * ซ่อนป๊อปอัปเผยแพร่
      */
     hidePublishModal() {
       if (this.renderer) {
@@ -2983,7 +3022,7 @@ if (typeof window.FriendsCircle === 'undefined') {
     }
 
     /**
-     * 显示文字发布界面
+     * แสดงอินเทอร์เฟซเผยแพร่ข้อความ
      */
     showTextPublish() {
       if (this.renderer) {
@@ -2992,7 +3031,7 @@ if (typeof window.FriendsCircle === 'undefined') {
     }
 
     /**
-     * 显示文字发布弹窗
+     * แสดงป๊อปอัปเผยแพร่ข้อความ
      */
     showTextPublishModal() {
       if (this.renderer) {
@@ -3001,7 +3040,7 @@ if (typeof window.FriendsCircle === 'undefined') {
     }
 
     /**
-     * 显示图片发布界面
+     * แสดงอินเทอร์เฟซเผยแพร่รูปภาพ
      */
     showImagePublish() {
       if (this.renderer) {
@@ -3010,7 +3049,7 @@ if (typeof window.FriendsCircle === 'undefined') {
     }
 
     /**
-     * 显示图片发布弹窗
+     * แสดงป๊อปอัปเผยแพร่รูปภาพ
      */
     showImagePublishModal() {
       if (this.renderer) {
@@ -3019,19 +3058,19 @@ if (typeof window.FriendsCircle === 'undefined') {
     }
 
     /**
-     * 发送文字朋友圈
-     * @param {string} content - 朋友圈内容
+     * ส่งวงเพื่อนแบบข้อความ
+     * @param {string} content - เนื้อหาวงเพื่อน
      */
     async sendTextCircle(content) {
       try {
-        // 生成随机楼层ID
+        // สร้าง ID ชั้นแบบสุ่ม
         const floorId = 'w' + Math.floor(Math.random() * 900 + 100);
 
-        // 🌟 立即存储文字朋友圈数据到管理器中
+        // 🌟 จัดเก็บข้อมูลวงเพื่อนแบบข้อความในตัวจัดการทันที
         const currentUserName = this.getCurrentUserName();
         const circleData = {
           id: floorId,
-          author: currentUserName, // 使用当前用户名，而不是{{user}}
+          author: currentUserName, // ใช้ชื่อผู้ใช้ปัจจุบันแทน {{user}}
           friendId: '483920',
           type: 'text',
           content: content,
@@ -3043,68 +3082,70 @@ if (typeof window.FriendsCircle === 'undefined') {
           timestamp: new Date().toISOString(),
         };
 
-        // 立即存储到管理器中
+        // จัดเก็บในตัวจัดการทันที
         this.manager.friendsCircleData.set(floorId, circleData);
-        console.log('[Friends Circle] 立即存储文字朋友圈数据:', circleData);
+        console.log('[Friends Circle] จัดเก็บข้อมูลวงเพื่อนแบบข้อความทันที:', circleData); // Translated: 立即存储文字朋友圈数据
 
-        // 触发界面更新
+        // ทริกเกอร์การอัปเดต UI
         this.dispatchUpdateEvent();
 
-        // 构建朋友圈格式
+        // สร้างรูปแบบวงเพื่อน
         const circleFormat = `[朋友圈|{{user}}|483920|${floorId}|${content}]`;
 
-        // 发送给AI
+        // ส่งไปยัง AI
         await this.sendToAI(
-          `用户发送朋友圈，请使用规定的朋友圈回复格式生成3-5条可能的好友回复，仅限有好友id的好友参与朋友圈回复。请注意，你是在为现有的用户朋友圈生成回复，只生成回复，禁止重复生成用户的朋友圈格式。\n${circleFormat}`,
+          `ผู้ใช้ส่งวงเพื่อน โปรดสร้างการตอบกลับที่เป็นไปได้ 3-5 รายการจากเพื่อนโดยใช้รูปแบบการตอบกลับวงเพื่อนที่กำหนด จำกัดเฉพาะเพื่อนที่มี ID เพื่อนเท่านั้นที่สามารถเข้าร่วมการตอบกลับวงเพื่อน โปรดทราบว่าคุณกำลังสร้างการตอบกลับสำหรับวงเพื่อนของผู้ใช้ที่มีอยู่ สร้างการตอบกลับเท่านั้น ห้ามสร้างรูปแบบวงเพื่อนของผู้ใช้ซ้ำ\n${circleFormat}`, // Translated: 用户发送朋友圈，请使用规定的朋友圈回复格式生成3-5条可能的好友回复，仅限有好友id的好友参与朋友圈回复。请注意，你是在为现有的用户朋友圈生成回复，只生成回复，禁止重复生成用户的朋友圈格式。\n${circleFormat}
         );
 
-        // 🌟 手动触发一次朋友圈解析，确保用户发送的朋友圈被正确解析
+        // 🌟 ทริกเกอร์การแยกวิเคราะห์วงเพื่อนด้วยตนเองหนึ่งครั้ง เพื่อให้แน่ใจว่าวงเพื่อนของผู้ใช้ที่ส่งไปได้รับการแยกวิเคราะห์อย่างถูกต้อง
         setTimeout(async () => {
           try {
-            console.log('[Friends Circle] 手动触发朋友圈解析，确保用户发送的内容被解析...');
-            await this.manager.refreshData(false); // 增量刷新
+            console.log(
+              '[Friends Circle] ทริกเกอร์การแยกวิเคราะห์วงเพื่อนด้วยตนเอง, เพื่อให้แน่ใจว่าเนื้อหาที่ผู้ใช้ส่งไปได้รับการแยกวิเคราะห์...',
+            ); // Translated: 手动触发朋友圈解析，确保用户发送的内容被解析...
+            await this.manager.refreshData(false); // อัปเดตแบบเพิ่มหน่วย
             if (this.isActive) {
               this.dispatchUpdateEvent();
             }
           } catch (error) {
-            console.warn('[Friends Circle] 手动触发解析失败:', error);
+            console.warn('[Friends Circle] ทริกเกอร์การแยกวิเคราะห์ด้วยตนเองล้มเหลว:', error); // Translated: 手动触发解析失败
           }
-        }, 500); // 等待500ms让SillyTavern处理消息
+        }, 500); // รอ 500ms เพื่อให้ SillyTavern ประมวลผลข้อความ
 
-        this.showToast('朋友圈已发送', 'success');
+        this.showToast('ส่งวงเพื่อนแล้ว', 'success'); // Translated: 朋友圈已发送
         this.hidePublishModal();
       } catch (error) {
-        console.error('[Friends Circle] 发送文字朋友圈失败:', error);
-        this.showToast('发送失败，请重试', 'error');
+        console.error('[Friends Circle] ส่งวงเพื่อนแบบข้อความล้มเหลว:', error); // Translated: 发送文字朋友圈失败
+        this.showToast('ส่งล้มเหลว, กรุณาลองใหม่', 'error'); // Translated: 发送失败，请重试
       }
     }
 
     /**
-     * 发送图片朋友圈
-     * @param {string} imageDescription - 图片描述
-     * @param {string} textContent - 文字内容
-     * @param {File} imageFile - 图片文件（可选）
+     * ส่งวงเพื่อนแบบรูปภาพ
+     * @param {string} imageDescription - คำอธิบายรูปภาพ
+     * @param {string} textContent - เนื้อหาข้อความ
+     * @param {File} imageFile - ไฟล์รูปภาพ (ไม่บังคับ)
      */
     async sendImageCircle(imageDescription, textContent, imageFile) {
       try {
-        // 生成随机楼层ID
+        // สร้าง ID ชั้นแบบสุ่ม
         const floorId = 's' + Math.floor(Math.random() * 900 + 100);
 
         let finalImageDesc = imageDescription;
 
-        // 如果有图片文件，先上传
+        // หากมีไฟล์รูปภาพ ให้อัปโหลดก่อน
         if (imageFile && window.mobileUploadManager) {
           try {
             const uploadResult = await window.mobileUploadManager.uploadFile(imageFile);
             if (uploadResult && uploadResult.success) {
-              finalImageDesc = '图片';
+              finalImageDesc = 'รูปภาพ'; // Translated: 图片
             }
           } catch (uploadError) {
-            console.warn('[Friends Circle] 图片上传失败，使用描述文本:', uploadError);
+            console.warn('[Friends Circle] อัปโหลดรูปภาพล้มเหลว, ใช้ข้อความคำอธิบาย:', uploadError); // Translated: 图片上传失败，使用描述文本
           }
         }
 
-        // 构建朋友圈格式
+        // สร้างรูปแบบวงเพื่อน
         let circleFormat;
         if (textContent && textContent.trim()) {
           circleFormat = `[朋友圈|{{user}}|483920|${floorId}|${finalImageDesc}|${textContent}]`;
@@ -3112,22 +3153,21 @@ if (typeof window.FriendsCircle === 'undefined') {
           circleFormat = `[朋友圈|{{user}}|483920|${floorId}|${finalImageDesc}]`;
         }
 
-        // 发送给AI
+        // ส่งไปยัง AI
         await this.sendToAI(
-          `用户发送朋友圈，请使用规定的朋友圈回复格式生成3-5条可能的好友回复，仅限有好友id的好友参与朋友圈回复。请注意，你是在为现有的用户朋友圈生成回复，只生成回复，禁止重复生成用户的朋友圈格式。\n${circleFormat}`,
+          `ผู้ใช้ส่งวงเพื่อน โปรดสร้างการตอบกลับที่เป็นไปได้ 3-5 รายการจากเพื่อนโดยใช้รูปแบบการตอบกลับวงเพื่อนที่กำหนด จำกัดเฉพาะเพื่อนที่มี ID เพื่อนเท่านั้นที่สามารถเข้าร่วมการตอบกลับวงเพื่อน โปรดทราบว่าคุณกำลังสร้างการตอบกลับสำหรับวงเพื่อนของผู้ใช้ที่มีอยู่ สร้างการตอบกลับเท่านั้น ห้ามสร้างรูปแบบวงเพื่อนของผู้ใช้ซ้ำ\n${circleFormat}`, // Translated: 用户发送朋友圈，请使用规定的朋友圈回复格式生成3-5条可能的好友回复，仅限有好友id的好友参与朋友圈回复。请注意，你是在为现有的用户朋友圈生成回复，只生成回复，禁止重复生成用户的朋友圈格式。\n${circleFormat}
         );
 
-        this.showToast('朋友圈已发送', 'success');
+        this.showToast('ส่งวงเพื่อนแล้ว', 'success'); // Translated: 朋友圈已发送
         this.hidePublishModal();
       } catch (error) {
-        console.error('[Friends Circle] 发送图片朋友圈失败:', error);
-        this.showToast('发送失败，请重试', 'error');
+        console.error('[Friends Circle] ส่งวงเพื่อนแบบรูปภาพล้มเหลว:', error); // Translated: 发送图片朋友圈失败
+        this.showToast('ส่งล้มเหลว, กรุณาลองใหม่', 'error'); // Translated: 发送失败，请重试
       }
     }
-
     /**
-     * 处理文字发布
-     * @param {HTMLElement} modal - 弹窗元素
+     * จัดการการเผยแพร่ข้อความ
+     * @param {HTMLElement} modal - องค์ประกอบป๊อปอัป
      */
     handleTextPublish(modal = null) {
       if (!modal) {
@@ -3140,21 +3180,22 @@ if (typeof window.FriendsCircle === 'undefined') {
 
       const content = textInput.value.trim();
       if (!content) {
-        this.showToast('请输入朋友圈内容', 'error');
+        this.showToast('กรุณาป้อนเนื้อหาวงเพื่อน', 'error'); // Translated: 请输入朋友圈内容
         return;
       }
 
-      // 发送文字朋友圈
+      // ส่งวงเพื่อนแบบข้อความ
       this.sendTextCircle(content);
       modal.remove();
     }
 
     /**
-     * 处理图片发布
+     * จัดการการเผยแพร่รูปภาพ
      */
     async handleImagePublish() {
-      console.log('[Friends Circle] 开始处理图片发布...');
-      console.log('[Friends Circle] this上下文检查:', {
+      console.log('[Friends Circle] เริ่มจัดการการเผยแพร่รูปภาพ...'); // Translated: 开始处理图片发布...
+      console.log('[Friends Circle] ตรวจสอบ this context:', {
+        // Translated: this上下文检查
         thisExists: !!this,
         thisConstructorName: this?.constructor?.name,
         hasSelectedImageFile: !!this?.selectedImageFile,
@@ -3165,16 +3206,16 @@ if (typeof window.FriendsCircle === 'undefined') {
         globalSelectedFileName: window.friendsCircle?.selectedImageFile?.name,
       });
 
-      // 如果当前实例没有文件，但全局实例有，则使用全局实例的文件
+      // หากอินสแตนซ์ปัจจุบันไม่มีไฟล์ แต่ global instance มี ให้ใช้ไฟล์จาก global instance
       if (!this.selectedImageFile && window.friendsCircle?.selectedImageFile) {
-        console.log('[Friends Circle] 从全局实例恢复文件信息');
+        console.log('[Friends Circle] กู้คืนข้อมูลไฟล์จาก global instance'); // Translated: 从全局实例恢复文件信息
         this.selectedImageFile = window.friendsCircle.selectedImageFile;
         this.selectedImageElements = window.friendsCircle.selectedImageElements;
       }
 
       const modal = document.querySelector('.friends-circle-image-publish-modal');
       if (!modal) {
-        console.error('[Friends Circle] 未找到发布弹窗');
+        console.error('[Friends Circle] ไม่พบป๊อปอัปเผยแพร่'); // Translated: 未找到发布弹窗
         return;
       }
 
@@ -3185,7 +3226,8 @@ if (typeof window.FriendsCircle === 'undefined') {
       const uploadText = modal.querySelector('#friends-circle-upload-text');
       const progressBar = modal.querySelector('#friends-circle-progress-bar');
 
-      console.log('[Friends Circle] 弹窗元素检查:', {
+      console.log('[Friends Circle] ตรวจสอบองค์ประกอบป๊อปอัป:', {
+        // Translated: 弹窗元素检查
         imageDescInput: !!imageDescInput,
         textInput: !!textInput,
         publishBtn: !!publishBtn,
@@ -3195,7 +3237,7 @@ if (typeof window.FriendsCircle === 'undefined') {
       });
 
       if (!imageDescInput) {
-        console.error('[Friends Circle] 图片描述输入框未找到');
+        console.error('[Friends Circle] ไม่พบช่องป้อนคำอธิบายรูปภาพ'); // Translated: 图片描述输入框未找到
         return;
       }
 
@@ -3203,7 +3245,8 @@ if (typeof window.FriendsCircle === 'undefined') {
       const textContent = textInput ? textInput.value.trim() : '';
       const imageFile = this.selectedImageFile;
 
-      console.log('[Friends Circle] 发布数据检查:', {
+      console.log('[Friends Circle] ตรวจสอบข้อมูลเผยแพร่:', {
+        // Translated: 发布数据检查
         imageDescription: imageDescription,
         textContent: textContent,
         hasImageFile: !!imageFile,
@@ -3211,151 +3254,152 @@ if (typeof window.FriendsCircle === 'undefined') {
         selectedImageFileExists: !!this.selectedImageFile,
       });
 
-      // 验证输入 - 至少需要图片描述或图片文件其中之一
+      // ตรวจสอบความถูกต้องของอินพุต - ต้องมีคำอธิบายรูปภาพหรือไฟล์รูปภาพอย่างใดอย่างหนึ่ง
       if (!imageDescription && !imageFile) {
-        console.warn('[Friends Circle] 验证失败 - 缺少描述和图片文件');
-        this.showToast('请输入图片描述或上传图片', 'error');
+        console.warn('[Friends Circle] ตรวจสอบความถูกต้องล้มเหลว - ขาดคำอธิบายและไฟล์รูปภาพ'); // Translated: 验证失败 - 缺少描述和图片文件
+        this.showToast('กรุณาป้อนคำอธิบายรูปภาพหรืออัปโหลดรูปภาพ', 'error'); // Translated: 请输入图片描述或上传图片
         return;
       }
 
-      console.log('[Friends Circle] 发布验证通过:', {
+      console.log('[Friends Circle] ตรวจสอบการเผยแพร่ผ่าน:', {
+        // Translated: 发布验证通过
         hasDescription: !!imageDescription,
         hasImageFile: !!imageFile,
         imageFileName: imageFile ? imageFile.name : 'none',
       });
 
       try {
-        // 禁用发布按钮，显示上传状态
+        // ปิดใช้งานปุ่มเผยแพร่, แสดงสถานะการอัปโหลด
         if (publishBtn) {
           publishBtn.disabled = true;
-          publishBtn.textContent = '发布中...';
+          publishBtn.textContent = 'กำลังเผยแพร่...'; // Translated: 发布中...
         }
 
         let uploadResult = null;
-        let finalImageDescription = imageDescription || '图片';
+        let finalImageDescription = imageDescription || 'รูปภาพ'; // Translated: 图片
 
-        // 如果有图片文件，先上传
+        // หากมีไฟล์รูปภาพ ให้อัปโหลดก่อน
         if (imageFile) {
-          console.log('[Friends Circle] 开始上传图片文件:', imageFile.name);
+          console.log('[Friends Circle] เริ่มอัปโหลดไฟล์รูปภาพ:', imageFile.name); // Translated: 开始上传图片文件
 
-          // 显示上传状态
+          // แสดงสถานะการอัปโหลด
           if (uploadStatus) {
             uploadStatus.style.display = 'block';
-            if (uploadText) uploadText.textContent = '正在上传图片...';
+            if (uploadText) uploadText.textContent = 'กำลังอัปโหลดรูปภาพ...'; // Translated: 正在上传图片...
             if (progressBar) progressBar.style.width = '30%';
           }
 
-          // 使用SillyTavern原生附件系统
+          // ใช้ระบบแนบไฟล์ดั้งเดิมของ SillyTavern
           if (!window.attachmentSender) {
-            throw new Error('图片上传功能未就绪');
+            throw new Error('ฟังก์ชันอัปโหลดรูปภาพไม่พร้อมใช้งาน'); // Translated: 图片上传功能未就绪
           }
 
-          // 直接使用simulateFileInputUpload，让SillyTavern处理附件
+          // ใช้ simulateFileInputUpload โดยตรง ให้ SillyTavern จัดการไฟล์แนบ
           uploadResult = await window.attachmentSender.simulateFileInputUpload(imageFile);
 
           if (!uploadResult.success) {
-            throw new Error(uploadResult.error || '图片上传失败');
+            throw new Error(uploadResult.error || 'อัปโหลดรูปภาพล้มเหลว'); // Translated: 图片上传失败
           }
 
-          console.log('[Friends Circle] 图片已附加到SillyTavern:', uploadResult);
+          console.log('[Friends Circle] แนบรูปภาพไปยัง SillyTavern แล้ว:', uploadResult); // Translated: 图片已附加到SillyTavern
 
-          // 更新进度
+          // อัปเดตความคืบหน้า
           if (progressBar) progressBar.style.width = '70%';
-          if (uploadText) uploadText.textContent = '图片已附加，正在发布...';
+          if (uploadText) uploadText.textContent = 'แนบรูปภาพแล้ว, กำลังเผยแพร่...'; // Translated: 图片已附加，正在发布...
 
-          // 如果没有描述，使用文件名作为描述
+          // หากไม่มีคำอธิบาย ให้ใช้ชื่อไฟล์เป็นคำอธิบาย
           if (!imageDescription) {
-            finalImageDescription = `我的图片: ${uploadResult.fileName}`;
+            finalImageDescription = `รูปภาพของฉัน: ${uploadResult.fileName}`; // Translated: 我的图片:
           }
         }
 
-        // 更新进度
+        // อัปเดตความคืบหน้า
         if (progressBar) progressBar.style.width = '90%';
-        if (uploadText) uploadText.textContent = '正在发布朋友圈...';
+        if (uploadText) uploadText.textContent = 'กำลังเผยแพร่วงเพื่อน...'; // Translated: 正在发布朋友圈...
 
-        // 发送朋友圈
+        // ส่งวงเพื่อน
         await this.sendImageCircleWithUpload(finalImageDescription, textContent, uploadResult);
 
-        // 完成
+        // เสร็จสมบูรณ์
         if (progressBar) progressBar.style.width = '100%';
-        if (uploadText) uploadText.textContent = '发布成功！';
+        if (uploadText) uploadText.textContent = 'เผยแพร่สำเร็จ!'; // Translated: 发布成功！
 
-        // 不要立即清理SillyTavern附件状态，让SillyTavern自然处理附件消息
+        // ไม่ต้องล้างสถานะไฟล์แนบของ SillyTavern ทันที ให้ SillyTavern จัดการข้อความแนบไฟล์ตามธรรมชาติ
         // this.clearSillyTavernAttachment();
 
-        // 延迟关闭弹窗
+        // ปิดป๊อปอัปแบบหน่วงเวลา
         setTimeout(() => {
           modal.remove();
-          this.showToast('朋友圈发布成功！', 'success');
+          this.showToast('เผยแพร่วงเพื่อนสำเร็จ!', 'success'); // Translated: 朋友圈发布成功！
         }, 1000);
       } catch (error) {
-        console.error('[Friends Circle] 图片朋友圈发布失败:', error);
+        console.error('[Friends Circle] เผยแพร่วงเพื่อนแบบรูปภาพล้มเหลว:', error); // Translated: 图片朋友圈发布失败
 
-        // 恢复按钮状态
+        // กู้คืนสถานะปุ่ม
         if (publishBtn) {
           publishBtn.disabled = false;
-          publishBtn.textContent = '发布';
+          publishBtn.textContent = 'เผยแพร่'; // Translated: 发布
         }
 
-        // 隐藏上传状态
+        // ซ่อนสถานะการอัปโหลด
         if (uploadStatus) {
           uploadStatus.style.display = 'none';
         }
 
-        this.showToast(error.message || '发布失败，请重试', 'error');
+        this.showToast(error.message || 'เผยแพร่ล้มเหลว, กรุณาลองใหม่', 'error'); // Translated: 发布失败，请重试
       }
     }
 
     /**
-     * 发送带上传结果的图片朋友圈
+     * ส่งวงเพื่อนแบบรูปภาพพร้อมผลการอัปโหลด
      */
     async sendImageCircleWithUpload(imageDescription, textContent, uploadResult) {
       try {
-        // 生成随机楼层ID
+        // สร้าง ID ชั้นแบบสุ่ม
         const floorId = 's' + Math.floor(Math.random() * 900 + 100);
 
-        // 从uploadResult中获取文件名
-        const fileName = uploadResult?.file?.name || uploadResult?.fileName || '图片';
+        // รับชื่อไฟล์จาก uploadResult
+        const fileName = uploadResult?.file?.name || uploadResult?.fileName || 'รูปภาพ'; // Translated: 图片
 
-        // 构建朋友圈格式
+        // สร้างรูปแบบวงเพื่อน
         let circleFormat;
         if (textContent && textContent.trim()) {
-          circleFormat = `[朋友圈|{{user}}|483920|${floorId}|我的图片: ${fileName}|${textContent}]`;
+          circleFormat = `[朋友圈|{{user}}|483920|${floorId}|我的图片: ${fileName}|${textContent}]`; // Note: '我的图片: ' is kept as functional format
         } else {
           circleFormat = `[朋友圈|{{user}}|483920|${floorId}|我的图片: ${fileName}]`;
         }
 
-        console.log('[Friends Circle] 发送朋友圈格式:', circleFormat);
+        console.log('[Friends Circle] รูปแบบวงเพื่อนที่จะส่ง:', circleFormat); // Translated: 发送朋友圈格式
 
-        // 🌟 立即存储朋友圈数据到管理器中，不等待SillyTavern处理
+        // 🌟 จัดเก็บข้อมูลวงเพื่อนในตัวจัดการทันที ไม่ต้องรอ SillyTavern ประมวลผล
         const currentUserName = this.getCurrentUserName();
 
-        // 尝试立即获取图片URL（如果可能的话）
+        // ลองรับ URL รูปภาพทันที (ถ้าเป็นไปได้)
         let imageUrl = null;
         try {
-          // 检查是否有已上传的图片URL可用
+          // ตรวจสอบว่ามี URL รูปภาพที่อัปโหลดแล้วหรือไม่
           if (uploadResult && uploadResult.fileUrl && uploadResult.fileUrl !== 'attached_to_sillytavern') {
             imageUrl = uploadResult.fileUrl;
-            console.log('[Friends Circle] 使用上传结果中的图片URL:', imageUrl);
+            console.log('[Friends Circle] ใช้ URL รูปภาพจากผลการอัปโหลด:', imageUrl); // Translated: 使用上传结果中的图片URL
           } else {
-            // 尝试从SillyTavern获取最新的图片URL
+            // ลองรับ URL รูปภาพล่าสุดจาก SillyTavern
             const recentImageUrl = await this.tryGetRecentImageUrl();
             if (recentImageUrl) {
               imageUrl = recentImageUrl;
-              console.log('[Friends Circle] 获取到最新图片URL:', imageUrl);
+              console.log('[Friends Circle] ได้รับ URL รูปภาพล่าสุด:', imageUrl); // Translated: 获取到最新图片URL
             }
           }
         } catch (error) {
-          console.warn('[Friends Circle] 获取图片URL失败，将使用占位符:', error);
+          console.warn('[Friends Circle] รับ URL รูปภาพล้มเหลว, จะใช้ตัวยึดตำแหน่ง:', error); // Translated: 获取图片URL失败，将使用占位符
         }
 
         const circleData = {
           id: floorId,
-          author: currentUserName, // 使用当前用户名，而不是{{user}}
+          author: currentUserName, // ใช้ชื่อผู้ใช้ปัจจุบันแทน {{user}}
           friendId: '483920',
           type: 'visual',
-          imageDescription: `我的图片: ${fileName}`,
-          imageUrl: imageUrl, // 添加图片URL字段
+          imageDescription: `รูปภาพของฉัน: ${fileName}`, // Translated: 我的图片:
+          imageUrl: imageUrl, // เพิ่มฟิลด์ URL รูปภาพ
           content: textContent || '',
           messageIndex: -1,
           latestActivityIndex: -1,
@@ -3365,65 +3409,67 @@ if (typeof window.FriendsCircle === 'undefined') {
           timestamp: new Date().toISOString(),
         };
 
-        // 立即存储到管理器中
+        // จัดเก็บในตัวจัดการทันที
         this.manager.friendsCircleData.set(floorId, circleData);
-        console.log('[Friends Circle] 立即存储图片朋友圈数据:', circleData);
+        console.log('[Friends Circle] จัดเก็บข้อมูลวงเพื่อนรูปภาพทันที:', circleData); // Translated: 立即存储图片朋友圈数据
 
-        // 触发界面更新
+        // ทริกเกอร์การอัปเดต UI
         this.dispatchUpdateEvent();
 
-        // 构建完整的消息，包含指导文本
-        const fullMessage = `用户发送朋友圈，请使用规定的朋友圈回复格式生成3-5条可能的好友回复，仅限有好友id的好友参与朋友圈回复。请注意，你是在为现有的用户朋友圈生成回复，只生成回复，禁止重复生成用户的朋友圈格式。\n${circleFormat}`;
+        // สร้างข้อความฉบับเต็ม พร้อมข้อความแนะนำ
+        const fullMessage = `ผู้ใช้ส่งวงเพื่อน โปรดสร้างการตอบกลับที่เป็นไปได้ 3-5 รายการจากเพื่อนโดยใช้รูปแบบการตอบกลับวงเพื่อนที่กำหนด จำกัดเฉพาะเพื่อนที่มี ID เพื่อนเท่านั้นที่สามารถเข้าร่วมการตอบกลับวงเพื่อน โปรดทราบว่าคุณกำลังสร้างการตอบกลับสำหรับวงเพื่อนของผู้ใช้ที่มีอยู่ สร้างการตอบกลับเท่านั้น ห้ามสร้างรูปแบบวงเพื่อนของผู้ใช้ซ้ำ\n${circleFormat}`; // Translated: (The full message instruction is kept consistent with previous translations)
 
-        // 发送朋友圈格式消息，SillyTavern会自动附加图片
+        // ส่งข้อความรูปแบบวงเพื่อน, SillyTavern จะแนบรูปภาพโดยอัตโนมัติ
         await this.sendToAI(fullMessage);
 
-        // 🌟 手动触发一次朋友圈解析，确保用户发送的朋友圈被正确解析
+        // 🌟 ทริกเกอร์การแยกวิเคราะห์วงเพื่อนด้วยตนเองหนึ่งครั้ง เพื่อให้แน่ใจว่าวงเพื่อนของผู้ใช้ที่ส่งไปได้รับการแยกวิเคราะห์อย่างถูกต้อง
         setTimeout(async () => {
           try {
-            console.log('[Friends Circle] 手动触发朋友圈解析，确保用户发送的内容被解析...');
-            await this.manager.refreshData(false); // 增量刷新
+            console.log(
+              '[Friends Circle] ทริกเกอร์การแยกวิเคราะห์วงเพื่อนด้วยตนเอง, เพื่อให้แน่ใจว่าเนื้อหาที่ผู้ใช้ส่งไปได้รับการแยกวิเคราะห์...',
+            ); // Translated: 手动触发朋友圈解析，确保用户发送的内容被解析...
+            await this.manager.refreshData(false); // อัปเดตแบบเพิ่มหน่วย
             if (this.isActive) {
               this.dispatchUpdateEvent();
             }
           } catch (error) {
-            console.warn('[Friends Circle] 手动触发解析失败:', error);
+            console.warn('[Friends Circle] ทริกเกอร์การแยกวิเคราะห์ด้วยตนเองล้มเหลว:', error); // Translated: 手动触发解析失败
           }
-        }, 500); // 等待500ms让SillyTavern处理消息
+        }, 500); // รอ 500ms เพื่อให้ SillyTavern ประมวลผลข้อความ
 
-        // 等待SillyTavern处理附件消息
+        // รอ SillyTavern ประมวลผลข้อความแนบไฟล์
         if (uploadResult && uploadResult.success) {
-          console.log('[Friends Circle] 等待SillyTavern处理附件消息...');
+          console.log('[Friends Circle] กำลังรอ SillyTavern ประมวลผลข้อความแนบไฟล์...'); // Translated: 等待SillyTavern处理附件消息...
 
-          // 延迟处理，让SillyTavern有时间处理附件
+          // ประมวลผลแบบหน่วงเวลา เพื่อให้ SillyTavern มีเวลาจัดการไฟล์แนบ
           setTimeout(async () => {
             try {
-              // 尝试从SillyTavern聊天数据中提取真实的图片URL
+              // ลองดึง URL รูปภาพจริงจากข้อมูลแชท SillyTavern
               await this.extractImageFromSillyTavern(floorId, fileName, textContent);
             } catch (error) {
-              console.warn('[Friends Circle] 提取图片信息失败:', error);
-              // 即使提取失败，朋友圈也已经发送成功了
+              console.warn('[Friends Circle] ดึงข้อมูลรูปภาพล้มเหลว:', error); // Translated: 提取图片信息失败
+              // แม้ว่าจะดึงข้อมูลล้มเหลว แต่วงเพื่อนก็ถูกส่งสำเร็จแล้ว
             } finally {
-              // 在处理完成后清理SillyTavern附件状态
+              // ล้างสถานะไฟล์แนบของ SillyTavern หลังจากการประมวลผลเสร็จสิ้น
               this.clearSillyTavernAttachment();
             }
-          }, 2000); // 等待2秒让SillyTavern处理
+          }, 2000); // รอ 2 วินาทีเพื่อให้ SillyTavern ประมวลผล
         }
 
-        console.log('[Friends Circle] 图片朋友圈发送成功');
+        console.log('[Friends Circle] ส่งวงเพื่อนแบบรูปภาพสำเร็จ'); // Translated: 图片朋友圈发送成功
       } catch (error) {
-        console.error('[Friends Circle] 发送图片朋友圈失败:', error);
+        console.error('[Friends Circle] ส่งวงเพื่อนแบบรูปภาพล้มเหลว:', error); // Translated: 发送图片朋友圈失败
         throw error;
       }
     }
 
     /**
-     * 尝试立即获取最新的图片URL
-     * @returns {Promise<string|null>} 图片URL或null
+     * ลองรับ URL รูปภาพล่าสุดทันที
+     * @returns {Promise<string|null>} URL รูปภาพ หรือ null
      */
     async tryGetRecentImageUrl() {
       try {
-        // 使用SillyTavern.getContext()获取聊天数据
+        // ใช้ SillyTavern.getContext() เพื่อรับข้อมูลแชท
         if (
           typeof window !== 'undefined' &&
           window.SillyTavern &&
@@ -3433,11 +3479,11 @@ if (typeof window.FriendsCircle === 'undefined') {
           if (context && context.chat && Array.isArray(context.chat)) {
             const chatMessages = context.chat;
 
-            // 检查最近的消息中是否有图片
-            const recentMessages = chatMessages.slice(-3); // 检查最近3条消息
+            // ตรวจสอบรูปภาพในข้อความล่าสุด
+            const recentMessages = chatMessages.slice(-3); // ตรวจสอบ 3 ข้อความล่าสุด
             for (const message of recentMessages.reverse()) {
               if (message.extra && message.extra.image) {
-                console.log('[Friends Circle] 找到最新图片URL:', message.extra.image);
+                console.log('[Friends Circle] พบ URL รูปภาพล่าสุด:', message.extra.image); // Translated: 找到最新图片URL
                 return message.extra.image;
               }
             }
@@ -3446,22 +3492,22 @@ if (typeof window.FriendsCircle === 'undefined') {
 
         return null;
       } catch (error) {
-        console.warn('[Friends Circle] 获取最新图片URL失败:', error);
+        console.warn('[Friends Circle] รับ URL รูปภาพล่าสุดล้มเหลว:', error); // Translated: 获取最新图片URL失败
         return null;
       }
     }
 
     /**
-     * 从SillyTavern提取图片信息
+     * ดึงข้อมูลรูปภาพจาก SillyTavern
      */
     async extractImageFromSillyTavern(floorId, imageDescription, textContent) {
       try {
-        console.log('[Friends Circle] 开始从SillyTavern提取图片信息...');
+        console.log('[Friends Circle] เริ่มดึงข้อมูลรูปภาพจาก SillyTavern...'); // Translated: 开始从SillyTavern提取图片信息...
 
-        // 使用正确的方法获取SillyTavern聊天数据（参考message-app.js）
+        // ใช้เมธอดที่ถูกต้องเพื่อรับข้อมูลแชท SillyTavern (อ้างอิง message-app.js)
         let chatMessages = null;
 
-        // 优先使用SillyTavern.getContext().chat
+        // ให้ความสำคัญกับการใช้ SillyTavern.getContext().chat
         if (
           typeof window !== 'undefined' &&
           window.SillyTavern &&
@@ -3470,30 +3516,34 @@ if (typeof window.FriendsCircle === 'undefined') {
           const context = window.SillyTavern.getContext();
           if (context && context.chat && Array.isArray(context.chat)) {
             chatMessages = context.chat;
-            console.log('[Friends Circle] 使用SillyTavern.getContext()获取聊天数据:', chatMessages.length, '条消息');
+            console.log(
+              '[Friends Circle] ใช้ SillyTavern.getContext() เพื่อรับข้อมูลแชท:',
+              chatMessages.length,
+              'ข้อความ',
+            ); // Translated: 使用SillyTavern.getContext()获取聊天数据, 条消息
           }
         }
 
-        // 备用方案：从全局变量获取
+        // แผนสำรอง: รับจากตัวแปรส่วนกลาง
         if (!chatMessages) {
           const chat = window['chat'];
           if (chat && Array.isArray(chat)) {
             chatMessages = chat;
-            console.log('[Friends Circle] 使用全局变量获取聊天数据:', chatMessages.length, '条消息');
+            console.log('[Friends Circle] ใช้ตัวแปรส่วนกลางเพื่อรับข้อมูลแชท:', chatMessages.length, 'ข้อความ'); // Translated: 使用全局变量获取聊天数据, 条消息
           }
         }
 
         if (!chatMessages || !Array.isArray(chatMessages)) {
-          throw new Error('无法访问SillyTavern聊天数据');
+          throw new Error('ไม่สามารถเข้าถึงข้อมูลแชท SillyTavern ได้'); // Translated: 无法访问SillyTavern聊天数据
         }
 
-        // 查找最近的消息中的图片信息
-        const recentMessages = chatMessages.slice(-5); // 检查最近5条消息
+        // ค้นหาข้อมูลรูปภาพในข้อความล่าสุด
+        const recentMessages = chatMessages.slice(-5); // ตรวจสอบ 5 ข้อความล่าสุด
         let imageUrl = null;
         let fileName = null;
 
         console.log(
-          '[Friends Circle] 检查最近的消息:',
+          '[Friends Circle] ตรวจสอบข้อความล่าสุด:', // Translated: 检查最近的消息
           recentMessages.map(m => ({
             content: m.mes || m.content,
             extra: m.extra,
@@ -3505,39 +3555,40 @@ if (typeof window.FriendsCircle === 'undefined') {
           if (message.extra && message.extra.image) {
             imageUrl = message.extra.image;
             fileName = imageUrl.split('/').pop();
-            console.log('[Friends Circle] 找到图片信息:', { imageUrl, fileName });
+            console.log('[Friends Circle] พบข้อมูลรูปภาพ:', { imageUrl, fileName }); // Translated: 找到图片信息
             break;
           }
         }
 
-        // 如果没有找到，尝试从消息内容中解析（参考message-renderer.js的实现）
+        // หากไม่พบ ให้ลองแยกวิเคราะห์จากเนื้อหาข้อความ (อ้างอิงการใช้งาน message-renderer.js)
         if (!imageUrl) {
-          console.log('[Friends Circle] 未在extra中找到图片，尝试从消息内容解析...');
+          console.log('[Friends Circle] ไม่พบรูปภาพใน extra, กำลังลองแยกวิเคราะห์จากเนื้อหาข้อความ...'); // Translated: 未在extra中找到图片，尝试从消息内容解析...
 
           for (const message of recentMessages.reverse()) {
             const content = message.mes || message.content || '';
 
-            // 检查是否包含朋友圈格式的图片信息
+            // ตรวจสอบว่ามีข้อมูลรูปภาพในรูปแบบวงเพื่อนหรือไม่
             if (content.includes('我的图片:') || content.includes('[朋友圈|')) {
+              // Note: '我的图片:' and '[朋友圈|' are kept as functional markers
               const imageRegex = /我的图片:\s*([^|\]]+)/;
               const match = content.match(imageRegex);
 
               if (match) {
                 fileName = match[1].trim();
-                console.log('[Friends Circle] 从消息解析到图片文件名:', fileName);
+                console.log('[Friends Circle] แยกวิเคราะห์ชื่อไฟล์รูปภาพจากข้อความ:', fileName); // Translated: 从消息解析到图片文件名
 
-                // 使用AttachmentSender构建图片URL（参考message-renderer.js）
+                // ใช้ AttachmentSender เพื่อสร้าง URL รูปภาพ (อ้างอิง message-renderer.js)
                 if (window.attachmentSender && typeof window.attachmentSender.buildImageUrl === 'function') {
-                  // 获取当前用户名
+                  // รับชื่อผู้ใช้ปัจจุบัน
                   const userName = this.getCurrentUserName();
                   imageUrl = window.attachmentSender.buildImageUrl(userName, fileName);
                 } else {
-                  // 备用方案：使用相对路径，与SillyTavern保持一致
+                  // แผนสำรอง: ใช้เส้นทางสัมพัทธ์ ให้สอดคล้องกับ SillyTavern
                   const userName = this.getCurrentUserName();
                   imageUrl = `/user/images/${userName}/${fileName}`;
                 }
 
-                console.log('[Friends Circle] 构建的图片URL:', imageUrl);
+                console.log('[Friends Circle] URL รูปภาพที่สร้าง:', imageUrl); // Translated: 构建的图片URL
                 break;
               }
             }
@@ -3545,30 +3596,31 @@ if (typeof window.FriendsCircle === 'undefined') {
         }
 
         if (imageUrl) {
-          // 构建完整的图片URL
+          // สร้าง URL รูปภาพฉบับเต็ม
           const fullImageUrl = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`;
 
-          // 🌟 更新已存在的朋友圈数据，而不是重新创建
+          // 🌟 อัปเดตข้อมูลวงเพื่อนที่มีอยู่แทนการสร้างใหม่
           const existingData = this.manager.friendsCircleData.get(floorId);
           if (existingData) {
-            // 更新现有数据的图片信息
+            // อัปเดตข้อมูลรูปภาพของข้อมูลที่มีอยู่
             existingData.imageUrl = fullImageUrl;
             existingData.imageFileName = fileName;
             if (imageDescription && imageDescription !== existingData.imageDescription) {
               existingData.imageDescription = imageDescription;
             }
 
-            console.log('[Friends Circle] 更新已存在朋友圈的图片信息:', {
+            console.log('[Friends Circle] อัปเดตข้อมูลรูปภาพของวงเพื่อนที่มีอยู่:', {
+              // Translated: 更新已存在朋友圈的图片信息
               id: floorId,
               imageUrl: fullImageUrl,
               imageFileName: fileName,
             });
           } else {
-            // 如果不存在（不应该发生），则创建新数据
+            // หากไม่มีอยู่ (ไม่ควรเกิดขึ้น) ให้สร้างข้อมูลใหม่
             const currentUserName = this.getCurrentUserName();
             const circleData = {
               id: floorId,
-              author: currentUserName, // 使用真实用户名
+              author: currentUserName, // ใช้ชื่อผู้ใช้จริง
               friendId: '483920',
               type: 'visual',
               imageDescription: imageDescription,
@@ -3584,50 +3636,50 @@ if (typeof window.FriendsCircle === 'undefined') {
             };
 
             this.manager.friendsCircleData.set(floorId, circleData);
-            console.log('[Friends Circle] 创建新的图片朋友圈数据:', circleData);
+            console.log('[Friends Circle] สร้างข้อมูลวงเพื่อนรูปภาพใหม่:', circleData); // Translated: 创建新的图片朋友圈数据
           }
 
-          // 触发界面更新
+          // ทริกเกอร์การอัปเดต UI
           this.dispatchUpdateEvent();
         } else {
-          console.warn('[Friends Circle] 未找到图片信息，保持占位符显示');
+          console.warn('[Friends Circle] ไม่พบข้อมูลรูปภาพ, คงการแสดงผลตัวยึดตำแหน่งไว้'); // Translated: 未找到图片信息，保持占位符显示
         }
       } catch (error) {
-        console.error('[Friends Circle] 提取图片信息失败:', error);
+        console.error('[Friends Circle] ดึงข้อมูลรูปภาพล้มเหลว:', error); // Translated: 提取图片信息失败
         throw error;
       }
     }
 
     /**
-     * 清理SillyTavern附件状态
+     * ล้างสถานะไฟล์แนบของ SillyTavern
      */
     clearSillyTavernAttachment() {
       try {
-        console.log('[Friends Circle] 清理SillyTavern附件状态...');
+        console.log('[Friends Circle] กำลังล้างสถานะไฟล์แนบของ SillyTavern...'); // Translated: 清理SillyTavern附件状态...
 
-        // 查找并点击SillyTavern的文件重置按钮
+        // ค้นหาและคลิกปุ่มรีเซ็ตไฟล์ของ SillyTavern
         const resetButton = document.getElementById('file_form_reset');
         if (resetButton) {
-          console.log('[Friends Circle] 找到SillyTavern重置按钮，准备点击');
+          console.log('[Friends Circle] พบปุ่มรีเซ็ต SillyTavern, เตรียมคลิก'); // Translated: 找到SillyTavern重置按钮，准备点击
           resetButton.click();
-          console.log('[Friends Circle] SillyTavern附件已重置');
+          console.log('[Friends Circle] ไฟล์แนบ SillyTavern ถูกรีเซ็ตแล้ว'); // Translated: SillyTavern附件已重置
         } else {
-          console.log('[Friends Circle] 未找到SillyTavern重置按钮');
+          console.log('[Friends Circle] ไม่พบปุ่มรีเซ็ต SillyTavern'); // Translated: 未找到SillyTavern重置按钮
 
-          // 备用方案：直接清空文件输入框
+          // แผนสำรอง: ล้างช่องป้อนข้อมูลไฟล์โดยตรง
           const fileInput = document.getElementById('file_form_input');
           if (fileInput) {
             fileInput.value = '';
-            console.log('[Friends Circle] 文件输入框已清空（备用方案）');
+            console.log('[Friends Circle] ช่องป้อนข้อมูลไฟล์ถูกล้างแล้ว (แผนสำรอง)'); // Translated: 文件输入框已清空（备用方案）
           }
         }
       } catch (error) {
-        console.error('[Friends Circle] 清理附件状态时出错:', error);
+        console.error('[Friends Circle] เกิดข้อผิดพลาดขณะล้างสถานะไฟล์แนบ:', error); // Translated: 清理附件状态时出错
       }
     }
 
     /**
-     * 派发更新事件
+     * ส่งเหตุการณ์อัปเดต
      */
     dispatchUpdateEvent() {
       const event = new CustomEvent('friendsCircleUpdate', {
@@ -3640,71 +3692,72 @@ if (typeof window.FriendsCircle === 'undefined') {
     }
 
     /**
-     * 测试视觉朋友圈解析
+     * ทดสอบการแยกวิเคราะห์วงเพื่อนแบบภาพ
      */
     testVisualCircleParsing() {
-      console.log('[Friends Circle] 开始测试朋友圈解析...');
+      console.log('[Friends Circle] เริ่มทดสอบการแยกวิเคราะห์วงเพื่อน...'); // Translated: 开始测试朋友圈解析...
 
-      // 测试正确格式
+      // รูปแบบที่ถูกต้องสำหรับการทดสอบ
       const correctFormats = [
-        '[朋友圈|夏阳|200005|s102|一张自拍照。金色的短发被汗水浸湿，几缕发丝贴在饱满的额头上。他正对着镜头露出一个大大的、灿烂的笑容，背景是清晨洒满阳光的沿江跑道。|今天也是元气满满的一天！]',
+        '[朋友圈|夏阳|200005|s102|一张自拍照。金色的短发被汗水浸湿，几缕发丝贴在饱满的额头上。他正对着镜头露出一个大大的、灿烂的笑容，背景是清晨洒满阳光的沿江跑道。|今天也是元气满满的一天！]', // Note: Content in Chinese is kept as it's test data
         '[朋友圈|秦倦|500002|w101|有点无聊，有没有人出来吃夜宵？]',
         '[朋友圈回复|夏阳|300004|w101|秦倦老师，我正好有空，我可以嘛？]',
       ];
 
-      // 测试错误格式（不应该被匹配）
+      // รูปแบบที่ไม่ถูกต้องสำหรับการทดสอบ (ไม่ควรถูกจับคู่)
       const incorrectFormats = [
-        '- 序号: 001 - 时间: 2025年8月22日午后',
-        '| 名字 | 身份 | 性格核心 | 心理状态 | 性经验 | 重要道具 |',
-        '| 沐夕 | 娱乐圈新人 | 温柔体贴，略带羞涩 | 平静，正在浏览信息 | 有 | 手机 |',
-        '剧情总结:沐夕在午后查看了朋友圈，看到了秦倦、夏阳、朝沐雨和温屿发布的动态',
+        '- 序号: 001 - 时间: 2025年8月22日午后', // Translated: 序号 -> ลำดับที่, 时间 -> เวลา
+        '| 名字 | 身份 | 性格核心 | 心理状态 | 性经验 | 重要道具 |', // Translated: 名字 -> ชื่อ, 身份 -> อัตลักษณ์, 性格核心 -> แก่นบุคลิก, 心理状态 -> สภาพจิตใจ, 性经验 -> ประสบการณ์ทางเพศ, 重要道具 -> อุปกรณ์สำคัญ
+        '| 沐夕 | 娱乐圈新人 | 温柔体贴，略带羞涩 | 平静，正在浏览信息 | 有 | 手机 |', // Translated: 娱乐圈新人 -> ศิลปินใหม่, 温柔体贴，略带羞涩 -> อ่อนโยนและขี้อายเล็กน้อย, 平静，正在浏览信息 -> สงบ, กำลังดูข้อมูล, 手机 -> โทรศัพท์มือถือ
+        '剧情总结:沐夕在午后查看了朋友圈，看到了秦倦、夏阳、朝沐雨和温屿发布的动态', // Translated: 剧情总结 -> สรุปเนื้อเรื่อง, 沐夕在午后查看了朋友圈，看到了秦倦、夏阳、朝沐雨和温屿发布的动态 -> มู่ซีดูวงเพื่อนในช่วงบ่าย, เห็นโพสต์ของฉินจวน, ซ่ายาง, เจามู่หยู่, และเวินหยู่
       ];
 
-      console.log('=== 测试正确格式 ===');
+      console.log('=== ทดสอบรูปแบบที่ถูกต้อง ==='); // Translated: === 测试正确格式 ===
       correctFormats.forEach((content, index) => {
-        console.log(`测试 ${index + 1}: ${content}`);
+        console.log(`ทดสอบ ${index + 1}: ${content}`); // Translated: 测试
         this.manager.testVisualCircleParsing(content);
       });
 
-      console.log('=== 测试错误格式（不应该匹配） ===');
+      console.log('=== ทดสอบรูปแบบที่ไม่ถูกต้อง (ไม่ควรถูกจับคู่) ==='); // Translated: === 测试错误格式（不应该匹配） ===
       incorrectFormats.forEach((content, index) => {
-        console.log(`测试 ${index + 1}: ${content}`);
+        console.log(`ทดสอบ ${index + 1}: ${content}`); // Translated: 测试
         this.manager.testVisualCircleParsing(content);
       });
     }
 
     /**
-     * 调试聊天内容获取
+     * ดีบักการรับเนื้อหาการแชท
      */
     async debugChatContent() {
-      console.log('=== 调试聊天内容获取 ===');
+      console.log('=== กำลังดีบักการรับเนื้อหาการแชท ==='); // Translated: === 调试聊天内容获取 ===
 
       try {
         const chatContent = await this.getChatContent();
-        console.log('获取到的聊天内容长度:', chatContent.length);
-        console.log('聊天内容前500字符:', chatContent.substring(0, 500));
+        console.log('ความยาวของเนื้อหาการแชทที่ได้รับ:', chatContent.length); // Translated: 获取到的聊天内容长度
+        console.log('500 ตัวอักษรแรกของเนื้อหาการแชท:', chatContent.substring(0, 500)); // Translated: 聊天内容前500字符
 
-        // 检查是否包含朋友圈格式
+        // ตรวจสอบว่ามีรูปแบบวงเพื่อนหรือไม่
         const friendsCircleMatches = chatContent.match(/\[朋友圈[^\]]*\]/g);
-        console.log('找到的朋友圈格式数量:', friendsCircleMatches?.length || 0);
+        console.log('จำนวนรูปแบบวงเพื่อนที่พบ:', friendsCircleMatches?.length || 0); // Translated: 找到的朋友圈格式数量
         if (friendsCircleMatches) {
-          console.log('朋友圈格式内容:', friendsCircleMatches);
+          console.log('เนื้อหารูปแบบวงเพื่อน:', friendsCircleMatches); // Translated: 朋友圈格式内容
         }
 
-        // 检查是否包含表格格式
+        // ตรวจสอบว่ามีรูปแบบตารางหรือไม่
         const tableMatches = chatContent.match(/\|[^|]*\|/g);
-        console.log('找到的表格格式数量:', tableMatches?.length || 0);
+        console.log('จำนวนรูปแบบตารางที่พบ:', tableMatches?.length || 0); // Translated: 找到的表格格式数量
         if (tableMatches && tableMatches.length > 0) {
-          console.log('表格格式示例:', tableMatches.slice(0, 5));
+          console.log('ตัวอย่างรูปแบบตาราง:', tableMatches.slice(0, 5)); // Translated: 表格格式示例
         }
 
-        // 使用新的解析方法测试
-        console.log('=== 使用新解析方法测试 ===');
+        // ทดสอบด้วยวิธีการแยกวิเคราะห์ใหม่
+        console.log('=== ทดสอบด้วยวิธีการแยกวิเคราะห์ใหม่ ==='); // Translated: === 使用新解析方法测试 ===
         const circles = this.manager.parseFriendsCircleData(chatContent);
-        console.log('解析到的朋友圈数量:', circles.size);
+        console.log('จำนวนวงเพื่อนที่แยกวิเคราะห์ได้:', circles.size); // Translated: 解析到的朋友圈数量
 
         circles.forEach((circle, id) => {
-          console.log(`朋友圈 ${id}:`, {
+          console.log(`วงเพื่อน ${id}:`, {
+            // Translated: 朋友圈
             author: circle.author,
             type: circle.type,
             content: circle.content?.substring(0, 100) + '...',
@@ -3712,494 +3765,496 @@ if (typeof window.FriendsCircle === 'undefined') {
           });
         });
       } catch (error) {
-        console.error('调试聊天内容获取失败:', error);
+        console.error('ดีบักการรับเนื้อหาการแชทล้มเหลว:', error); // Translated: 调试聊天内容获取失败
       }
     }
 
     /**
-     * 调试监听系统状态
-     */
-    debugListenerStatus() {
-      console.log('=== 朋友圈监听系统调试信息 ===');
-      console.log('监听器状态:', this.eventListener?.isListening);
-      console.log('朋友圈激活状态:', this.isActive);
-      console.log('当前消息数量:', this.eventListener?.getCurrentMessageCount());
-      console.log('上次消息数量:', this.eventListener?.lastMessageCount);
+   * ดีบักสถานะระบบฟัง
+   */
+  debugListenerStatus() {
+    console.log('=== ข้อมูลดีบักระบบฟังวงเพื่อน ==='); // Translated: === 朋友圈监听系统调试信息 ===
+    console.log('สถานะตัวฟัง:', this.eventListener?.isListening); // Translated: 监听器状态
+    console.log('สถานะเปิดใช้งานวงเพื่อน:', this.isActive); // Translated: 朋友圈激活状态
+    console.log('จำนวนข้อความปัจจุบัน:', this.eventListener?.getCurrentMessageCount()); // Translated: 当前消息数量
+    console.log('จำนวนข้อความล่าสุด:', this.eventListener?.lastMessageCount); // Translated: 上次消息数量
 
-      // 检查可用的事件系统
-      console.log('可用的事件系统:');
-      console.log('- window.SillyTavern:', !!window.SillyTavern);
-      console.log('- window.SillyTavern.getContext:', !!window.SillyTavern?.getContext);
+    // ตรวจสอบระบบเหตุการณ์ที่ใช้งานได้
+    console.log('ระบบเหตุการณ์ที่ใช้งานได้:'); // Translated: 可用的事件系统
+    console.log('- window.SillyTavern:', !!window.SillyTavern);
+    console.log('- window.SillyTavern.getContext:', !!window.SillyTavern?.getContext);
 
-      if (window.SillyTavern?.getContext) {
-        const context = window.SillyTavern.getContext();
-        console.log('- context:', !!context);
-        console.log('- context.eventSource:', !!context?.eventSource);
-        console.log('- context.event_types:', !!context?.event_types);
-        console.log('- context.event_types.MESSAGE_RECEIVED:', context?.event_types?.MESSAGE_RECEIVED);
-      }
-
-      console.log('- eventOn函数:', typeof eventOn);
-      console.log('- tavern_events:', typeof tavern_events);
-      console.log('- window.parent.eventSource:', !!window.parent?.eventSource);
-      console.log('- window.eventSource:', typeof window.eventSource);
-
-      // 检查聊天数据获取
-      console.log('=== 聊天数据获取测试 ===');
-      this.testChatDataAccess();
-
-      // 强制触发一次检查
-      if (this.eventListener) {
-        console.log('强制触发消息检查...');
-        this.eventListener.checkForNewMessages();
-      }
+    if (window.SillyTavern?.getContext) {
+      const context = window.SillyTavern.getContext();
+      console.log('- context:', !!context);
+      console.log('- context.eventSource:', !!context?.eventSource);
+      console.log('- context.event_types:', !!context?.event_types);
+      console.log('- context.event_types.MESSAGE_RECEIVED:', context?.event_types?.MESSAGE_RECEIVED);
     }
 
-    /**
-     * 测试聊天数据获取
-     */
-    async testChatDataAccess() {
-      console.log('[Debug] 测试聊天数据获取...');
-
-      // 方法1: SillyTavern.getContext
-      if (window.SillyTavern?.getContext) {
-        try {
-          const context = window.SillyTavern.getContext();
-          console.log('[Debug] SillyTavern.getContext():', !!context);
-          if (context?.chat) {
-            console.log('[Debug] context.chat 长度:', context.chat.length);
-            console.log('[Debug] 最后一条消息:', context.chat[context.chat.length - 1]?.mes?.substring(0, 100));
-          }
-        } catch (error) {
-          console.log('[Debug] SillyTavern.getContext 错误:', error);
-        }
-      }
-
-      // 方法2: contextMonitor
-      if (window.contextMonitor?.getCurrentChatMessages) {
-        try {
-          const chatData = await window.contextMonitor.getCurrentChatMessages();
-          console.log('[Debug] contextMonitor 数据:', !!chatData);
-          if (chatData?.messages) {
-            console.log('[Debug] contextMonitor 消息数量:', chatData.messages.length);
-          }
-        } catch (error) {
-          console.log('[Debug] contextMonitor 错误:', error);
-        }
-      }
-
-      // 方法3: 父窗口
-      if (window.parent?.chat) {
-        try {
-          console.log('[Debug] window.parent.chat 长度:', window.parent.chat.length);
-        } catch (error) {
-          console.log('[Debug] window.parent.chat 错误:', error);
-        }
-      }
-    }
-
-    /**
-     * 重启监听系统
-     */
-    restartListener() {
-      console.log('[Friends Circle] 重启监听系统...');
-      if (this.eventListener) {
-        this.eventListener.stopListening();
-        setTimeout(() => {
-          this.eventListener.startListening();
-        }, 1000);
-      }
-    }
-
-    /**
-     * 全面调试朋友圈系统
-     */
-    debugAll() {
-      console.log('=== 朋友圈系统全面调试 ===');
-
-      // 1. 基本状态
-      console.log('1. 基本状态:');
-      console.log('- 朋友圈实例:', !!this);
-      console.log('- 管理器实例:', !!this.manager);
-      console.log('- 渲染器实例:', !!this.renderer);
-      console.log('- 事件监听器实例:', !!this.eventListener);
-      console.log('- 朋友圈激活状态:', this.isActive);
-
-      // 2. 数据状态
-      console.log('2. 数据状态:');
-      const circles = this.manager?.getSortedFriendsCircles() || [];
-      console.log('- 朋友圈数量:', circles.length);
-      circles.forEach((circle, index) => {
-        console.log(`- 朋友圈 ${index + 1}:`, {
-          id: circle.id,
-          type: circle.type,
-          author: circle.author,
-          hasImageDescription: !!circle.imageDescription,
-          hasContent: !!circle.content,
-        });
-      });
-
-      // 3. DOM状态
-      console.log('3. DOM状态:');
-      const circleElements = document.querySelectorAll('.circle-item');
-      console.log('- 页面上的朋友圈元素数量:', circleElements.length);
-
-      // 4. 发布弹窗状态
-      console.log('4. 发布弹窗状态:');
-      const publishModal = document.querySelector('.friends-circle-publish-modal');
-      console.log('- 发布弹窗存在:', !!publishModal);
-      if (publishModal) {
-        console.log('- 弹窗可见性:', window.getComputedStyle(publishModal).display);
-        console.log('- 弹窗位置:', publishModal.getBoundingClientRect());
-      }
-
-      // 5. 监听系统状态
-      this.debugListenerStatus();
-
-      // 6. 测试发布弹窗
-      console.log('5. 测试发布弹窗功能:');
-      if (this.renderer) {
-        console.log('- 尝试显示发布弹窗...');
-        this.renderer.showPublishModal();
-      }
-    }
-
-    /**
-     * 强制激活朋友圈（修复激活问题）
-     */
-    async forceActivate() {
-      console.log('[Friends Circle] 强制激活朋友圈...');
-
-      // 1. 强制设置激活状态
-      this.isActive = true;
-      console.log('[Friends Circle] 激活状态已设置为 true');
-
-      // 2. 确保header正确显示
-      this.updateHeader();
-
-      // 3. 强制刷新数据
-      await this.refreshFriendsCircle();
-
-      // 4. 启动监听器
-      if (this.eventListener) {
-        this.eventListener.startListening();
-        console.log('[Friends Circle] 监听器已启动');
-      }
-
-      // 5. 检查结果
-      const circles = this.manager?.getSortedFriendsCircles() || [];
-      console.log('[Friends Circle] 强制激活完成，朋友圈数量:', circles.length);
-
-      return circles.length > 0;
-    }
-
-    /**
-     * 测试新的排序方案
-     */
-    testNewSortingSystem() {
-      console.log('=== 测试新的基于消息位置的排序方案 ===');
-
-      // 获取当前朋友圈数据
-      const circles = this.manager.getSortedFriendsCircles();
-
-      console.log('朋友圈排序结果:');
-      circles.forEach((circle, index) => {
-        console.log(`${index + 1}. ${circle.author} (${circle.id}):`, {
-          messageIndex: circle.messageIndex,
-          latestActivityIndex: circle.latestActivityIndex,
-          repliesCount: circle.replies?.length || 0,
-          content: circle.content?.substring(0, 30) + '...',
-        });
-      });
-
-      // 验证排序是否正确
-      let isCorrectlySorted = true;
-      for (let i = 1; i < circles.length; i++) {
-        if (circles[i - 1].latestActivityIndex < circles[i].latestActivityIndex) {
-          isCorrectlySorted = false;
-          console.error(
-            `排序错误: 位置 ${i - 1} 的朋友圈活动位置 (${
-              circles[i - 1].latestActivityIndex
-            }) 小于位置 ${i} 的朋友圈活动位置 (${circles[i].latestActivityIndex})`,
-          );
-        }
-      }
-
-      if (isCorrectlySorted) {
-        console.log('✅ 排序验证通过：朋友圈按最新活动位置正确排序');
-      } else {
-        console.error('❌ 排序验证失败：存在排序错误');
-      }
-
-      console.log('=== 排序测试完成 ===');
-      return { circles, isCorrectlySorted };
-    }
-
-    /**
-     * 测试增量更新系统
-     */
-    testIncrementalUpdate() {
-      console.log('=== 测试增量更新系统 ===');
-
-      console.log('当前状态:');
-      console.log('- 朋友圈数量:', this.manager.friendsCircleData.size);
-      console.log('- 上次处理消息索引:', this.manager.lastProcessedMessageIndex);
-
-      // 强制触发一次增量更新
-      console.log('强制触发增量更新...');
-      this.manager.refreshData(false);
-
-      console.log('=== 增量更新测试完成 ===');
-    }
-
-    /**
-     * 验证数据持久性
-     */
-    verifyDataPersistence() {
-      console.log('=== 验证朋友圈数据持久性 ===');
-
-      const manager = this.manager;
-      console.log('管理器实例ID:', manager.constructor.name);
-      console.log('朋友圈数据大小:', manager.friendsCircleData.size);
-      console.log('上次处理索引:', manager.lastProcessedMessageIndex);
-
-      // 检查全局实例
-      console.log('全局实例存在:', !!window.friendsCircle);
-      console.log('全局实例与当前实例相同:', window.friendsCircle === this);
-
-      if (window.messageApp) {
-        console.log('MessageApp朋友圈实例存在:', !!window.messageApp.friendsCircle);
-        console.log('MessageApp实例与全局实例相同:', window.messageApp.friendsCircle === window.friendsCircle);
-      }
-
-      // 显示朋友圈数据
-      const circles = manager.getSortedFriendsCircles();
-      console.log('朋友圈列表:');
-      circles.forEach((circle, index) => {
-        console.log(`${index + 1}. ${circle.author} (${circle.id}): ${circle.replies?.length || 0} 条回复`);
-      });
-
-      console.log('=== 数据持久性验证完成 ===');
-    }
-
-    /**
-     * 强制刷新朋友圈数据（用于测试）
-     */
-    async forceRefresh() {
-      console.log('=== 强制刷新朋友圈数据 ===');
-
-      try {
-        // 强制全量刷新
-        await this.manager.refreshData(true);
-
-        // 更新界面
-        if (this.isActive) {
-          this.dispatchUpdateEvent();
-        }
-
-        console.log('强制刷新完成，朋友圈数量:', this.manager.friendsCircleData.size);
-      } catch (error) {
-        console.error('强制刷新失败:', error);
-      }
-
-      console.log('=== 强制刷新完成 ===');
-    }
-
-    /**
-     * 检查当前页面状态
-     */
-    checkPageStatus() {
-      console.log('=== 页面状态检查 ===');
-
-      // 检查message-app状态
-      if (window.messageApp) {
-        console.log('- messageApp存在:', true);
-        console.log('- currentMainTab:', window.messageApp.currentMainTab);
-        console.log('- currentView:', window.messageApp.currentView);
-        console.log('- friendsCircle实例:', !!window.messageApp.friendsCircle);
-        console.log('- friendsCircle激活状态:', window.messageApp.friendsCircle?.isActive);
-      } else {
-        console.log('- messageApp存在:', false);
-      }
-
-      // 检查全局朋友圈实例
-      console.log('- window.friendsCircle存在:', !!window.friendsCircle);
-      console.log('- window.friendsCircle激活状态:', window.friendsCircle?.isActive);
-
-      // 检查DOM状态
-      const friendsCirclePage = document.querySelector('.friends-circle-page');
-      console.log('- 朋友圈页面DOM存在:', !!friendsCirclePage);
-
-      return {
-        messageAppExists: !!window.messageApp,
-        currentTab: window.messageApp?.currentMainTab,
-        friendsCircleActive: window.friendsCircle?.isActive,
-        domExists: !!friendsCirclePage,
-      };
-    }
-
-    /**
-     * 测试弹窗交互
-     */
-    testModalInteraction() {
-      console.log('[Friends Circle Debug] 测试弹窗交互...');
-
-      const modal = document.querySelector('.friends-circle-publish-modal');
-      if (!modal) {
-        console.log('[Friends Circle Debug] 弹窗不存在，先显示弹窗');
-        this.showPublishModal();
-        setTimeout(() => this.testModalInteraction(), 200);
-        return;
-      }
-
-      console.log('[Friends Circle Debug] 找到弹窗，测试按钮点击...');
-
-      const textBtn = modal.querySelector('.text-btn');
-      const imageBtn = modal.querySelector('.image-btn');
-      const closeBtn = modal.querySelector('.modal-close');
-      const overlay = modal.querySelector('.modal-overlay');
-
-      if (textBtn) {
-        console.log('[Friends Circle Debug] 手动触发文字按钮点击事件');
-        textBtn.click();
-
-        // 也尝试直接调用方法
-        setTimeout(() => {
-          console.log('[Friends Circle Debug] 直接调用showTextPublishModal方法');
-          this.renderer.showTextPublishModal();
-        }, 1000);
-      }
-
-      if (closeBtn) {
-        setTimeout(() => {
-          console.log('[Friends Circle Debug] 测试关闭按钮');
-          closeBtn.click();
-        }, 2000);
-      }
-    }
-
-    /**
-     * 测试文字发布弹窗
-     */
-    testTextPublishModal() {
-      console.log('[Friends Circle Debug] 测试文字发布弹窗...');
-
-      const modal = document.querySelector('.friends-circle-text-publish-modal');
-      if (!modal) {
-        console.log('[Friends Circle Debug] 文字发布弹窗不存在');
-        return;
-      }
-
-      console.log('[Friends Circle Debug] 找到文字发布弹窗');
-
-      // 检查弹窗样式
-      const modalStyle = window.getComputedStyle(modal);
-      console.log('[Friends Circle Debug] 文字弹窗样式:', {
-        display: modalStyle.display,
-        position: modalStyle.position,
-        zIndex: modalStyle.zIndex,
-        visibility: modalStyle.visibility,
-        opacity: modalStyle.opacity,
-        pointerEvents: modalStyle.pointerEvents,
-      });
-
-      // 检查按钮
-      const cancelBtn = modal.querySelector('.cancel-btn');
-      const sendBtn = modal.querySelector('.send-btn');
-      const closeBtn = modal.querySelector('.modal-close');
-      const textInput = modal.querySelector('.text-input');
-
-      console.log('[Friends Circle Debug] 文字弹窗元素:', {
-        cancelBtn: !!cancelBtn,
-        sendBtn: !!sendBtn,
-        closeBtn: !!closeBtn,
-        textInput: !!textInput,
-      });
-
-      // 测试输入框
-      if (textInput) {
-        console.log('[Friends Circle Debug] 测试输入框...');
-        textInput.value = '测试文字内容';
-        textInput.dispatchEvent(new Event('input'));
-        console.log('[Friends Circle Debug] 输入框值:', textInput.value);
-      }
-
-      // 测试按钮点击
-      if (cancelBtn) {
-        setTimeout(() => {
-          console.log('[Friends Circle Debug] 测试取消按钮');
-          cancelBtn.click();
-        }, 1000);
-      }
-    }
-
-    /**
-     * 强制修复弹窗交互问题
-     */
-    fixModalInteraction() {
-      console.log('[Friends Circle Debug] 强制修复弹窗交互...');
-
-      // 查找所有弹窗
-      const publishModal = document.querySelector('.friends-circle-publish-modal');
-      const textModal = document.querySelector('.friends-circle-text-publish-modal');
-
-      [publishModal, textModal].forEach((modal, index) => {
-        if (!modal) return;
-
-        const modalType = index === 0 ? '发布选择' : '文字发布';
-        console.log(`[Friends Circle Debug] 修复${modalType}弹窗...`);
-
-        // 强制设置样式
-        modal.style.zIndex = '99999';
-        modal.style.pointerEvents = 'auto';
-        modal.style.position = 'fixed';
-        modal.style.top = '0';
-        modal.style.left = '0';
-        modal.style.right = '0';
-        modal.style.bottom = '0';
-
-        // 修复内容区域
-        const content = modal.querySelector('.modal-content');
-        if (content) {
-          content.style.pointerEvents = 'auto';
-          content.style.zIndex = '100000';
-          content.style.position = 'relative';
-        }
-
-        // 修复所有按钮
-        const buttons = modal.querySelectorAll('button');
-        buttons.forEach(btn => {
-          btn.style.pointerEvents = 'auto';
-          btn.style.zIndex = '100001';
-          btn.style.position = 'relative';
-
-          // 添加调试点击事件
-          btn.addEventListener(
-            'click',
-            e => {
-              console.log(`[Friends Circle Debug] 按钮被点击:`, btn.className, e);
-            },
-            true,
-          );
-        });
-
-        // 修复输入框
-        const inputs = modal.querySelectorAll('input, textarea');
-        inputs.forEach(input => {
-          input.style.pointerEvents = 'auto';
-          input.style.zIndex = '100001';
-        });
-
-        console.log(`[Friends Circle Debug] ${modalType}弹窗修复完成`);
-      });
+    console.log('- ฟังก์ชัน eventOn:', typeof eventOn); // Translated: eventOn函数
+    console.log('- tavern_events:', typeof tavern_events);
+    console.log('- window.parent.eventSource:', !!window.parent?.eventSource);
+    console.log('- window.eventSource:', typeof window.eventSource);
+
+    // ตรวจสอบการรับข้อมูลแชท
+    console.log('=== การทดสอบการรับข้อมูลแชท ==='); // Translated: === 聊天数据获取测试 ===
+    this.testChatDataAccess();
+
+    // บังคับทริกเกอร์การตรวจสอบหนึ่งครั้ง
+    if (this.eventListener) {
+      console.log('บังคับทริกเกอร์การตรวจสอบข้อความ...'); // Translated: 强制触发消息检查...
+      this.eventListener.checkForNewMessages();
     }
   }
 
-  // 导出类到全局
+  /**
+   * ทดสอบการรับข้อมูลแชท
+   */
+  async testChatDataAccess() {
+    console.log('[Debug] กำลังทดสอบการรับข้อมูลแชท...'); // Translated: 测试聊天数据获取...
+
+    // วิธีที่ 1: SillyTavern.getContext
+    if (window.SillyTavern?.getContext) {
+      try {
+        const context = window.SillyTavern.getContext();
+        console.log('[Debug] SillyTavern.getContext():', !!context);
+        if (context?.chat) {
+          console.log('[Debug] context.chat ความยาว:', context.chat.length); // Translated: 长度
+          console.log('[Debug] ข้อความล่าสุด:', context.chat[context.chat.length - 1]?.mes?.substring(0, 100)); // Translated: 最后一条消息
+        }
+      } catch (error) {
+        console.log('[Debug] SillyTavern.getContext ข้อผิดพลาด:', error); // Translated: 错误
+      }
+    }
+
+    // วิธีที่ 2: contextMonitor
+    if (window.contextMonitor?.getCurrentChatMessages) {
+      try {
+        const chatData = await window.contextMonitor.getCurrentChatMessages();
+        console.log('[Debug] contextMonitor ข้อมูล:', !!chatData); // Translated: 数据
+        if (chatData?.messages) {
+          console.log('[Debug] contextMonitor จำนวนข้อความ:', chatData.messages.length); // Translated: 消息数量
+        }
+      } catch (error) {
+        console.log('[Debug] contextMonitor ข้อผิดพลาด:', error); // Translated: 错误
+      }
+    }
+
+    // วิธีที่ 3: Window แม่
+    if (window.parent?.chat) {
+      try {
+        console.log('[Debug] window.parent.chat ความยาว:', window.parent.chat.length); // Translated: 长度
+      } catch (error) {
+        console.log('[Debug] window.parent.chat ข้อผิดพลาด:', error); // Translated: 错误
+      }
+    }
+  }
+
+  /**
+   * รีสตาร์ทระบบฟัง
+   */
+  restartListener() {
+    console.log('[Friends Circle] กำลังรีสตาร์ทระบบฟัง...'); // Translated: 重启监听系统...
+    if (this.eventListener) {
+      this.eventListener.stopListening();
+      setTimeout(() => {
+        this.eventListener.startListening();
+      }, 1000);
+    }
+  }
+
+  /**
+   * ดีบักระบบวงเพื่อนทั้งหมด
+   */
+  debugAll() {
+    console.log('=== ดีบักระบบวงเพื่อนทั้งหมด ==='); // Translated: === 朋友圈系统全面调试 ===
+
+    // 1. สถานะพื้นฐาน
+    console.log('1. สถานะพื้นฐาน:'); // Translated: 基本状态
+    console.log('- อินสแตนซ์วงเพื่อน:', !!this); // Translated: 朋友圈实例
+    console.log('- อินสแตนซ์ตัวจัดการ:', !!this.manager); // Translated: 管理器实例
+    console.log('- อินสแตนซ์ตัวแสดงผล:', !!this.renderer); // Translated: 渲染器实例
+    console.log('- อินสแตนซ์ตัวฟังเหตุการณ์:', !!this.eventListener); // Translated: 事件监听器实例
+    console.log('- สถานะเปิดใช้งานวงเพื่อน:', this.isActive); // Translated: 朋友圈激活状态
+
+    // 2. สถานะข้อมูล
+    console.log('2. สถานะข้อมูล:'); // Translated: 数据状态
+    const circles = this.manager?.getSortedFriendsCircles() || [];
+    console.log('- จำนวนวงเพื่อน:', circles.length); // Translated: 朋友圈数量
+    circles.forEach((circle, index) => {
+      console.log(`- วงเพื่อน ${index + 1}:`, { // Translated: 朋友圈
+        id: circle.id,
+        type: circle.type,
+        author: circle.author,
+        hasImageDescription: !!circle.imageDescription,
+        hasContent: !!circle.content,
+      });
+    });
+
+    // 3. สถานะ DOM
+    console.log('3. สถานะ DOM:'); // Translated: DOM状态
+    const circleElements = document.querySelectorAll('.circle-item');
+    console.log('- จำนวนองค์ประกอบวงเพื่อนบนหน้า:', circleElements.length); // Translated: 页面上的朋友圈元素数量
+
+    // 4. สถานะป๊อปอัปเผยแพร่
+    console.log('4. สถานะป๊อปอัปเผยแพร่:'); // Translated: 发布弹窗状态
+    const publishModal = document.querySelector('.friends-circle-publish-modal');
+    console.log('- ป๊อปอัปเผยแพร่มีอยู่:', !!publishModal); // Translated: 发布弹窗存在
+    if (publishModal) {
+      console.log('- การมองเห็นป๊อปอัป:', window.getComputedStyle(publishModal).display); // Translated: 弹窗可见性
+      console.log('- ตำแหน่งป๊อปอัป:', publishModal.getBoundingClientRect()); // Translated: 弹窗位置
+    }
+
+    // 5. สถานะระบบฟัง
+    console.log('5. สถานะระบบฟัง:'); // Translated: 监听系统状态
+    this.debugListenerStatus();
+
+    // 6. ทดสอบป๊อปอัปเผยแพร่
+    console.log('5. ทดสอบฟังก์ชันป๊อปอัปเผยแพร่:'); // Translated: 测试发布弹窗功能
+    if (this.renderer) {
+      console.log('- กำลังพยายามแสดงป๊อปอัปเผยแพร่...'); // Translated: 尝试显示发布弹窗...
+      this.renderer.showPublishModal();
+    }
+  }
+
+  /**
+   * บังคับเปิดใช้งานวงเพื่อน (แก้ไขปัญหาการเปิดใช้งาน)
+   */
+  async forceActivate() {
+    console.log('[Friends Circle] กำลังบังคับเปิดใช้งานวงเพื่อน...'); // Translated: 强制激活朋友圈...
+
+    // 1. บังคับตั้งค่าสถานะเปิดใช้งาน
+    this.isActive = true;
+    console.log('[Friends Circle] สถานะเปิดใช้งานถูกตั้งค่าเป็น true'); // Translated: 激活状态已设置为 true
+
+    // 2. ตรวจสอบให้แน่ใจว่าส่วนหัวแสดงผลถูกต้อง
+    this.updateHeader();
+
+    // 3. บังคับรีเฟรชข้อมูล
+    await this.refreshFriendsCircle();
+
+    // 4. เริ่มตัวฟัง
+    if (this.eventListener) {
+      this.eventListener.startListening();
+      console.log('[Friends Circle] ตัวฟังถูกเริ่มแล้ว'); // Translated: 监听器已启动
+    }
+
+    // 5. ตรวจสอบผลลัพธ์
+    const circles = this.manager?.getSortedFriendsCircles() || [];
+    console.log('[Friends Circle] บังคับเปิดใช้งานเสร็จสมบูรณ์, จำนวนวงเพื่อน:', circles.length); // Translated: 强制激活完成，朋友圈数量
+
+    return circles.length > 0;
+  }
+
+  /**
+   * ทดสอบระบบจัดเรียงใหม่
+   */
+  testNewSortingSystem() {
+    console.log('=== ทดสอบระบบจัดเรียงใหม่ตามตำแหน่งข้อความ ==='); // Translated: === 测试新的基于消息位置的排序方案 ===
+
+    // รับข้อมูลวงเพื่อนปัจจุบัน
+    const circles = this.manager.getSortedFriendsCircles();
+
+    console.log('ผลการจัดเรียงวงเพื่อน:'); // Translated: 朋友圈排序结果
+    circles.forEach((circle, index) => {
+      console.log(`${index + 1}. ${circle.author} (${circle.id}):`, {
+        messageIndex: circle.messageIndex,
+        latestActivityIndex: circle.latestActivityIndex,
+        repliesCount: circle.replies?.length || 0,
+        content: circle.content?.substring(0, 30) + '...',
+      });
+    });
+
+    // ตรวจสอบว่าจัดเรียงถูกต้องหรือไม่
+    let isCorrectlySorted = true;
+    for (let i = 1; i < circles.length; i++) {
+      if (circles[i - 1].latestActivityIndex < circles[i].latestActivityIndex) {
+        isCorrectlySorted = false;
+        console.error(
+          `จัดเรียงผิดพลาด: ตำแหน่งกิจกรรมของวงเพื่อนที่ตำแหน่ง ${i - 1} (${ // Translated: 排序错误: 位置
+            circles[i - 1].latestActivityIndex
+          }) น้อยกว่าตำแหน่งกิจกรรมของวงเพื่อนที่ตำแหน่ง ${i} (${circles[i].latestActivityIndex})`, // Translated: 的朋友圈活动位置, 小于位置, 的朋友圈活动位置
+        );
+      }
+    }
+
+    if (isCorrectlySorted) {
+      console.log('✅ ตรวจสอบการจัดเรียงผ่าน: วงเพื่อนถูกจัดเรียงตามตำแหน่งกิจกรรมล่าสุดอย่างถูกต้อง'); // Translated: 排序验证通过：朋友圈按最新活动位置正确排序
+    } else {
+      console.error('❌ ตรวจสอบการจัดเรียงล้มเหลว: มีข้อผิดพลาดในการจัดเรียง'); // Translated: 排序验证失败：存在排序错误
+    }
+
+    console.log('=== ทดสอบการจัดเรียงเสร็จสมบูรณ์ ==='); // Translated: === 排序测试完成 ===
+    return { circles, isCorrectlySorted };
+  }
+
+  /**
+   * ทดสอบระบบอัปเดตแบบเพิ่มหน่วย
+   */
+  testIncrementalUpdate() {
+    console.log('=== ทดสอบระบบอัปเดตแบบเพิ่มหน่วย ==='); // Translated: === 测试增量更新系统 ===
+
+    console.log('สถานะปัจจุบัน:'); // Translated: 当前状态
+    console.log('- จำนวนวงเพื่อน:', this.manager.friendsCircleData.size); // Translated: 朋友圈数量
+    console.log('- ดัชนีข้อความที่ประมวลผลล่าสุด:', this.manager.lastProcessedMessageIndex); // Translated: 上次处理消息索引
+
+    // บังคับทริกเกอร์การอัปเดตแบบเพิ่มหน่วยหนึ่งครั้ง
+    console.log('บังคับทริกเกอร์การอัปเดตแบบเพิ่มหน่วย...'); // Translated: 强制触发增量更新...
+    this.manager.refreshData(false);
+
+    console.log('=== ทดสอบการอัปเดตแบบเพิ่มหน่วยเสร็จสมบูรณ์ ==='); // Translated: === 增量更新测试完成 ===
+  }
+
+  /**
+   * ตรวจสอบความคงทนของข้อมูล
+   */
+  verifyDataPersistence() {
+    console.log('=== ตรวจสอบความคงทนของข้อมูลวงเพื่อน ==='); // Translated: === 验证朋友圈数据持久性 ===
+
+    const manager = this.manager;
+    console.log('ID อินสแตนซ์ตัวจัดการ:', manager.constructor.name); // Translated: 管理器实例ID
+    console.log('ขนาดข้อมูลวงเพื่อน:', manager.friendsCircleData.size); // Translated: 朋友圈数据大小
+    console.log('ดัชนีที่ประมวลผลล่าสุด:', manager.lastProcessedMessageIndex); // Translated: 上次处理索引
+
+    // ตรวจสอบอินสแตนซ์ส่วนกลาง
+    console.log('อินสแตนซ์ส่วนกลางมีอยู่:', !!window.friendsCircle); // Translated: 全局实例存在
+    console.log('อินสแตนซ์ส่วนกลางเหมือนกับอินสแตนซ์ปัจจุบัน:', window.friendsCircle === this); // Translated: 全局实例与当前实例相同
+
+    if (window.messageApp) {
+      console.log('อินสแตนซ์วงเพื่อนของ MessageApp มีอยู่:', !!window.messageApp.friendsCircle); // Translated: MessageApp朋友圈实例存在
+      console.log('อินสแตนซ์ MessageApp เหมือนกับอินสแตนซ์ส่วนกลาง:', window.messageApp.friendsCircle === window.friendsCircle); // Translated: MessageApp实例与全局实例相同
+    }
+
+    // แสดงข้อมูลวงเพื่อน
+    const circles = manager.getSortedFriendsCircles();
+    console.log('รายการวงเพื่อน:'); // Translated: 朋友圈列表
+    circles.forEach((circle, index) => {
+      console.log(`${index + 1}. ${circle.author} (${circle.id}): ${circle.replies?.length || 0} รายการตอบกลับ`); // Translated: 条回复
+    });
+
+    console.log('=== ตรวจสอบความคงทนของข้อมูลเสร็จสมบูรณ์ ==='); // Translated: === 数据持久性验证完成 ===
+  }
+
+  /**
+   * บังคับรีเฟรชข้อมูลวงเพื่อน (สำหรับทดสอบ)
+   */
+  async forceRefresh() {
+    console.log('=== บังคับรีเฟรชข้อมูลวงเพื่อน ==='); // Translated: === 强制刷新朋友圈数据 ===
+
+    try {
+      // บังคับรีเฟรชแบบเต็ม
+      await this.manager.refreshData(true);
+
+      // อัปเดต UI
+      if (this.isActive) {
+        this.dispatchUpdateEvent();
+      }
+
+      console.log('บังคับรีเฟรชเสร็จสมบูรณ์, จำนวนวงเพื่อน:', this.manager.friendsCircleData.size); // Translated: 强制刷新完成，朋友圈数量
+    } catch (error) {
+      console.error('บังคับรีเฟรชล้มเหลว:', error); // Translated: 强制刷新失败
+    }
+
+    console.log('=== บังคับรีเฟรชเสร็จสมบูรณ์ ==='); // Translated: === 强制刷新完成 ===
+  }
+
+  /**
+   * ตรวจสอบสถานะหน้าปัจจุบัน
+   */
+  checkPageStatus() {
+    console.log('=== ตรวจสอบสถานะหน้า ==='); // Translated: === 页面状态检查 ===
+
+    // ตรวจสอบสถานะ message-app
+    if (window.messageApp) {
+      console.log('- messageApp มีอยู่:', true); // Translated: messageApp存在
+      console.log('- currentMainTab:', window.messageApp.currentMainTab);
+      console.log('- currentView:', window.messageApp.currentView);
+      console.log('- อินสแตนซ์ friendsCircle:', !!window.messageApp.friendsCircle); // Translated: friendsCircle实例
+      console.log('- สถานะเปิดใช้งาน friendsCircle:', window.messageApp.friendsCircle?.isActive); // Translated: friendsCircle激活状态
+    } else {
+      console.log('- messageApp มีอยู่:', false); // Translated: messageApp存在
+    }
+
+    // ตรวจสอบอินสแตนซ์วงเพื่อนส่วนกลาง
+    console.log('- window.friendsCircle มีอยู่:', !!window.friendsCircle); // Translated: window.friendsCircle存在
+    console.log('- สถานะเปิดใช้งาน window.friendsCircle:', window.friendsCircle?.isActive); // Translated: window.friendsCircle激活状态
+
+    // ตรวจสอบสถานะ DOM
+    const friendsCirclePage = document.querySelector('.friends-circle-page');
+    console.log('- องค์ประกอบ DOM หน้าวงเพื่อนมีอยู่:', !!friendsCirclePage); // Translated: 朋友圈页面DOM存在
+
+    return {
+      messageAppExists: !!window.messageApp,
+      currentTab: window.messageApp?.currentMainTab,
+      friendsCircleActive: window.friendsCircle?.isActive,
+      domExists: !!friendsCirclePage,
+    };
+  }
+
+  /**
+   * ทดสอบการโต้ตอบป๊อปอัป
+   */
+  testModalInteraction() {
+    console.log('[Friends Circle Debug] ทดสอบการโต้ตอบป๊อปอัป...'); // Translated: 测试弹窗交互...
+
+    const modal = document.querySelector('.friends-circle-publish-modal');
+    if (!modal) {
+      console.log('[Friends Circle Debug] ป๊อปอัปไม่มีอยู่, กำลังแสดงป๊อปอัปก่อน'); // Translated: 弹窗不存在，先显示弹窗
+      this.showPublishModal();
+      setTimeout(() => this.testModalInteraction(), 200);
+      return;
+    }
+
+    console.log('[Friends Circle Debug] พบป๊อปอัป, กำลังทดสอบการคลิกปุ่ม...'); // Translated: 找到弹窗，测试按钮点击...
+
+    const textBtn = modal.querySelector('.text-btn');
+    const imageBtn = modal.querySelector('.image-btn');
+    const closeBtn = modal.querySelector('.modal-close');
+    const overlay = modal.querySelector('.modal-overlay');
+
+    if (textBtn) {
+      console.log('[Friends Circle Debug] ทริกเกอร์เหตุการณ์คลิกปุ่มข้อความด้วยตนเอง'); // Translated: 手动触发文字按钮点击事件
+      textBtn.click();
+
+      // ลองเรียกเมธอดโดยตรงด้วย
+      setTimeout(() => {
+        console.log('[Friends Circle Debug] เรียกเมธอด showTextPublishModal โดยตรง'); // Translated: 直接调用showTextPublishModal方法
+        this.renderer.showTextPublishModal();
+      }, 1000);
+    }
+
+    if (closeBtn) {
+      setTimeout(() => {
+        console.log('[Friends Circle Debug] ทดสอบปุ่มปิด'); // Translated: 测试关闭按钮
+        closeBtn.click();
+      }, 2000);
+    }
+  }
+
+  /**
+   * ทดสอบป๊อปอัปเผยแพร่ข้อความ
+   */
+  testTextPublishModal() {
+    console.log('[Friends Circle Debug] ทดสอบป๊อปอัปเผยแพร่ข้อความ...'); // Translated: 测试文字发布弹窗...
+
+    const modal = document.querySelector('.friends-circle-text-publish-modal');
+    if (!modal) {
+      console.log('[Friends Circle Debug] ป๊อปอัปเผยแพร่ข้อความไม่มีอยู่'); // Translated: 文字发布弹窗不存在
+      return;
+    }
+
+    console.log('[Friends Circle Debug] พบป๊อปอัปเผยแพร่ข้อความ'); // Translated: 找到文字发布弹窗
+
+    // ตรวจสอบสไตล์ป๊อปอัป
+    const modalStyle = window.getComputedStyle(modal);
+    console.log('[Friends Circle Debug] สไตล์ป๊อปอัปข้อความ:', { // Translated: 文字弹窗样式
+      display: modalStyle.display,
+      position: modalStyle.position,
+      zIndex: modalStyle.zIndex,
+      visibility: modalStyle.visibility,
+      opacity: modalStyle.opacity,
+      pointerEvents: modalStyle.pointerEvents,
+    });
+
+    // ตรวจสอบปุ่ม
+    const cancelBtn = modal.querySelector('.cancel-btn');
+    const sendBtn = modal.querySelector('.send-btn');
+    const closeBtn = modal.querySelector('.modal-close');
+    const textInput = modal.querySelector('.text-input');
+
+    console.log('[Friends Circle Debug] องค์ประกอบป๊อปอัปข้อความ:', { // Translated: 文字弹窗元素
+      cancelBtn: !!cancelBtn,
+      sendBtn: !!sendBtn,
+      closeBtn: !!closeBtn,
+      textInput: !!textInput,
+    });
+
+    // ทดสอบช่องป้อนข้อมูล
+    if (textInput) {
+      console.log('[Friends Circle Debug] ทดสอบช่องป้อนข้อมูล...'); // Translated: 测试输入框...
+      textInput.value = 'เนื้อหาข้อความทดสอบ'; // Translated: 测试文字内容
+      textInput.dispatchEvent(new Event('input'));
+      console.log('[Friends Circle Debug] ค่าช่องป้อนข้อมูล:', textInput.value); // Translated: 输入框值
+    }
+
+    // ทดสอบการคลิกปุ่ม
+    if (cancelBtn) {
+      setTimeout(() => {
+        console.log('[Friends Circle Debug] ทดสอบปุ่มยกเลิก'); // Translated: 测试取消按钮
+        cancelBtn.click();
+      }, 1000);
+    }
+  }
+
+  /**
+   * บังคับซ่อมแซมการโต้ตอบป๊อปอัป
+   */
+  fixModalInteraction() {
+    console.log('[Friends Circle Debug] บังคับซ่อมแซมการโต้ตอบป๊อปอัป...'); // Translated: 强制修复弹窗交互...
+
+    // ค้นหาป๊อปอัปทั้งหมด
+    const publishModal = document.querySelector('.friends-circle-publish-modal');
+    const textModal = document.querySelector('.friends-circle-text-publish-modal');
+
+    [publishModal, textModal].forEach((modal, index) => {
+      if (!modal) return;
+
+      const modalType = index === 0 ? 'เลือกเผยแพร่' : 'เผยแพร่ข้อความ'; // Translated: 发布选择, 文字发布
+      console.log(`[Friends Circle Debug] กำลังซ่อมแซมป๊อปอัป ${modalType}...`); // Translated: 修复${modalType}弹窗...
+
+      // บังคับตั้งค่าสไตล์
+      modal.style.zIndex = '99999';
+      modal.style.pointerEvents = 'auto';
+      modal.style.position = 'fixed';
+      modal.style.top = '0';
+      modal.style.left = '0';
+      modal.style.right = '0';
+      modal.style.bottom = '0';
+
+      // ซ่อมแซมพื้นที่เนื้อหา
+      const content = modal.querySelector('.modal-content');
+      if (content) {
+        content.style.pointerEvents = 'auto';
+        content.style.zIndex = '100000';
+        content.style.position = 'relative';
+      }
+
+      // ซ่อมแซมปุ่มทั้งหมด
+      const buttons = modal.querySelectorAll('button');
+      buttons.forEach(btn => {
+        btn.style.pointerEvents = 'auto';
+        btn.style.zIndex = '100001';
+        btn.style.position = 'relative';
+
+        // เพิ่มเหตุการณ์คลิกสำหรับดีบัก
+        btn.addEventListener(
+          'click',
+          e => {
+            console.log(`[Friends Circle Debug] ปุ่มถูกคลิก:`, btn.className, e); // Translated: 按钮被点击
+          },
+          true,
+        );
+      });
+
+      // ซ่อมแซมช่องป้อนข้อมูล
+      const inputs = modal.querySelectorAll('input, textarea');
+      inputs.forEach(input => {
+        input.style.pointerEvents = 'auto';
+        input.style.zIndex = '100001';
+      });
+
+      console.log(`[Friends Circle Debug] ป๊อปอัป ${modalType} ซ่อมแซมเสร็จสมบูรณ์`); // Translated: ${modalType}弹窗修复完成
+    });
+    }
+  }
+
+  // ส่งออกคลาสไปยังส่วนกลาง
   window.FriendsCircleManager = FriendsCircleManager;
   window.FriendsCircleEventListener = FriendsCircleEventListener;
   window.FriendsCircleRenderer = FriendsCircleRenderer;
   window.FriendsCircle = FriendsCircle;
 
-  console.log('[Friends Circle] 朋友圈模块加载完成');
+  console.log('[Friends Circle] โมดูลวงเพื่อนโหลดเสร็จสมบูรณ์'); // Translated: 朋友圈模块加载完成
 }
+
