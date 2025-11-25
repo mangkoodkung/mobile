@@ -1,10 +1,10 @@
 /**
- * Task App - 任务应用
- * 基于shop-app.js的模式，为mobile-phone.js提供任务功能
+ * Task App - แอปภารกิจ
+ * ให้ฟังก์ชันภารกิจสำหรับ mobile-phone.js ตามรูปแบบของ shop-app.js
  */
 
 // @ts-nocheck
-// 避免重复定义
+// หลีกเลี่ยงการนิยามซ้ำ
 if (typeof window.TaskApp === 'undefined') {
   class TaskApp {
     constructor() {
@@ -24,97 +24,97 @@ if (typeof window.TaskApp === 'undefined') {
     }
 
     init() {
-      console.log('[Task App] 任务应用初始化开始 - 版本 3.0 (事件驱动 + 族会目标)');
+      console.log('[Task App] เริ่มต้นแอปภารกิจ - เวอร์ชัน 3.0 (ขับเคลื่อนด้วยเหตุการณ์ + เป้าหมายตระกูล)');
 
-      // 立即从变量管理器读取一次族会目标
+      // อ่านเป้าหมายตระกูลจากตัวจัดการตัวแปรทันที
       this.parseTasksFromContext();
 
-      // 异步初始化监控，避免阻塞界面渲染
+      // เริ่มต้นการตรวจสอบแบบอะซิงโครนัส เพื่อไม่ให้บล็อกการเรนเดอร์หน้าจอ
       setTimeout(() => {
         this.setupContextMonitor();
       }, 100);
 
-      console.log('[Task App] 任务应用初始化完成 - 版本 3.0');
+      console.log('[Task App] การเริ่มต้นแอปภารกิจเสร็จสมบูรณ์ - เวอร์ชัน 3.0');
     }
 
-    // 设置上下文监控
+    // ตั้งค่าการตรวจสอบบริบท
     setupContextMonitor() {
-      console.log('[Task App] 设置上下文监控...');
+      console.log('[Task App] ตั้งค่าการตรวจสอบบริบท...');
 
-      // 不再使用定时检查，只通过事件监听
-      // 监听SillyTavern的事件系统（MESSAGE_RECEIVED 和 CHAT_CHANGED）
+      // ไม่ใช้การตรวจสอบตามช่วงเวลาอีกต่อไป ใช้เฉพาะการฟังเหตุการณ์
+      // ฟังระบบเหตุการณ์ของ SillyTavern (MESSAGE_RECEIVED และ CHAT_CHANGED)
       this.setupSillyTavernEventListeners();
     }
 
-    // 手动刷新任务数据（在变量操作后调用）
+    // รีเฟรชข้อมูลภารกิจด้วยตนเอง (เรียกใช้หลังจากการดำเนินการกับตัวแปร)
     refreshTasksData() {
-      console.log('[Task App] 🔄 手动刷新任务数据...');
-                this.parseTasksFromContext();
+      console.log('[Task App] 🔄 รีเฟรชข้อมูลภารกิจด้วยตนเอง...');
+      this.parseTasksFromContext();
     }
 
-    // 设置SillyTavern事件监听器
+    // ตั้งค่าตัวฟังเหตุการณ์ SillyTavern
     setupSillyTavernEventListeners() {
-      // 防止重复设置
+      // ป้องกันการตั้งค่าซ้ำ
       if (this.eventListenersSetup) {
         return;
       }
 
       try {
-        // 监听SillyTavern的事件系统
+        // ฟังระบบเหตุการณ์ของ SillyTavern
         const eventSource = window['eventSource'];
         const event_types = window['event_types'];
 
         if (eventSource && event_types) {
           this.eventListenersSetup = true;
 
-          // 创建延迟刷新函数（只在消息接收后刷新）
+          // สร้างฟังก์ชันรีเฟรชแบบหน่วงเวลา (รีเฟรชเฉพาะหลังจากได้รับข้อความ)
           const handleMessageReceived = () => {
-            console.log('[Task App] 📨 收到 MESSAGE_RECEIVED 事件，刷新任务数据...');
+            console.log('[Task App] 📨 ได้รับเหตุการณ์ MESSAGE_RECEIVED รีเฟรชข้อมูลภารกิจ...');
             setTimeout(() => {
-              // 先解析数据
+              // แยกวิเคราะห์ข้อมูลก่อน
               this.parseTasksFromContext();
 
-              // 如果应用当前处于活动状态，强制刷新UI
+              // ถ้าแอปเปิดใช้งานอยู่ ให้บังคับรีเฟรช UI
               const appContent = document.getElementById('app-content');
               if (appContent && appContent.querySelector('.task-list')) {
-                console.log('[Task App] 🔄 强制刷新任务应用UI...');
+                console.log('[Task App] 🔄 บังคับรีเฟรช UI แอปภารกิจ...');
                 appContent.innerHTML = this.getAppContent();
                 this.bindEvents();
               }
             }, 500);
           };
 
-          // 只监听消息接收事件（AI回复后）
+          // ฟังเฉพาะเหตุการณ์ได้รับข้อความ (หลังจาก AI ตอบกลับ)
           if (event_types.MESSAGE_RECEIVED) {
             eventSource.on(event_types.MESSAGE_RECEIVED, handleMessageReceived);
-            console.log('[Task App] ✅ 已注册 MESSAGE_RECEIVED 事件监听');
+            console.log('[Task App] ✅ ลงทะเบียนผู้ฟังเหตุการณ์ MESSAGE_RECEIVED แล้ว');
           }
 
-          // 监听聊天变化事件（切换对话时）
+          // ฟังเหตุการณ์การเปลี่ยนแชท (เมื่อสลับการสนทนา)
           if (event_types.CHAT_CHANGED) {
             eventSource.on(event_types.CHAT_CHANGED, () => {
-              console.log('[Task App] 📨 聊天已切换，刷新任务数据...');
+              console.log('[Task App] 📨 สลับการแชทแล้ว รีเฟรชข้อมูลภารกิจ...');
               setTimeout(() => {
                 this.parseTasksFromContext();
               }, 500);
             });
-            console.log('[Task App] ✅ 已注册 CHAT_CHANGED 事件监听');
+            console.log('[Task App] ✅ ลงทะเบียนผู้ฟังเหตุการณ์ CHAT_CHANGED แล้ว');
           }
 
-          // 保存引用以便后续清理
+          // บันทึกการอ้างอิงเพื่อล้างข้อมูลในภายหลัง
           this.messageReceivedHandler = handleMessageReceived;
         } else {
-          // 减少重试频率，从2秒改为5秒
+          // ลดความถี่ในการลองใหม่ จาก 2 วินาที เป็น 5 วินาที
           setTimeout(() => {
             this.setupSillyTavernEventListeners();
           }, 5000);
         }
       } catch (error) {
-        console.warn('[Task App] 设置SillyTavern事件监听器失败:', error);
+        console.warn('[Task App] ตั้งค่าตัวฟังเหตุการณ์ SillyTavern ล้มเหลว:', error);
       }
     }
 
-    // 防抖函数
+    // ฟังก์ชัน Debounce
     debounce(func, wait) {
       let timeout;
       return function executedFunction(...args) {
@@ -127,22 +127,22 @@ if (typeof window.TaskApp === 'undefined') {
       };
     }
 
-    // 从上下文解析任务信息
+    // แยกวิเคราะห์ข้อมูลภารกิจจากบริบท
     parseTasksFromContext() {
       try {
-        // 获取当前任务数据
+        // รับข้อมูลภารกิจปัจจุบัน
         const taskData = this.getCurrentTaskData();
 
-        // 检查任务状态是否有变化
+        // ตรวจสอบว่าสถานะภารกิจมีการเปลี่ยนแปลงหรือไม่
         const tasksChanged = taskData.tasks.length !== this.tasks.length || this.hasTasksChanged(taskData.tasks);
         const acceptedChanged =
           JSON.stringify(taskData.acceptedTasks.sort()) !== JSON.stringify(this.acceptedTasks.sort());
         const completedChanged =
           JSON.stringify(taskData.completedTasks.sort()) !== JSON.stringify(this.completedTasks.sort());
 
-        // 如果有任何变化，更新数据
+        // หากมีการเปลี่ยนแปลงใดๆ ให้อัปเดตข้อมูล
         if (tasksChanged || acceptedChanged || completedChanged) {
-          console.log('[Task App] 检测到任务状态变化:', {
+          console.log('[Task App] ตรวจพบการเปลี่ยนแปลงสถานะภารกิจ:', {
             tasksChanged,
             acceptedChanged,
             completedChanged,
@@ -155,50 +155,50 @@ if (typeof window.TaskApp === 'undefined') {
           this.tasks = taskData.tasks;
           this.acceptedTasks = taskData.acceptedTasks;
           this.completedTasks = taskData.completedTasks;
-          console.log('[Task App] 📋 任务数据已更新');
+          console.log('[Task App] 📋 ข้อมูลภารกิจอัปเดตแล้ว');
 
-          // 只有在当前显示任务应用时才更新UI
+          // อัปเดต UI เฉพาะเมื่อแอปภารกิจแสดงอยู่
           if (this.isCurrentlyActive()) {
-            console.log('[Task App] 🎨 任务应用处于活动状态，更新UI...');
-          this.updateTaskList();
+            console.log('[Task App] 🎨 แอปภารกิจทำงานอยู่ อัปเดต UI...');
+            this.updateTaskList();
           } else {
-            console.log('[Task App] 💤 任务应用未激活，数据已更新但UI延迟渲染');
+            console.log('[Task App] 💤 แอปภารกิจไม่ได้ใช้งาน ข้อมูลอัปเดตแล้วแต่ UI รอการเรนเดอร์');
           }
         }
       } catch (error) {
-        console.error('[Task App] 解析任务信息失败:', error);
+        console.error('[Task App] แยกวิเคราะห์ข้อมูลภารกิจล้มเหลว:', error);
       }
     }
 
-    // 检查任务应用是否当前活动
+    // ตรวจสอบว่าแอปภารกิจกำลังทำงานอยู่หรือไม่
     isCurrentlyActive() {
       const appContent = document.getElementById('app-content');
       if (!appContent) return false;
 
-      // 检查是否包含任务应用的特征元素
+      // ตรวจสอบว่ามีองค์ประกอบของแอปภารกิจหรือไม่
       return appContent.querySelector('.task-tabs') !== null || appContent.querySelector('.task-list') !== null;
     }
 
     /**
-     * 从变量管理器获取任务数据（使用 Mvu 框架 + 向上楼层查找）
+     * รับข้อมูลภารกิจจากตัวจัดการตัวแปร (ใช้ Mvu Framework + ค้นหาชั้นบน)
      */
     getCurrentTaskData() {
       try {
-        // 方法1: 使用 Mvu 框架获取变量（与shop-app一致：向上查找有变量的楼层）
+        // วิธีที่ 1: ใช้ Mvu Framework เพื่อรับตัวแปร (เหมือนกับ shop-app: ค้นหาชั้นบนที่มีตัวแปร)
         if (window.Mvu && typeof window.Mvu.getMvuData === 'function') {
-          // 获取目标消息ID（向上查找最近有AI消息且有变量的楼层）
+          // รับ ID ข้อความเป้าหมาย (ค้นหาขึ้นไปหาข้อความ AI ล่าสุดที่มีตัวแปร)
           let targetMessageId = 'latest';
 
           if (typeof window.getLastMessageId === 'function' && typeof window.getChatMessages === 'function') {
             let currentId = window.getLastMessageId();
 
-            // 向上查找AI消息（跳过用户消息）
+            // ค้นหาข้อความ AI ขึ้นไป (ข้ามข้อความผู้ใช้)
             while (currentId >= 0) {
               const message = window.getChatMessages(currentId).at(-1);
               if (message && message.role !== 'user') {
                 targetMessageId = currentId;
                 if (currentId !== window.getLastMessageId()) {
-                  console.log(`[Task App] 📝 向上查找到第 ${currentId} 层的AI消息`);
+                  console.log(`[Task App] 📝 ค้นหาพบข้อความ AI ที่ชั้น ${currentId}`);
                 }
                 break;
               }
@@ -207,83 +207,84 @@ if (typeof window.TaskApp === 'undefined') {
 
             if (currentId < 0) {
               targetMessageId = 'latest';
-              console.warn('[Task App] ⚠️ 没有找到AI消息，使用最后一层');
+              console.warn('[Task App] ⚠️ ไม่พบข้อความ AI ใช้ชั้นสุดท้าย');
             }
           }
 
-          console.log('[Task App] 使用消息ID:', targetMessageId);
+          console.log('[Task App] ใช้ข้อความ ID:', targetMessageId);
 
-          // 获取变量
+          // รับตัวแปร
           const mvuData = window.Mvu.getMvuData({ type: 'message', message_id: targetMessageId });
-          console.log('[Task App] 从 Mvu 获取变量数据:', mvuData);
-          console.log('[Task App] stat_data 存在:', !!mvuData?.stat_data);
+          console.log('[Task App] รับข้อมูลตัวแปรจาก Mvu:', mvuData);
+          console.log('[Task App] stat_data มีอยู่:', !!mvuData?.stat_data);
           if (mvuData?.stat_data) {
-            console.log('[Task App] stat_data 的键:', Object.keys(mvuData.stat_data));
-            console.log('[Task App] 任务是否存在:', !!mvuData.stat_data['任务']);
+            console.log('[Task App] คีย์ของ stat_data:', Object.keys(mvuData.stat_data));
+            // '任务' ต้องคงภาษาจีนไว้ตามคีย์ข้อมูล
+            console.log('[Task App] มีภารกิจหรือไม่:', !!mvuData.stat_data['任务']);
             if (mvuData.stat_data['任务']) {
-              console.log('[Task App] 任务数据:', mvuData.stat_data['任务']);
+              console.log('[Task App] ข้อมูลภารกิจ:', mvuData.stat_data['任务']);
             }
           }
 
-          // 尝试从 stat_data 读取
+          // พยายามอ่านจาก stat_data
           if (mvuData && mvuData.stat_data && mvuData.stat_data['任务']) {
             const taskData = mvuData.stat_data['任务'];
-            console.log('[Task App] ✅ 从 stat_data 获取到任务数据:', taskData);
+            console.log('[Task App] ✅ รับข้อมูลภารกิจจาก stat_data:', taskData);
             return this.parseTaskData(taskData);
           }
 
-          // 尝试从根级别读取（如果变量不在 stat_data 中）
+          // พยายามอ่านจากระดับราก (ถ้าตัวแปรไม่อยู่ใน stat_data)
           if (mvuData && mvuData['任务']) {
             const taskData = mvuData['任务'];
-            console.log('[Task App] ✅ 从根级别获取到任务数据:', taskData);
+            console.log('[Task App] ✅ รับข้อมูลภารกิจจากระดับราก:', taskData);
             return this.parseTaskData(taskData);
           }
 
-          // 如果 stat_data 为空但 variables 存在，尝试从 variables 获取
+          // ถ้า stat_data ว่างแต่ variables มีอยู่ ให้พยายามรับจาก variables
           if (mvuData && !mvuData.stat_data && window.SillyTavern) {
             const context = window.SillyTavern.getContext ? window.SillyTavern.getContext() : window.SillyTavern;
             if (context && context.chatMetadata && context.chatMetadata.variables) {
               const stat_data = context.chatMetadata.variables['stat_data'];
               if (stat_data && stat_data['任务']) {
-                console.log('[Task App] 从 variables.stat_data 获取任务数据');
+                console.log('[Task App] รับข้อมูลภารกิจจาก variables.stat_data');
                 return this.parseTaskData(stat_data['任务']);
               }
             }
           }
         }
 
-        // 方法2: 尝试从 SillyTavern 的上下文获取（备用）
+        // วิธีที่ 2: พยายามรับจากบริบทของ SillyTavern (สำรอง)
         if (window.SillyTavern) {
           const context = window.SillyTavern.getContext ? window.SillyTavern.getContext() : window.SillyTavern;
           if (context && context.chatMetadata && context.chatMetadata.variables) {
-            // 尝试从 variables.stat_data 获取
+            // พยายามรับจาก variables.stat_data
             const stat_data = context.chatMetadata.variables['stat_data'];
             if (stat_data && stat_data['任务']) {
-              console.log('[Task App] 从 context.chatMetadata.variables.stat_data 获取任务数据');
+              console.log('[Task App] รับข้อมูลภารกิจจาก context.chatMetadata.variables.stat_data');
               return this.parseTaskData(stat_data['任务']);
             }
 
-            // 尝试直接从 variables 获取
+            // พยายามรับจาก variables โดยตรง
             const taskData = context.chatMetadata.variables['任务'];
             if (taskData && typeof taskData === 'object') {
-              console.log('[Task App] 从 context.chatMetadata.variables 获取任务数据');
+              console.log('[Task App] รับข้อมูลภารกิจจาก context.chatMetadata.variables');
               return this.parseTaskData(taskData);
             }
           }
         }
 
-        console.log('[Task App] 未找到任务数据');
+        console.log('[Task App] ไม่พบข้อมูลภารกิจ');
       } catch (error) {
-        console.warn('[Task App] 获取任务数据失败:', error);
+        console.warn('[Task App] รับข้อมูลภารกิจล้มเหลว:', error);
       }
 
       return { tasks: [], acceptedTasks: [], completedTasks: [] };
     }
 
     /**
-     * 解析任务数据
-     * 任务结构：{ t001: {任务名称: [值, ''], 任务状态: [值, ''], 任务描述: [值, ''], 奖励: [值, '']}, ... }
-     * 任务状态：未接受/进行中/已完成
+     * แยกวิเคราะห์ข้อมูลภารกิจ
+     * โครงสร้างภารกิจ: { t001: {任务名称: [ค่า, ''], 任务状态: [ค่า, ''], 任务描述: [ค่า, ''], 奖励: [ค่า, '']}, ... }
+     * สถานะภารกิจ: 未接受 (ยังไม่รับ) / 进行中 (กำลังทำ) / 已完成 (สำเร็จแล้ว)
      */
     parseTaskData(taskData) {
       const tasks = [];
@@ -291,16 +292,17 @@ if (typeof window.TaskApp === 'undefined') {
       const completedTaskIds = [];
 
       try {
-        // 遍历任务中的所有任务
+        // วนลูปภารกิจทั้งหมดในข้อมูลภารกิจ
         Object.keys(taskData).forEach(taskKey => {
-          // 跳过元数据
+          // ข้ามข้อมูลเมตา
           if (taskKey === '$meta') return;
 
           const task = taskData[taskKey];
           if (!task || typeof task !== 'object') return;
 
-          // 提取任务数据（变量格式：[值, 描述]）
-          const getValue = (field) => task[field] && Array.isArray(task[field]) ? task[field][0] : '';
+          // ดึงข้อมูลภารกิจ (รูปแบบตัวแปร: [ค่า, คำอธิบาย])
+          // คีย์ภาษาจีนต้องคงไว้เพื่อให้ตรงกับข้อมูล
+          const getValue = field => (task[field] && Array.isArray(task[field]) ? task[field][0] : '');
 
           const taskName = getValue('任务名称') || taskKey;
           const taskDescription = getValue('任务描述') || '';
@@ -309,12 +311,14 @@ if (typeof window.TaskApp === 'undefined') {
 
           if (!taskName) return;
 
-          // 根据状态确定任务状态
+          // กำหนดสถานะภารกิจตามสถานะ
           let status = 'available';
           if (taskStatus === '进行中') {
+            // กำลังทำ
             status = 'inProgress';
             acceptedTaskIds.push(taskKey);
           } else if (taskStatus === '已完成') {
+            // สำเร็จแล้ว
             status = 'completed';
             completedTaskIds.push(taskKey);
           }
@@ -323,25 +327,25 @@ if (typeof window.TaskApp === 'undefined') {
             id: taskKey,
             name: taskName,
             description: taskDescription,
-            publisher: '系统',
+            publisher: 'ระบบ', // แปล '系统' เป็น 'ระบบ'
             reward: taskReward,
             status: status,
             timestamp: new Date().toLocaleString(),
           });
         });
 
-        console.log('[Task App] 从任务解析完成，任务数:', tasks.length);
-        console.log('[Task App] 未接受:', tasks.filter(t => t.status === 'available').length);
-        console.log('[Task App] 进行中:', acceptedTaskIds.length);
-        console.log('[Task App] 已完成:', completedTaskIds.length);
+        console.log('[Task App] แยกวิเคราะห์จากภารกิจเสร็จสมบูรณ์ จำนวนภารกิจ:', tasks.length);
+        console.log('[Task App] ยังไม่รับ:', tasks.filter(t => t.status === 'available').length);
+        console.log('[Task App] กำลังทำ:', acceptedTaskIds.length);
+        console.log('[Task App] สำเร็จแล้ว:', completedTaskIds.length);
       } catch (error) {
-        console.error('[Task App] 解析任务数据失败:', error);
+        console.error('[Task App] แยกวิเคราะห์ข้อมูลภารกิจล้มเหลว:', error);
       }
 
       return { tasks, acceptedTasks: acceptedTaskIds, completedTasks: completedTaskIds };
     }
 
-    // 检查任务是否有变化
+    // ตรวจสอบว่าภารกิจมีการเปลี่ยนแปลงหรือไม่
     hasTasksChanged(newTasks) {
       if (newTasks.length !== this.tasks.length) {
         return true;
@@ -366,7 +370,7 @@ if (typeof window.TaskApp === 'undefined') {
       return false;
     }
 
-    // 获取任务图标
+    // รับไอคอนภารกิจ
     getTaskIcon(status) {
       const iconMap = {
         available: '📋',
@@ -376,10 +380,10 @@ if (typeof window.TaskApp === 'undefined') {
       return iconMap[status] || iconMap['available'];
     }
 
-    // 获取聊天数据
+    // รับข้อมูลแชท
     getChatData() {
       try {
-        // 优先使用mobileContextEditor获取数据
+        // ให้ความสำคัญกับการใช้ mobileContextEditor เพื่อรับข้อมูล
         const mobileContextEditor = window['mobileContextEditor'];
         if (mobileContextEditor) {
           const chatData = mobileContextEditor.getCurrentChatData();
@@ -388,13 +392,13 @@ if (typeof window.TaskApp === 'undefined') {
           }
         }
 
-        // 尝试从全局变量获取
+        // พยายามรับจากตัวแปร global
         const chat = window['chat'];
         if (chat && Array.isArray(chat)) {
           return chat;
         }
 
-        // 尝试从其他可能的位置获取
+        // พยายามรับจากตำแหน่งอื่นที่เป็นไปได้
         const SillyTavern = window['SillyTavern'];
         if (SillyTavern && SillyTavern.chat) {
           return SillyTavern.chat;
@@ -402,18 +406,18 @@ if (typeof window.TaskApp === 'undefined') {
 
         return [];
       } catch (error) {
-        console.error('[Task App] 获取聊天数据失败:', error);
+        console.error('[Task App] รับข้อมูลแชทล้มเหลว:', error);
         return [];
       }
     }
 
-    // 获取应用内容
+    // รับเนื้อหาแอป
     getAppContent() {
-      // 每次打开应用时重新解析一次数据（确保显示最新内容）
+      // แยกวิเคราะห์ข้อมูลใหม่ทุกครั้งที่เปิดแอป (เพื่อให้แน่ใจว่าแสดงเนื้อหาล่าสุด)
       const taskData = this.getCurrentTaskData();
       if (taskData.tasks.length !== this.tasks.length || this.hasTasksChanged(taskData.tasks)) {
         this.tasks = taskData.tasks;
-        console.log('[Task App] 📋 打开应用时更新任务数据，任务数:', this.tasks.length);
+        console.log('[Task App] 📋 อัปเดตข้อมูลภารกิจเมื่อเปิดแอป จำนวนภารกิจ:', this.tasks.length);
       }
 
       switch (this.currentView) {
@@ -428,9 +432,9 @@ if (typeof window.TaskApp === 'undefined') {
       }
     }
 
-    // 渲染任务列表
+    // เรนเดอร์รายการภารกิจ
     renderTaskList() {
-      console.log('[Task App] 渲染任务列表...');
+      console.log('[Task App] เรนเดอร์รายการภารกิจ...');
 
       const availableTasks = this.tasks.filter(
         task => !this.acceptedTasks.includes(task.id) && !this.completedTasks.includes(task.id),
@@ -450,13 +454,13 @@ if (typeof window.TaskApp === 'undefined') {
                     <div class="task-header-row">
                         <div class="task-name">${task.name}</div>
                         <button class="accept-task-btn" data-task-id="${task.id}">
-                            接取任务
+                            รับภารกิจ
                         </button>
                     </div>
-                    <div class="task-id">任务ID: ${task.id}</div>
+                    <div class="task-id">รหัสภารกิจ: ${task.id}</div>
                     <div class="task-description">${task.description}</div>
-                    <div class="task-reward">奖励: ${task.reward}</div>
-                    <div class="task-publisher">发布人: ${task.publisher}</div>
+                    <div class="task-reward">รางวัล: ${task.reward}</div>
+                    <div class="task-publisher">ผู้ประกาศ: ${task.publisher}</div>
                 </div>
             </div>
         `,
@@ -466,28 +470,26 @@ if (typeof window.TaskApp === 'undefined') {
       const emptyState = `
             <div class="task-empty-state">
                 <div class="empty-icon">📋</div>
-                <div class="empty-title">暂无可接任务</div>
+                <div class="empty-title">ไม่มีภารกิจที่รับได้</div>
             </div>
         `;
 
       return `
             <div class="task-app">
-                <!-- 标签页导航 -->
                 <div class="task-tabs">
                     <button class="task-tab ${this.currentView === 'taskList' ? 'active' : ''}" data-view="taskList">
-                        任务 (${availableTasks.length})
+                        ภารกิจ (${availableTasks.length})
                     </button>
                     <button class="task-tab ${
                       this.currentView === 'inProgress' ? 'active' : ''
                     }" data-view="inProgress">
-                        进行中 (${inProgressTasks.length})
+                        กำลังทำ (${inProgressTasks.length})
                     </button>
                     <button class="task-tab ${this.currentView === 'completed' ? 'active' : ''}" data-view="completed">
-                        已完成 (${completedTasks.length})
+                        สำเร็จแล้ว (${completedTasks.length})
                     </button>
                 </div>
 
-                <!-- 任务内容 -->
                 <div class="task-list">
                     <div class="task-grid">
                         ${availableTasks.length > 0 ? taskItems : emptyState}
@@ -497,9 +499,9 @@ if (typeof window.TaskApp === 'undefined') {
         `;
     }
 
-    // 渲染进行中任务
+    // เรนเดอร์ภารกิจที่กำลังทำ
     renderInProgress() {
-      console.log('[Task App] 渲染进行中任务...');
+      console.log('[Task App] เรนเดอร์ภารกิจที่กำลังทำ...');
 
       const availableTasks = this.tasks.filter(
         task => !this.acceptedTasks.includes(task.id) && !this.completedTasks.includes(task.id),
@@ -518,12 +520,12 @@ if (typeof window.TaskApp === 'undefined') {
                 <div class="task-info">
                     <div class="task-header-row">
                         <div class="task-name">${task.name}</div>
-                        <div class="task-status">进行中</div>
+                        <div class="task-status">กำลังทำ</div>
                     </div>
-                    <div class="task-id">任务ID: ${task.id}</div>
+                    <div class="task-id">รหัสภารกิจ: ${task.id}</div>
                     <div class="task-description">${task.description}</div>
-                    <div class="task-reward">奖励: ${task.reward}</div>
-                    <div class="task-publisher">发布人: ${task.publisher}</div>
+                    <div class="task-reward">รางวัล: ${task.reward}</div>
+                    <div class="task-publisher">ผู้ประกาศ: ${task.publisher}</div>
                 </div>
             </div>
         `,
@@ -533,30 +535,28 @@ if (typeof window.TaskApp === 'undefined') {
       const emptyState = `
             <div class="task-empty-state">
                 <div class="empty-icon">⏳</div>
-                <div class="empty-title">暂无进行中任务</div>
-                <div class="empty-subtitle">快去接受一些任务吧</div>
-                <button class="back-to-tasks-btn">查看可接任务</button>
+                <div class="empty-title">ไม่มีภารกิจที่กำลังทำ</div>
+                <div class="empty-subtitle">รีบไปรับภารกิจกันเถอะ</div>
+                <button class="back-to-tasks-btn">ดูภารกิจที่รับได้</button>
             </div>
         `;
 
       return `
             <div class="task-app">
-                <!-- 标签页导航 -->
                 <div class="task-tabs">
                     <button class="task-tab ${this.currentView === 'taskList' ? 'active' : ''}" data-view="taskList">
-                        任务 (${availableTasks.length})
+                        ภารกิจ (${availableTasks.length})
                     </button>
                     <button class="task-tab ${
                       this.currentView === 'inProgress' ? 'active' : ''
                     }" data-view="inProgress">
-                        进行中 (${inProgressTasks.length})
+                        กำลังทำ (${inProgressTasks.length})
                     </button>
                     <button class="task-tab ${this.currentView === 'completed' ? 'active' : ''}" data-view="completed">
-                        已完成 (${completedTasks.length})
+                        สำเร็จแล้ว (${completedTasks.length})
                     </button>
                 </div>
 
-                <!-- 任务内容 -->
                 <div class="task-list">
                     <div class="task-grid">
                         ${inProgressTasks.length > 0 ? taskItems : emptyState}
@@ -566,9 +566,9 @@ if (typeof window.TaskApp === 'undefined') {
         `;
     }
 
-    // 渲染已完成任务
+    // เรนเดอร์ภารกิจที่สำเร็จแล้ว
     renderCompleted() {
-      console.log('[Task App] 渲染已完成任务...');
+      console.log('[Task App] เรนเดอร์ภารกิจที่สำเร็จแล้ว...');
 
       const availableTasks = this.tasks.filter(
         task => !this.acceptedTasks.includes(task.id) && !this.completedTasks.includes(task.id),
@@ -587,12 +587,12 @@ if (typeof window.TaskApp === 'undefined') {
                 <div class="task-info">
                     <div class="task-header-row">
                         <div class="task-name">${task.name}</div>
-                        <div class="task-status">已完成</div>
+                        <div class="task-status">สำเร็จแล้ว</div>
                     </div>
-                    <div class="task-id">任务ID: ${task.id}</div>
+                    <div class="task-id">รหัสภารกิจ: ${task.id}</div>
                     <div class="task-description">${task.description}</div>
-                    <div class="task-reward">奖励: ${task.reward}</div>
-                    <div class="task-publisher">发布人: ${task.publisher}</div>
+                    <div class="task-reward">รางวัล: ${task.reward}</div>
+                    <div class="task-publisher">ผู้ประกาศ: ${task.publisher}</div>
                 </div>
             </div>
         `,
@@ -602,30 +602,28 @@ if (typeof window.TaskApp === 'undefined') {
       const emptyState = `
             <div class="task-empty-state">
                 <div class="empty-icon">✅</div>
-                <div class="empty-title">暂无已完成任务</div>
-                <div class="empty-subtitle">完成任务后会在这里显示</div>
-                <button class="back-to-tasks-btn">查看可接任务</button>
+                <div class="empty-title">ไม่มีภารกิจที่สำเร็จ</div>
+                <div class="empty-subtitle">ภารกิจที่ทำสำเร็จแล้วจะแสดงที่นี่</div>
+                <button class="back-to-tasks-btn">ดูภารกิจที่รับได้</button>
             </div>
         `;
 
       return `
             <div class="task-app">
-                <!-- 标签页导航 -->
                 <div class="task-tabs">
                     <button class="task-tab ${this.currentView === 'taskList' ? 'active' : ''}" data-view="taskList">
-                        任务 (${availableTasks.length})
+                        ภารกิจ (${availableTasks.length})
                     </button>
                     <button class="task-tab ${
                       this.currentView === 'inProgress' ? 'active' : ''
                     }" data-view="inProgress">
-                        进行中 (${inProgressTasks.length})
+                        กำลังทำ (${inProgressTasks.length})
                     </button>
                     <button class="task-tab ${this.currentView === 'completed' ? 'active' : ''}" data-view="completed">
-                        已完成 (${completedTasks.length})
+                        สำเร็จแล้ว (${completedTasks.length})
                     </button>
                 </div>
 
-                <!-- 任务内容 -->
                 <div class="task-list">
                     <div class="task-grid">
                         ${completedTasks.length > 0 ? taskItems : emptyState}
@@ -635,118 +633,118 @@ if (typeof window.TaskApp === 'undefined') {
         `;
     }
 
-    // 更新任务列表
+    // อัปเดตรายการภารกิจ
     updateTaskList() {
-      console.log('[Task App] 更新任务列表...');
+      console.log('[Task App] อัปเดตรายการภารกิจ...');
       this.updateAppContent();
     }
 
-    // 更新应用内容
+    // อัปเดตเนื้อหาแอป
     updateAppContent() {
       const content = this.getAppContent();
       const appElement = document.getElementById('app-content');
       if (appElement) {
         appElement.innerHTML = content;
-        // 延迟绑定事件，确保DOM已更新
+        // หน่วงเวลาผูก Event เพื่อให้แน่ใจว่า DOM อัปเดตแล้ว
         setTimeout(() => {
           this.bindEvents();
         }, 50);
       }
     }
 
-    // 绑定事件
+    // ผูก Event
     bindEvents() {
-      console.log('[Task App] 绑定事件...');
+      console.log('[Task App] ผูก Event...');
 
-      // 在应用容器内查找元素，避免与其他应用冲突
+      // ค้นหา Element ในคอนเทนเนอร์แอปเพื่อหลีกเลี่ยงความขัดแย้งกับแอปอื่น
       const appContainer = document.getElementById('app-content');
       if (!appContainer) {
-        console.error('[Task App] 应用容器未找到');
+        console.error('[Task App] ไม่พบคอนเทนเนอร์แอป');
         return;
       }
 
-      // 接受任务按钮点击事件
+      // Event ปุ่มรับภารกิจ
       appContainer.querySelectorAll('.accept-task-btn').forEach(btn => {
         btn.addEventListener('click', e => {
           e.preventDefault();
           e.stopPropagation();
           const taskId = e.target.dataset.taskId;
-          console.log('[Task App] 点击接受任务按钮:', taskId);
+          console.log('[Task App] คลิกปุ่มรับภารกิจ:', taskId);
           this.acceptTask(taskId);
         });
       });
 
-      // 返回任务列表按钮
+      // Event ปุ่มกลับไปรายการภารกิจ
       appContainer.querySelectorAll('.back-to-tasks-btn').forEach(btn => {
         btn.addEventListener('click', e => {
           e.preventDefault();
           e.stopPropagation();
-          console.log('[Task App] 点击返回任务列表按钮');
+          console.log('[Task App] คลิกปุ่มกลับไปรายการภารกิจ');
           this.showTaskList();
         });
       });
 
-      // 标签页切换事件
+      // Event สลับแท็บ
       appContainer.querySelectorAll('.task-tab').forEach(tab => {
         tab.addEventListener('click', e => {
           e.preventDefault();
           e.stopPropagation();
           const view = e.target.dataset.view;
-          console.log('[Task App] 点击标签页:', view);
+          console.log('[Task App] คลิกแท็บ:', view);
           this.switchView(view);
         });
       });
 
-      // 刷新任务按钮事件
+      // Event ปุ่มรีเฟรชภารกิจ
       appContainer.querySelectorAll('.refresh-tasks-btn').forEach(btn => {
         btn.addEventListener('click', e => {
           e.preventDefault();
           e.stopPropagation();
-          console.log('[Task App] 点击刷新任务按钮');
+          console.log('[Task App] คลิกปุ่มรีเฟรชภารกิจ');
           this.refreshTaskList();
-          this.showToast('正在刷新任务状态...', 'info');
+          this.showToast('กำลังรีเฟรชสถานะภารกิจ...', 'info');
         });
       });
 
       console.log(
-        '[Task App] 事件绑定完成 - 标签页:',
+        '[Task App] ผูก Event เสร็จสิ้น - แท็บ:',
         appContainer.querySelectorAll('.task-tab').length,
-        '个, 刷新按钮:',
+        'อัน, ปุ่มรีเฟรช:',
         appContainer.querySelectorAll('.refresh-tasks-btn').length,
-        '个',
+        'อัน',
       );
     }
 
-    // 接受任务（直接操作变量）
+    // รับภารกิจ (จัดการตัวแปรโดยตรง)
     async acceptTask(taskId) {
-      console.log('[Task App] 接受任务:', taskId);
+      console.log('[Task App] รับภารกิจ:', taskId);
 
       const task = this.tasks.find(t => t.id === taskId && t.status === 'available');
       if (!task) {
-        this.showToast('任务不存在或已接受', 'warning');
+        this.showToast('ภารกิจไม่พบหรือถูกรับไปแล้ว', 'warning');
         return;
       }
 
       try {
-        // 直接操作Mvu变量
+        // จัดการตัวแปร Mvu โดยตรง
         await this.acceptTaskDirectly(task);
 
-        this.showToast('任务接受成功！', 'success');
+        this.showToast('รับภารกิจสำเร็จ!', 'success');
 
-        // 刷新任务列表
+        // รีเฟรชรายการภารกิจ
         this.refreshTasksData();
       } catch (error) {
-        console.error('[Task App] 接受任务失败:', error);
-        this.showToast('接受任务失败: ' + error.message, 'error');
+        console.error('[Task App] รับภารกิจล้มเหลว:', error);
+        this.showToast('การรับภารกิจล้มเหลว: ' + error.message, 'error');
       }
     }
 
-    // 直接操作Mvu变量接受任务（修改任务状态）
+    // จัดการตัวแปร Mvu โดยตรงเพื่อรับภารกิจ (แก้ไขสถานะภารกิจ)
     async acceptTaskDirectly(task) {
       try {
-        console.log('[Task App] 开始直接更新变量...');
+        console.log('[Task App] เริ่มอัปเดตตัวแปรโดยตรง...');
 
-        // 获取目标消息ID
+        // รับ ID ข้อความเป้าหมาย
         let targetMessageId = 'latest';
         if (typeof window.getLastMessageId === 'function' && typeof window.getChatMessages === 'function') {
           let currentId = window.getLastMessageId();
@@ -760,43 +758,43 @@ if (typeof window.TaskApp === 'undefined') {
           }
         }
 
-        // 获取Mvu数据
+        // รับข้อมูล Mvu
         const mvuData = window.Mvu.getMvuData({ type: 'message', message_id: targetMessageId });
         if (!mvuData || !mvuData.stat_data) {
-          throw new Error('无法获取Mvu变量数据');
+          throw new Error('ไม่สามารถรับข้อมูลตัวแปร Mvu');
         }
 
-        // 确保任务存在
+        // ตรวจสอบว่ามีระบบภารกิจอยู่จริง
         if (!mvuData.stat_data['任务']) {
-          throw new Error('任务系统不存在');
+          throw new Error('ไม่พบระบบภารกิจ');
         }
 
         const taskKey = task.id;
 
-        // 1. 修改任务状态为"进行中"
+        // 1. แก้ไขสถานะภารกิจเป็น "進行中" (กำลังทำ - ต้องคงค่าภาษาจีนไว้เพื่อให้ระบบทำงานต่อได้)
         await window.Mvu.setMvuVariable(mvuData, `任务.${taskKey}.任务状态[0]`, '进行中', {
-          reason: `接受任务：${task.name}`,
-          is_recursive: false
+          reason: `รับภารกิจ: ${task.name}`,
+          is_recursive: false,
         });
-        console.log(`[Task App] ✅ 任务状态更新: ${taskKey} -> 进行中`);
+        console.log(`[Task App] ✅ อัปเดตสถานะภารกิจ: ${taskKey} -> 进行中 (กำลังทำ)`);
 
-        // 2. 不再记录历史（由AI生成摘要代替）
-        // 接受任务操作将在AI回复的摘要中体现
+        // 2. ไม่บันทึกประวัติ (ให้ AI สร้างสรุปแทน)
+        // การรับภารกิจจะถูกสะท้อนในสรุปที่ AI ตอบกลับ
 
-        // 保存更新
+        // บันทึกการอัปเดต
         await window.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: targetMessageId });
 
-        console.log('[Task App] ✅ 变量更新完成');
+        console.log('[Task App] ✅ อัปเดตตัวแปรเสร็จสมบูรณ์');
       } catch (error) {
-        console.error('[Task App] 更新变量失败:', error);
+        console.error('[Task App] อัปเดตตัวแปรล้มเหลว:', error);
         throw error;
       }
     }
 
-    // 获取当前游戏时间（向上楼层查找AI消息）
+    // รับเวลาในเกมปัจจุบัน (ค้นหาข้อความ AI ชั้นบน)
     getCurrentGameTime() {
       try {
-        // 使用 Mvu 框架获取变量（向上查找AI消息）
+        // ใช้ Mvu Framework เพื่อรับตัวแปร (ค้นหาขึ้นไปหาข้อความ AI)
         if (window.Mvu && typeof window.Mvu.getMvuData === 'function') {
           let targetMessageId = 'latest';
 
@@ -822,7 +820,7 @@ if (typeof window.TaskApp === 'undefined') {
           }
         }
 
-        // 备用方法：从 SillyTavern context 获取
+        // วิธีสำรอง: รับจากบริบทของ SillyTavern
         if (window.SillyTavern) {
           const context = window.SillyTavern.getContext ? window.SillyTavern.getContext() : window.SillyTavern;
           if (context && context.chatMetadata && context.chatMetadata.variables) {
@@ -834,86 +832,87 @@ if (typeof window.TaskApp === 'undefined') {
           }
         }
       } catch (error) {
-        console.warn('[Task App] 获取游戏时间失败:', error);
+        console.warn('[Task App] รับเวลาในเกมล้มเหลว:', error);
       }
-      return '未知时间';
+      return 'ไม่ทราบเวลา';
     }
 
-    // 切换视图
+    // สลับมุมมอง
     switchView(view) {
-      console.log('[Task App] 切换视图:', view);
+      console.log('[Task App] สลับมุมมอง:', view);
       this.currentView = view;
       this.updateAppContent();
       this.updateHeader();
     }
 
-    // 显示任务列表
+    // แสดงรายการภารกิจ
     showTaskList() {
       this.switchView('taskList');
     }
 
-    // 显示进行中任务
+    // แสดงภารกิจที่กำลังทำ
     showInProgress() {
       this.switchView('inProgress');
     }
 
-    // 显示已完成任务
+    // แสดงภารกิจที่สำเร็จแล้ว
     showCompleted() {
       this.switchView('completed');
     }
 
-    // 发送查看任务消息
+    // ส่งข้อความดูภารกิจ
     sendViewTasksMessage() {
       try {
-        console.log('[Task App] 发送查看任务消息');
+        console.log('[Task App] ส่งข้อความดูภารกิจ');
 
-        const message = '<Request:Meta-instructions：接下来你要，按照当前剧情，输出至少3个任务,注意更新对应变量,不要输出重复的任务，注意更新任务变量>查看任务';
+        const message =
+          '<Request:Meta-instructions：接下来你要，按照当前剧情，输出至少3个任务,注意更新对应变量,不要输出重复的任务，注意更新任务变量>查看任务';
 
-        // 使用与消息app相同的发送方式
+        // ใช้วิธีส่งแบบเดียวกับแอปข้อความ
         this.sendToSillyTavern(message);
       } catch (error) {
-        console.error('[Task App] 发送查看任务消息失败:', error);
+        console.error('[Task App] ส่งข้อความดูภารกิจล้มเหลว:', error);
       }
     }
 
-    // 发送消息到SillyTavern
+    // ส่งข้อความไปยัง SillyTavern
     async sendToSillyTavern(message) {
       try {
-        console.log('[Task App] 发送消息到SillyTavern:', message);
+        console.log('[Task App] ส่งข้อความไปยัง SillyTavern:', message);
 
-        // 尝试找到文本输入框
+        // พยายามหากล่องข้อความ
         const textarea = document.querySelector('#send_textarea');
         if (!textarea) {
-          console.error('[Task App] 未找到消息输入框');
+          console.error('[Task App] ไม่พบกล่องข้อความ');
           return this.sendToSillyTavernBackup(message);
         }
 
-        // 设置消息内容
+        // ตั้งค่าเนื้อหาข้อความ
         textarea.value = message;
         textarea.focus();
 
-        // 触发输入事件
+        // Trigger input event
         textarea.dispatchEvent(new Event('input', { bubbles: true }));
 
-        // 触发发送按钮点击
+        // คลิกปุ่มส่ง
         const sendButton = document.querySelector('#send_but');
         if (sendButton) {
           sendButton.click();
-          console.log('[Task App] 已点击发送按钮');
+          console.log('[Task App] คลิกปุ่มส่งแล้ว');
           return true;
         }
 
         return this.sendToSillyTavernBackup(message);
       } catch (error) {
-        console.error('[Task App] 发送消息时出错:', error);
+        console.error('[Task App] เกิดข้อผิดพลาดขณะส่งข้อความ:', error);
         return this.sendToSillyTavernBackup(message);
       }
     }
 
-    // 备用发送方法
+    // วิธีส่งข้อความสำรอง
     async sendToSillyTavernBackup(message) {
       try {
-        console.log('[Task App] 尝试备用发送方法:', message);
+        console.log('[Task App] ใช้วิธีส่งข้อความสำรอง:', message);
 
         const textareas = document.querySelectorAll('textarea');
         if (textareas.length > 0) {
@@ -928,53 +927,53 @@ if (typeof window.TaskApp === 'undefined') {
 
         return false;
       } catch (error) {
-        console.error('[Task App] 备用发送方法失败:', error);
+        console.error('[Task App] วิธีส่งข้อความสำรองล้มเหลว:', error);
         return false;
       }
     }
 
-    // 手动刷新任务列表
+    // รีเฟรชรายการภารกิจด้วยตนเอง
     refreshTaskList() {
-      console.log('[Task App] 手动刷新任务列表');
+      console.log('[Task App] รีเฟรชรายการภารกิจด้วยตนเอง');
 
-      // 强制重新解析任务数据
+      // บังคับแยกวิเคราะห์ข้อมูลภารกิจใหม่
       this.parseTasksFromContext();
 
-      // 更新界面
+      // อัปเดตหน้าจอ
       this.updateAppContent();
 
-      // 显示刷新成功提示
+      // แสดงแจ้งเตือนความสำเร็จ
       setTimeout(() => {
-        this.showToast('任务状态已更新', 'success');
+        this.showToast('สถานะภารกิจอัปเดตแล้ว', 'success');
       }, 500);
     }
 
-    // 销毁应用，清理资源
+    // ทำลายแอป ล้างทรัพยากร
     destroy() {
-      console.log('[Task App] 销毁应用，清理资源');
+      console.log('[Task App] ทำลายแอป ล้างทรัพยากร');
 
-      // 清理事件监听
+      // ล้าง Event Listener
       if (this.eventListenersSetup && this.messageReceivedHandler) {
         const eventSource = window['eventSource'];
         if (eventSource && eventSource.removeListener) {
           eventSource.removeListener('MESSAGE_RECEIVED', this.messageReceivedHandler);
-          console.log('[Task App] 🗑️ 已移除 MESSAGE_RECEIVED 事件监听');
+          console.log('[Task App] 🗑️ ลบผู้ฟังเหตุการณ์ MESSAGE_RECEIVED แล้ว');
         }
       }
 
-      // 重置状态
+      // รีเซ็ตสถานะ
       this.eventListenersSetup = false;
       this.isAutoRenderEnabled = false;
 
-      // 清空数据
+      // ล้างข้อมูล
       this.tasks = [];
       this.acceptedTasks = [];
       this.completedTasks = [];
     }
 
-    // 更新header
+    // อัปเดต Header
     updateHeader() {
-      // 通知mobile-phone更新header
+      // แจ้ง mobile-phone ให้อัปเดต Header
       if (window.mobilePhone && window.mobilePhone.updateAppHeader) {
         const state = {
           app: 'task',
@@ -985,21 +984,21 @@ if (typeof window.TaskApp === 'undefined') {
       }
     }
 
-    // 获取视图标题
+    // รับชื่อหัวข้อของมุมมอง
     getViewTitle() {
       switch (this.currentView) {
         case 'taskList':
-          return '任务大厅';
+          return 'โถงภารกิจ';
         case 'inProgress':
-          return '进行中';
+          return 'กำลังทำ';
         case 'completed':
-          return '已完成';
+          return 'สำเร็จแล้ว';
         default:
-          return '任务大厅';
+          return 'โถงภารกิจ';
       }
     }
 
-    // 显示提示消息
+    // แสดงข้อความแจ้งเตือน
     showToast(message, type = 'info') {
       const toast = document.createElement('div');
       toast.className = `task-toast ${type}`;
@@ -1020,43 +1019,43 @@ if (typeof window.TaskApp === 'undefined') {
     }
   }
 
-  // 创建全局实例
+  // สร้าง Global Instance
   window.TaskApp = TaskApp;
   window.taskApp = new TaskApp();
-} // 结束类定义检查
+} // จบการตรวจสอบคลาส
 
-// 全局函数供调用
+// ฟังก์ชัน Global สำหรับเรียกใช้งาน
 window.getTaskAppContent = function () {
-  console.log('[Task App] 获取任务应用内容');
+  console.log('[Task App] รับเนื้อหาแอปภารกิจ');
 
   if (!window.taskApp) {
-    console.error('[Task App] taskApp实例不存在');
-    return '<div class="error-message">任务应用加载失败</div>';
+    console.error('[Task App] อินสแตนซ์ taskApp ไม่มีอยู่');
+    return '<div class="error-message">โหลดแอปภารกิจล้มเหลว</div>';
   }
 
   try {
     return window.taskApp.getAppContent();
   } catch (error) {
-    console.error('[Task App] 获取应用内容失败:', error);
-    return '<div class="error-message">任务应用内容加载失败</div>';
+    console.error('[Task App] รับเนื้อหาแอปล้มเหลว:', error);
+    return '<div class="error-message">โหลดเนื้อหาแอปภารกิจล้มเหลว</div>';
   }
 };
 
 window.bindTaskAppEvents = function () {
-  console.log('[Task App] 绑定任务应用事件');
+  console.log('[Task App] ผูก Event แอปภารกิจ');
 
   if (!window.taskApp) {
-    console.error('[Task App] taskApp实例不存在');
+    console.error('[Task App] อินสแตนซ์ taskApp ไม่มีอยู่');
     return;
   }
 
   try {
-    // 延迟绑定，确保DOM完全加载
+    // หน่วงเวลาผูก เพื่อให้แน่ใจว่า DOM โหลดเสร็จสมบูรณ์
     setTimeout(() => {
       window.taskApp.bindEvents();
     }, 100);
   } catch (error) {
-    console.error('[Task App] 绑定事件失败:', error);
+    console.error('[Task App] ผูก Event ล้มเหลว:', error);
   }
 };
 
@@ -1086,57 +1085,57 @@ window.taskAppSendViewMessage = function () {
 
 window.taskAppDebugInfo = function () {
   if (window.taskApp) {
-    console.log('[Task App Debug] 当前任务数量:', window.taskApp.tasks.length);
-    console.log('[Task App Debug] 任务列表:', window.taskApp.tasks);
-    console.log('[Task App Debug] 已接受任务:', window.taskApp.acceptedTasks);
-    console.log('[Task App Debug] 已完成任务:', window.taskApp.completedTasks);
-    console.log('[Task App Debug] 当前视图:', window.taskApp.currentView);
-    console.log('[Task App Debug] 事件监听器设置:', window.taskApp.eventListenersSetup);
-    console.log('[Task App Debug] 自动渲染启用:', window.taskApp.isAutoRenderEnabled);
+    console.log('[Task App Debug] จำนวนภารกิจปัจจุบัน:', window.taskApp.tasks.length);
+    console.log('[Task App Debug] รายการภารกิจ:', window.taskApp.tasks);
+    console.log('[Task App Debug] ภารกิจที่รับแล้ว:', window.taskApp.acceptedTasks);
+    console.log('[Task App Debug] ภารกิจที่สำเร็จแล้ว:', window.taskApp.completedTasks);
+    console.log('[Task App Debug] มุมมองปัจจุบัน:', window.taskApp.currentView);
+    console.log('[Task App Debug] การตั้งค่า Event Listener:', window.taskApp.eventListenersSetup);
+    console.log('[Task App Debug] เปิดใช้งานการเรนเดอร์อัตโนมัติ:', window.taskApp.isAutoRenderEnabled);
   }
 };
 
 window.taskAppDestroy = function () {
   if (window.taskApp) {
     window.taskApp.destroy();
-    console.log('[Task App] 应用已销毁');
+    console.log('[Task App] แอปถูกทำลายแล้ว');
   }
 };
 
 window.taskAppForceReload = function () {
-  console.log('[Task App] 🔄 强制重新加载应用...');
+  console.log('[Task App] 🔄 บังคับโหลดแอปใหม่...');
 
-  // 先销毁旧实例
+  // ทำลายอินสแตนซ์เก่าก่อน
   if (window.taskApp) {
     window.taskApp.destroy();
   }
 
-  // 创建新实例
+  // สร้างอินสแตนซ์ใหม่
   window.taskApp = new TaskApp();
-  console.log('[Task App] ✅ 应用已重新加载 - 版本 3.0');
+  console.log('[Task App] ✅ แอปโหลดใหม่แล้ว - เวอร์ชัน 3.0');
 };
 
 window.taskAppForceRefresh = function () {
-  console.log('[Task App] 🔄 强制刷新任务状态...');
+  console.log('[Task App] 🔄 บังคับรีเฟรชสถานะภารกิจ...');
 
   if (window.taskApp) {
-    // 强制重新解析
+    // บังคับแยกวิเคราะห์ใหม่
     window.taskApp.parseTasksFromContext();
     window.taskApp.updateAppContent();
-    window.taskApp.showToast('强制刷新完成', 'success');
+    window.taskApp.showToast('บังคับรีเฟรชเสร็จสมบูรณ์', 'success');
   } else {
-    console.error('[Task App] taskApp实例不存在');
+    console.error('[Task App] อินสแตนซ์ taskApp ไม่มีอยู่');
   }
 };
 
 window.taskAppTestTabs = function () {
-  console.log('[Task App] 🧪 测试标签页点击事件...');
+  console.log('[Task App] 🧪 ทดสอบ Event คลิกแท็บ...');
 
   const tabs = document.querySelectorAll('.task-tab');
-  console.log('[Task App] 找到标签页数量:', tabs.length);
+  console.log('[Task App] พบแท็บจำนวน:', tabs.length);
 
   tabs.forEach((tab, index) => {
-    console.log(`[Task App] 标签页 ${index + 1}:`, {
+    console.log(`[Task App] แท็บ ${index + 1}:`, {
       text: tab.textContent.trim(),
       view: tab.dataset.view,
       active: tab.classList.contains('active'),
@@ -1144,13 +1143,15 @@ window.taskAppTestTabs = function () {
   });
 
   if (tabs.length > 0) {
-    console.log('[Task App] 尝试点击第二个标签页...');
+    console.log('[Task App] ลองคลิกแท็บที่สอง...');
     const secondTab = tabs[1];
     if (secondTab) {
       secondTab.click();
-      console.log('[Task App] 已触发点击事件');
+      console.log('[Task App] ทริกเกอร์ Event คลิกแล้ว');
     }
   }
 };
 
-console.log('[Task App] 任务应用模块加载完成 - 版本 3.0 (事件驱动 + 族会目标 + 直接操作变量)');
+console.log(
+  '[Task App] โมดูลแอปภารกิจโหลดเสร็จสมบูรณ์ - เวอร์ชัน 3.0 (ขับเคลื่อนด้วยเหตุการณ์ + เป้าหมายตระกูล + จัดการตัวแปรโดยตรง)',
+);

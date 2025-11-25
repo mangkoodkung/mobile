@@ -1,54 +1,54 @@
 /**
- * Diary App - 日记应用
- * 为mobile-phone.js提供日记功能，显示摘要列表
+ * Diary App - แอปไดอารี่
+ * ให้ฟังก์ชันไดอารี่สำหรับ mobile-phone.js แสดงรายการสรุป
  */
 
 // @ts-nocheck
-// 避免重复定义
+// หลีกเลี่ยงการนิยามซ้ำ
 if (typeof window.DiaryApp === 'undefined') {
   class DiaryApp {
     constructor() {
-      this.diaryList = []; // 日记列表
+      this.diaryList = []; // รายการไดอารี่
       this.eventListenersSetup = false;
 
       this.init();
     }
 
     init() {
-      console.log('[Diary App] 日记应用初始化开始 - 版本 1.0');
+      console.log('[Diary App] เริ่มต้นแอปไดอารี่ - เวอร์ชัน 1.0');
 
-      // 立即从变量管理器读取一次日记信息
+      // อ่านข้อมูลไดอารี่จากตัวจัดการตัวแปรทันที
       this.parseDiariesFromContext();
 
-      // 异步初始化监控，避免阻塞界面渲染
+      // เริ่มต้นการตรวจสอบแบบอะซิงโครนัส เพื่อไม่ให้บล็อกการเรนเดอร์หน้าจอ
       setTimeout(() => {
         this.setupContextMonitor();
       }, 100);
 
-      console.log('[Diary App] 日记应用初始化完成');
+      console.log('[Diary App] การเริ่มต้นแอปไดอารี่เสร็จสมบูรณ์');
     }
 
-    // 设置上下文监控
+    // ตั้งค่าการตรวจสอบบริบท
     setupContextMonitor() {
-      console.log('[Diary App] 设置上下文监控...');
+      console.log('[Diary App] ตั้งค่าการตรวจสอบบริบท...');
       this.setupSillyTavernEventListeners();
     }
 
-    // 手动刷新日记数据
+    // รีเฟรชข้อมูลไดอารี่ด้วยตนเอง
     refreshDiariesData() {
-      console.log('[Diary App] 🔄 手动刷新日记数据...');
+      console.log('[Diary App] 🔄 รีเฟรชข้อมูลไดอารี่ด้วยตนเอง...');
       this.parseDiariesFromContext();
     }
 
-    // 设置SillyTavern事件监听器
+    // ตั้งค่าตัวฟังเหตุการณ์ SillyTavern
     setupSillyTavernEventListeners() {
-      // 防止重复设置
+      // ป้องกันการตั้งค่าซ้ำ
       if (this.eventListenersSetup) {
         return;
       }
 
       try {
-        // 监听SillyTavern的事件系统
+        // ฟังระบบเหตุการณ์ของ SillyTavern
         const eventSource = window['eventSource'];
         const event_types = window['event_types'];
 
@@ -56,15 +56,15 @@ if (typeof window.DiaryApp === 'undefined') {
           this.eventListenersSetup = true;
 
           const handleMessageReceived = () => {
-            console.log('[Diary App] 📨 收到 MESSAGE_RECEIVED 事件，刷新日记数据...');
+            console.log('[Diary App] 📨 ได้รับเหตุการณ์ MESSAGE_RECEIVED รีเฟรชข้อมูลไดอารี่...');
             setTimeout(() => {
-              // 先解析数据
+              // แยกวิเคราะห์ข้อมูลก่อน
               this.parseDiariesFromContext();
 
-              // 如果应用当前处于活动状态，强制刷新UI
+              // ถ้าแอปเปิดใช้งานอยู่ ให้บังคับรีเฟรช UI
               const appContent = document.getElementById('app-content');
               if (appContent && appContent.querySelector('.cd-diary-app')) {
-                console.log('[Diary App] 🔄 强制刷新日记应用UI...');
+                console.log('[Diary App] 🔄 บังคับรีเฟรช UI แอปไดอารี่...');
                 appContent.innerHTML = this.getAppContent();
                 this.bindEvents();
               }
@@ -73,21 +73,21 @@ if (typeof window.DiaryApp === 'undefined') {
 
           if (event_types.MESSAGE_RECEIVED) {
             eventSource.on(event_types.MESSAGE_RECEIVED, handleMessageReceived);
-            console.log('[Diary App] ✅ 已注册 MESSAGE_RECEIVED 事件监听');
+            console.log('[Diary App] ✅ ลงทะเบียนผู้ฟังเหตุการณ์ MESSAGE_RECEIVED แล้ว');
           }
 
-          // 监听聊天变化事件
+          // ฟังเหตุการณ์การเปลี่ยนแชท
           if (event_types.CHAT_CHANGED) {
             eventSource.on(event_types.CHAT_CHANGED, () => {
-              console.log('[Diary App] 📨 聊天已切换，刷新日记数据...');
+              console.log('[Diary App] 📨 สลับการแชทแล้ว รีเฟรชข้อมูลไดอารี่...');
               setTimeout(() => {
                 this.parseDiariesFromContext();
               }, 500);
             });
-            console.log('[Diary App] ✅ 已注册 CHAT_CHANGED 事件监听');
+            console.log('[Diary App] ✅ ลงทะเบียนผู้ฟังเหตุการณ์ CHAT_CHANGED แล้ว');
           }
 
-          // 保存引用以便后续清理
+          // บันทึกการอ้างอิงเพื่อล้างข้อมูลในภายหลัง
           this.messageReceivedHandler = handleMessageReceived;
         } else {
           setTimeout(() => {
@@ -95,65 +95,65 @@ if (typeof window.DiaryApp === 'undefined') {
           }, 5000);
         }
       } catch (error) {
-        console.warn('[Diary App] 设置SillyTavern事件监听器失败:', error);
+        console.warn('[Diary App] ตั้งค่าตัวฟังเหตุการณ์ SillyTavern ล้มเหลว:', error);
       }
     }
 
-    // 从上下文解析日记信息
+    // แยกวิเคราะห์ข้อมูลไดอารี่จากบริบท
     parseDiariesFromContext() {
       try {
-        // 获取当前日记数据
+        // รับข้อมูลไดอารี่ปัจจุบัน
         const diaryData = this.getCurrentDiaryData();
 
-        // 更新日记列表
+        // อัปเดตรายการไดอารี่
         if (diaryData.diaries.length !== this.diaryList.length || this.hasDiariesChanged(diaryData.diaries)) {
           this.diaryList = diaryData.diaries;
-          console.log('[Diary App] 📔 日记数据已更新，日记数:', this.diaryList.length);
+          console.log('[Diary App] 📔 ข้อมูลไดอารี่อัปเดตแล้ว จำนวน:', this.diaryList.length);
 
-          // 只有在当前显示日记应用时才更新UI
+          // อัปเดต UI เฉพาะเมื่อแอปไดอารี่แสดงอยู่
           if (this.isCurrentlyActive()) {
-            console.log('[Diary App] 🎨 日记应用处于活动状态，更新UI...');
+            console.log('[Diary App] 🎨 แอปไดอารี่ทำงานอยู่ อัปเดต UI...');
             this.updateAppContent();
           } else {
-            console.log('[Diary App] 💤 日记应用未激活，数据已更新但UI延迟渲染');
+            console.log('[Diary App] 💤 แอปไดอารี่ไม่ได้ใช้งาน ข้อมูลอัปเดตแล้วแต่ UI รอการเรนเดอร์');
           }
         } else {
-          console.log('[Diary App] 📊 日记数据无变化，跳过更新');
+          console.log('[Diary App] 📊 ข้อมูลไดอารี่ไม่มีการเปลี่ยนแปลง ข้ามการอัปเดต');
         }
       } catch (error) {
-        console.error('[Diary App] 解析日记信息失败:', error);
+        console.error('[Diary App] แยกวิเคราะห์ข้อมูลไดอารี่ล้มเหลว:', error);
       }
     }
 
-    // 检查日记应用是否当前活动
+    // ตรวจสอบว่าแอปไดอารี่กำลังทำงานอยู่หรือไม่
     isCurrentlyActive() {
       const appContent = document.getElementById('app-content');
       if (!appContent) return false;
 
-      // 检查是否包含日记应用的特征元素
+      // ตรวจสอบว่ามีองค์ประกอบของแอปไดอารี่หรือไม่
       return appContent.querySelector('.cd-diary-app') !== null;
     }
 
     /**
-     * 从变量管理器获取摘要数据
+     * รับข้อมูลสรุปจากตัวจัดการตัวแปร
      */
     getCurrentDiaryData() {
       try {
-        // 使用 Mvu 框架获取变量
+        // ใช้ Mvu Framework เพื่อรับตัวแปร
         if (window.Mvu && typeof window.Mvu.getMvuData === 'function') {
-          // 获取目标消息ID（向上查找最近有AI消息的楼层）
+          // รับ ID ข้อความเป้าหมาย (ค้นหาขึ้นไปหาข้อความ AI ล่าสุด)
           let targetMessageId = 'latest';
 
           if (typeof window.getLastMessageId === 'function' && typeof window.getChatMessages === 'function') {
             let currentId = window.getLastMessageId();
 
-            // 向上查找AI消息（跳过用户消息）
+            // ค้นหาข้อความ AI ขึ้นไป (ข้ามข้อความผู้ใช้)
             while (currentId >= 0) {
               const message = window.getChatMessages(currentId).at(-1);
               if (message && message.role !== 'user') {
                 targetMessageId = currentId;
                 if (currentId !== window.getLastMessageId()) {
-                  console.log(`[Diary App] 📝 向上查找到第 ${currentId} 层的AI消息`);
+                  console.log(`[Diary App] 📝 ค้นหาพบข้อความ AI ที่ชั้น ${currentId}`);
                 }
                 break;
               }
@@ -162,131 +162,133 @@ if (typeof window.DiaryApp === 'undefined') {
 
             if (currentId < 0) {
               targetMessageId = 'latest';
-              console.warn('[Diary App] ⚠️ 没有找到AI消息，使用最后一层');
+              console.warn('[Diary App] ⚠️ ไม่พบข้อความ AI ใช้ชั้นสุดท้าย');
             }
           }
 
-          console.log('[Diary App] 使用消息ID:', targetMessageId);
+          console.log('[Diary App] ใช้ข้อความ ID:', targetMessageId);
 
-          // 获取变量
+          // รับตัวแปร
           const mvuData = window.Mvu.getMvuData({ type: 'message', message_id: targetMessageId });
-          console.log('[Diary App] 从 Mvu 获取变量数据:', mvuData);
-          console.log('[Diary App] stat_data 存在:', !!mvuData?.stat_data);
+          console.log('[Diary App] รับข้อมูลตัวแปรจาก Mvu:', mvuData);
+          console.log('[Diary App] stat_data มีอยู่:', !!mvuData?.stat_data);
           if (mvuData?.stat_data) {
-            console.log('[Diary App] stat_data 的键:', Object.keys(mvuData.stat_data));
-            console.log('[Diary App] 摘要是否存在:', !!mvuData.stat_data['摘要']);
+            console.log('[Diary App] คีย์ของ stat_data:', Object.keys(mvuData.stat_data));
+            // '摘要' แปลว่า สรุป/Abstract แต่ต้องคงภาษาจีนไว้ตามคีย์ข้อมูล
+            console.log('[Diary App] มีข้อมูลสรุปหรือไม่:', !!mvuData.stat_data['摘要']);
             if (mvuData.stat_data['摘要']) {
-              console.log('[Diary App] 摘要原始数据:', mvuData.stat_data['摘要']);
+              console.log('[Diary App] ข้อมูลดิบสรุป:', mvuData.stat_data['摘要']);
             }
           }
 
-          // 尝试从 stat_data 读取
+          // พยายามอ่านจาก stat_data
           if (mvuData && mvuData.stat_data && mvuData.stat_data['摘要']) {
             const summaryData = mvuData.stat_data['摘要'];
-            console.log('[Diary App] ✅ 从 stat_data 获取到摘要数据:', summaryData);
+            console.log('[Diary App] ✅ รับข้อมูลสรุปจาก stat_data:', summaryData);
             return this.parseDiaryData(summaryData);
           }
 
-          // 尝试从根级别读取
+          // พยายามอ่านจากระดับราก (root level)
           if (mvuData && mvuData['摘要']) {
             const summaryData = mvuData['摘要'];
-            console.log('[Diary App] ✅ 从根级别获取到摘要数据:', summaryData);
+            console.log('[Diary App] ✅ รับข้อมูลสรุปจากระดับราก:', summaryData);
             return this.parseDiaryData(summaryData);
           }
         }
 
-        console.log('[Diary App] 未找到摘要数据');
+        console.log('[Diary App] ไม่พบข้อมูลสรุป');
       } catch (error) {
-        console.warn('[Diary App] 获取摘要数据失败:', error);
+        console.warn('[Diary App] รับข้อมูลสรุปล้มเหลว:', error);
       }
 
       return { diaries: [] };
     }
 
     /**
-     * 解析日记变量数据
-     * 摘要结构可能是以下两种之一：
-     * 1. [['$__META_EXTENSIBLE__$', {日期: 'YYYY-MM-DD', 内容: '...'}, ...], '描述'] (标准Mvu格式)
-     * 2. [{日期: 'YYYY-MM-DD', 内容: '...'}, ...] (简化格式)
+     * แยกวิเคราะห์ข้อมูลตัวแปรไดอารี่
+     * โครงสร้างสรุปอาจเป็นหนึ่งในสองแบบนี้:
+     * 1. [['$__META_EXTENSIBLE__$', {日期: 'YYYY-MM-DD', 内容: '...'}, ...], 'คำอธิบาย'] (รูปแบบมาตรฐาน Mvu)
+     * 2. [{日期: 'YYYY-MM-DD', 内容: '...'}, ...] (รูปแบบอย่างง่าย)
      */
     parseDiaryData(summaryData) {
       const diaries = [];
 
       try {
-        console.log('[Diary App] 开始解析摘要数据:', summaryData);
-        console.log('[Diary App] 摘要数据类型:', typeof summaryData);
-        console.log('[Diary App] 是否为数组:', Array.isArray(summaryData));
+        console.log('[Diary App] เริ่มแยกวิเคราะห์ข้อมูลสรุป:', summaryData);
+        console.log('[Diary App] ประเภทข้อมูลสรุป:', typeof summaryData);
+        console.log('[Diary App] เป็นอาร์เรย์หรือไม่:', Array.isArray(summaryData));
 
         if (!summaryData || !Array.isArray(summaryData)) {
-          console.warn('[Diary App] 摘要数据格式不正确，不是数组');
+          console.warn('[Diary App] รูปแบบข้อมูลสรุปไม่ถูกต้อง ไม่ใช่อาร์เรย์');
           return { diaries };
         }
 
-        // 尝试检测摘要格式
+        // พยายามตรวจสอบรูปแบบสรุป
         let summaryArray = summaryData;
 
-        // 如果第一个元素是数组，说明是Mvu标准格式 [[...], '描述']
+        // ถ้าองค์ประกอบแรกเป็นอาร์เรย์ แสดงว่าเป็นรูปแบบมาตรฐาน Mvu [[...], 'คำอธิบาย']
         if (summaryData.length > 0 && Array.isArray(summaryData[0])) {
-          console.log('[Diary App] 检测到Mvu标准格式 [[...], "描述"]');
+          console.log('[Diary App] ตรวจพบรูปแบบมาตรฐาน Mvu [[...], "คำอธิบาย"]');
           summaryArray = summaryData[0];
         } else {
-          console.log('[Diary App] 检测到简化格式 [{...}, ...]');
+          console.log('[Diary App] ตรวจพบรูปแบบอย่างง่าย [{...}, ...]');
         }
 
         if (!Array.isArray(summaryArray)) {
-          console.warn('[Diary App] 摘要数组格式不正确');
+          console.warn('[Diary App] รูปแบบอาร์เรย์สรุปไม่ถูกต้อง');
           return { diaries };
         }
 
-        console.log('[Diary App] 摘要数组长度:', summaryArray.length);
-        console.log('[Diary App] 摘要数组内容:', summaryArray);
+        console.log('[Diary App] ความยาวอาร์เรย์สรุป:', summaryArray.length);
+        console.log('[Diary App] เนื้อหาอาร์เรย์สรุป:', summaryArray);
 
-        // 遍历所有摘要（跳过 '$__META_EXTENSIBLE__$' 标记）
+        // วนลูปสรุปทั้งหมด (ข้ามเครื่องหมาย '$__META_EXTENSIBLE__$')
         for (let i = 0; i < summaryArray.length; i++) {
           const item = summaryArray[i];
 
-          // 跳过扩展标记
+          // ข้ามเครื่องหมายส่วนขยาย
           if (item === '$__META_EXTENSIBLE__$') {
-            console.log(`[Diary App] 跳过扩展标记，索引 ${i}`);
+            console.log(`[Diary App] ข้ามเครื่องหมายส่วนขยาย ดัชนี ${i}`);
             continue;
           }
 
           if (item && typeof item === 'object') {
-            const date = item['日期'] || item.date || '未知日期';
-            const content = item['内容'] || item.content || '暂无内容';
+            // คีย์ '日期' (วันที่) และ '内容' (เนื้อหา) ต้องคงภาษาจีนไว้เพื่อให้ตรงกับข้อมูล
+            const date = item['日期'] || item.date || 'ไม่ระบุวันที่';
+            const content = item['内容'] || item.content || 'ไม่มีเนื้อหา';
 
-            console.log(`[Diary App] 解析日记 ${i}:`, { date, content: content.substring(0, 50) + '...' });
+            console.log(`[Diary App] แยกวิเคราะห์ไดอารี่ ${i}:`, { date, content: content.substring(0, 50) + '...' });
 
             diaries.push({
               id: `diary_${i}_${Date.now()}`,
               date: date,
               content: content,
-              expanded: false // 默认收起
+              expanded: false, // ค่าเริ่มต้นคือย่อเก็บ
             });
           } else {
-            console.log(`[Diary App] 跳过非对象元素，索引 ${i}:`, item);
+            console.log(`[Diary App] ข้ามองค์ประกอบที่ไม่ใช่วัตถุ ดัชนี ${i}:`, item);
           }
         }
 
-        // 按日期倒序排列（最新的在前面）
+        // เรียงลำดับตามวันที่จากใหม่ไปเก่า
         diaries.sort((a, b) => {
-          if (a.date === '未知日期') return 1;
-          if (b.date === '未知日期') return -1;
+          if (a.date === 'ไม่ระบุวันที่') return 1;
+          if (b.date === 'ไม่ระบุวันที่') return -1;
           return b.date.localeCompare(a.date);
         });
 
-        console.log('[Diary App] 从摘要解析完成，日记数:', diaries.length);
+        console.log('[Diary App] แยกวิเคราะห์จากสรุปเสร็จสมบูรณ์ จำนวนไดอารี่:', diaries.length);
         if (diaries.length > 0) {
-          console.log('[Diary App] 第一条日记:', diaries[0]);
+          console.log('[Diary App] ไดอารี่เรื่องแรก:', diaries[0]);
         }
       } catch (error) {
-        console.error('[Diary App] 解析日记数据失败:', error);
+        console.error('[Diary App] แยกวิเคราะห์ข้อมูลไดอารี่ล้มเหลว:', error);
       }
 
       return { diaries };
     }
 
-    // 检查日记是否有变化
+    // ตรวจสอบว่าไดอารี่มีการเปลี่ยนแปลงหรือไม่
     hasDiariesChanged(newDiaries) {
       if (newDiaries.length !== this.diaryList.length) {
         return true;
@@ -296,11 +298,7 @@ if (typeof window.DiaryApp === 'undefined') {
         const newDiary = newDiaries[i];
         const oldDiary = this.diaryList[i];
 
-        if (
-          !oldDiary ||
-          newDiary.date !== oldDiary.date ||
-          newDiary.content !== oldDiary.content
-        ) {
+        if (!oldDiary || newDiary.date !== oldDiary.date || newDiary.content !== oldDiary.content) {
           return true;
         }
       }
@@ -308,34 +306,34 @@ if (typeof window.DiaryApp === 'undefined') {
       return false;
     }
 
-    // 获取应用内容
+    // รับเนื้อหาแอป
     getAppContent() {
-      console.log('[Diary App] 获取日记应用内容');
+      console.log('[Diary App] รับเนื้อหาแอปไดอารี่');
 
-      // 每次打开应用时重新解析一次数据（确保显示最新内容）
+      // แยกวิเคราะห์ข้อมูลใหม่ทุกครั้งที่เปิดแอป (เพื่อให้แน่ใจว่าแสดงเนื้อหาล่าสุด)
       const diaryData = this.getCurrentDiaryData();
       if (diaryData.diaries.length !== this.diaryList.length || this.hasDiariesChanged(diaryData.diaries)) {
         this.diaryList = diaryData.diaries;
-        console.log('[Diary App] 📔 打开应用时更新日记数据，日记数:', this.diaryList.length);
+        console.log('[Diary App] 📔 อัปเดตข้อมูลไดอารี่เมื่อเปิดแอป จำนวน:', this.diaryList.length);
       }
 
       return this.renderDiaryList();
     }
 
-    // 渲染日记列表
+    // เรนเดอร์รายการไดอารี่
     renderDiaryList() {
-      console.log('[Diary App] 渲染日记列表...');
+      console.log('[Diary App] เรนเดอร์รายการไดอารี่...');
 
       if (!this.diaryList.length) {
         return `
           <div class="cd-diary-app">
             <div class="cd-diary-header">
-              <div class="cd-diary-title">📔 我的日记</div>
+              <div class="cd-diary-title">📔 ไดอารี่ของฉัน</div>
             </div>
             <div class="cd-diary-empty">
               <div class="cd-empty-icon">📖</div>
-              <div class="cd-empty-title">暂无日记</div>
-              <div class="cd-empty-subtitle">开始你的冒险，记录精彩瞬间</div>
+              <div class="cd-empty-title">ยังไม่มีไดอารี่</div>
+              <div class="cd-empty-subtitle">เริ่มต้นการผจญภัยของคุณ บันทึกช่วงเวลาที่น่าประทับใจ</div>
             </div>
           </div>
         `;
@@ -353,15 +351,15 @@ if (typeof window.DiaryApp === 'undefined') {
               <div class="cd-diary-content-text">${diary.content}</div>
             </div>
           </div>
-        `
+        `,
         )
         .join('');
 
       return `
         <div class="cd-diary-app">
           <div class="cd-diary-header">
-            <div class="cd-diary-title">📔 我的日记</div>
-            <div class="cd-diary-count">${this.diaryList.length} 篇</div>
+            <div class="cd-diary-title">📔 ไดอารี่ของฉัน</div>
+            <div class="cd-diary-count">${this.diaryList.length} เรื่อง</div>
           </div>
           <div class="cd-diary-list">
             ${diaryItems}
@@ -370,11 +368,11 @@ if (typeof window.DiaryApp === 'undefined') {
       `;
     }
 
-    // 绑定事件
+    // ผูกเหตุการณ์ (Events)
     bindEvents() {
-      console.log('[Diary App] 绑定事件...');
+      console.log('[Diary App] ผูกเหตุการณ์...');
 
-      // 绑定日记条目点击事件（展开/收起）
+      // ผูกเหตุการณ์คลิกรายการไดอารี่ (ขยาย/ย่อ)
       document.querySelectorAll('.cd-diary-item-header').forEach(header => {
         header.addEventListener('click', e => {
           e.preventDefault();
@@ -385,19 +383,19 @@ if (typeof window.DiaryApp === 'undefined') {
       });
     }
 
-    // 切换日记展开/收起状态
+    // สลับสถานะขยาย/ย่อไดอารี่
     toggleDiary(diaryId) {
       const diary = this.diaryList.find(d => d.id === diaryId);
       if (!diary) return;
 
       diary.expanded = !diary.expanded;
-      console.log(`[Diary App] 切换日记状态: ${diaryId}, expanded: ${diary.expanded}`);
+      console.log(`[Diary App] สลับสถานะไดอารี่: ${diaryId}, expanded: ${diary.expanded}`);
 
-      // 更新UI
+      // อัปเดต UI
       this.updateAppContent();
     }
 
-    // 更新应用内容
+    // อัปเดตเนื้อหาแอป
     updateAppContent() {
       const appContent = document.getElementById('app-content');
       if (appContent) {
@@ -407,51 +405,50 @@ if (typeof window.DiaryApp === 'undefined') {
     }
   }
 
-  // 创建全局实例
+  // สร้างอินสแตนซ์สากล
   window.DiaryApp = DiaryApp;
   window.diaryApp = new DiaryApp();
-} // 结束类定义检查
+} // จบการตรวจสอบคลาส
 
-// 全局函数供mobile-phone.js调用
+// ฟังก์ชันสากลสำหรับให้ mobile-phone.js เรียกใช้
 window.getDiaryAppContent = function () {
-  console.log('[Diary App] 获取日记应用内容');
+  console.log('[Diary App] รับเนื้อหาแอปไดอารี่');
 
   if (!window.diaryApp) {
-    console.error('[Diary App] diaryApp实例不存在');
-    return '<div class="error-message">日记应用加载失败</div>';
+    console.error('[Diary App] อินสแตนซ์ diaryApp ไม่มีอยู่');
+    return '<div class="error-message">โหลดแอปไดอารี่ล้มเหลว</div>';
   }
 
   try {
     return window.diaryApp.getAppContent();
   } catch (error) {
-    console.error('[Diary App] 获取应用内容失败:', error);
-    return '<div class="error-message">获取内容失败</div>';
+    console.error('[Diary App] รับเนื้อหาแอปล้มเหลว:', error);
+    return '<div class="error-message">รับเนื้อหาล้มเหลว</div>';
   }
 };
 
 window.bindDiaryAppEvents = function () {
-  console.log('[Diary App] 绑定日记应用事件');
+  console.log('[Diary App] ผูกเหตุการณ์แอปไดอารี่');
 
   if (!window.diaryApp) {
-    console.error('[Diary App] diaryApp实例不存在');
+    console.error('[Diary App] อินสแตนซ์ diaryApp ไม่มีอยู่');
     return;
   }
 
   try {
     window.diaryApp.bindEvents();
   } catch (error) {
-    console.error('[Diary App] 绑定事件失败:', error);
+    console.error('[Diary App] ผูกเหตุการณ์ล้มเหลว:', error);
   }
 };
 
-// 调试功能
+// ฟังก์ชันดีบัก
 window.diaryAppDebugInfo = function () {
   if (window.diaryApp) {
-    console.log('[Diary App Debug] 当前日记数量:', window.diaryApp.diaryList.length);
-    console.log('[Diary App Debug] 日记列表:', window.diaryApp.diaryList);
+    console.log('[Diary App Debug] จำนวนไดอารี่ปัจจุบัน:', window.diaryApp.diaryList.length);
+    console.log('[Diary App Debug] รายการไดอารี่:', window.diaryApp.diaryList);
   }
 };
 
-// 初始化
-console.log('[Diary App] 日记应用模块加载完成 - 版本 1.0');
-
+// เริ่มต้น
+console.log('[Diary App] โมดูลแอปไดอารี่โหลดเสร็จสมบูรณ์ - เวอร์ชัน 1.0');
