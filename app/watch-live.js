@@ -1,15 +1,15 @@
 /**
- * Watch Live App - 观看直播应用
- * 基于live-app.js的模式，为mobile-phone.js提供观看直播功能
- * 监听SillyTavern上下文，解析直播数据，实时显示弹幕和互动
+ * Watch Live App - แอปดูไลฟ์สด
+ * ทำงานบนพื้นฐานของ live-app.js เพื่อเพิ่มฟังก์ชันดูไลฟ์ให้กับ mobile-phone.js
+ * ดักจับ Context ของ SillyTavern เพื่อแปลงข้อมูลไลฟ์ แสดงคอมเมนต์และการโต้ตอบแบบเรียลไทม์
  */
 
 // @ts-nocheck
-// 避免重复定义
+// ป้องกันการประกาศซ้ำ
 if (typeof window.WatchLiveApp === 'undefined') {
   /**
-   * 直播事件监听器
-   * 负责监听SillyTavern的消息事件并触发数据解析
+   * ตัวดักจับเหตุการณ์ไลฟ์ (Live Event Listener)
+   * หน้าที่: ดักจับข้อความจาก SillyTavern และสั่งให้เริ่มแปลงข้อมูล
    */
   class LiveEventListener {
     constructor(liveApp) {
@@ -21,17 +21,17 @@ if (typeof window.WatchLiveApp === 'undefined') {
     }
 
     /**
-     * 开始监听SillyTavern事件
+     * เริ่มดักจับเหตุการณ์จาก SillyTavern
      */
     startListening() {
       if (this.isListening) {
-        console.log('[Live App] 监听器已经在运行中');
+        console.log('[Live App] ตัวดักจับกำลังทำงานอยู่แล้ว');
         return;
       }
 
       try {
-        // 检查SillyTavern接口可用性
-        console.log('[Live App] 检查SillyTavern接口可用性:', {
+        // ตรวจสอบความพร้อมของ Interface SillyTavern
+        console.log('[Live App] ตรวจสอบ Interface ของ SillyTavern:', {
           'window.SillyTavern': !!window?.SillyTavern,
           'window.SillyTavern.getContext': typeof window?.SillyTavern?.getContext,
           eventOn: typeof eventOn,
@@ -39,7 +39,7 @@ if (typeof window.WatchLiveApp === 'undefined') {
           mobileContextEditor: !!window?.mobileContextEditor,
         });
 
-        // 方法1: 优先使用SillyTavern.getContext().eventSource（iframe环境推荐）
+        // วิธีที่ 1: ใช้ SillyTavern.getContext().eventSource (แนะนำสำหรับ iframe)
         if (
           typeof window !== 'undefined' &&
           window.SillyTavern &&
@@ -47,59 +47,59 @@ if (typeof window.WatchLiveApp === 'undefined') {
         ) {
           const context = window.SillyTavern.getContext();
           if (context && context.eventSource && typeof context.eventSource.on === 'function' && context.event_types) {
-            console.log('[Live App] 使用SillyTavern.getContext().eventSource监听MESSAGE_RECEIVED事件');
+            console.log('[Live App] ใช้ SillyTavern.getContext().eventSource ดักจับ event MESSAGE_RECEIVED');
             context.eventSource.on(context.event_types.MESSAGE_RECEIVED, this.messageReceivedHandler);
             this.isListening = true;
-            console.log('[Live App] ✅ 成功开始监听SillyTavern消息事件 (context.eventSource)');
+            console.log('[Live App] ✅ เริ่มดักจับข้อความ SillyTavern สำเร็จ (context.eventSource)');
             this.updateMessageCount();
             return;
           }
         }
 
-        // 方法2: 尝试使用全局eventOn函数（如果可用）
+        // วิธีที่ 2: ลองใช้ฟังก์ชัน Global eventOn (ถ้ามี)
         if (typeof eventOn === 'function' && typeof tavern_events !== 'undefined' && tavern_events.MESSAGE_RECEIVED) {
-          console.log('[Live App] 使用全局eventOn监听MESSAGE_RECEIVED事件');
+          console.log('[Live App] ใช้ global eventOn ดักจับ event MESSAGE_RECEIVED');
           eventOn(tavern_events.MESSAGE_RECEIVED, this.messageReceivedHandler);
           this.isListening = true;
-          console.log('[Live App] ✅ 成功开始监听SillyTavern消息事件 (eventOn)');
+          console.log('[Live App] ✅ เริ่มดักจับข้อความ SillyTavern สำเร็จ (eventOn)');
           this.updateMessageCount();
           return;
         }
 
-        // 方法3: 尝试从父窗口使用eventSource
+        // วิธีที่ 3: ลองดึง eventSource จากหน้าต่างแม่ (Parent Window)
         if (
           typeof window !== 'undefined' &&
           window.parent &&
           window.parent.eventSource &&
           typeof window.parent.eventSource.on === 'function'
         ) {
-          console.log('[Live App] 使用父窗口eventSource监听MESSAGE_RECEIVED事件');
+          console.log('[Live App] ใช้ eventSource จาก Parent Window ดักจับ event MESSAGE_RECEIVED');
           if (window.parent.event_types && window.parent.event_types.MESSAGE_RECEIVED) {
             window.parent.eventSource.on(window.parent.event_types.MESSAGE_RECEIVED, this.messageReceivedHandler);
             this.isListening = true;
-            console.log('[Live App] ✅ 成功开始监听SillyTavern消息事件 (parent eventSource)');
+            console.log('[Live App] ✅ เริ่มดักจับข้อความ SillyTavern สำเร็จ (parent eventSource)');
             this.updateMessageCount();
             return;
           }
         }
 
-        // 如果所有方法都失败，使用轮询作为备用方案
-        console.warn('[Live App] 无法设置事件监听，使用轮询方案');
+        // ถ้าทุกวิธีล้มเหลว ให้ใช้การ Polling (วนเช็ค) แทน
+        console.warn('[Live App] ไม่สามารถตั้งค่า Event Listener ได้ เปลี่ยนไปใช้ระบบ Polling แทน');
         this.startPolling();
       } catch (error) {
-        console.error('[Live App] 设置事件监听失败:', error);
+        console.error('[Live App] การตั้งค่า Event Listener ล้มเหลว:', error);
         this.startPolling();
       }
     }
 
     /**
-     * 停止监听
+     * หยุดดักจับ
      */
     stopListening() {
       if (!this.isListening) return;
 
       try {
-        // 尝试移除事件监听器
+        // พยายามลบ Event Listener ออก
         if (
           typeof window !== 'undefined' &&
           window.SillyTavern &&
@@ -111,21 +111,21 @@ if (typeof window.WatchLiveApp === 'undefined') {
           }
         }
 
-        // 清除轮询
+        // ลบ Polling
         if (this.pollingInterval) {
           clearInterval(this.pollingInterval);
           this.pollingInterval = null;
         }
 
         this.isListening = false;
-        console.log('[Live App] 已停止监听SillyTavern事件');
+        console.log('[Live App] หยุดดักจับเหตุการณ์ SillyTavern แล้ว');
       } catch (error) {
-        console.error('[Live App] 停止监听失败:', error);
+        console.error('[Live App] การหยุดดักจับล้มเหลว:', error);
       }
     }
 
     /**
-     * 启动轮询方案
+     * เริ่มระบบ Polling (วนเช็คข้อความใหม่เอง)
      */
     startPolling() {
       if (this.pollingInterval) {
@@ -135,73 +135,75 @@ if (typeof window.WatchLiveApp === 'undefined') {
       this.updateMessageCount();
       this.pollingInterval = setInterval(() => {
         this.checkForNewMessages();
-      }, 2000); // 每2秒检查一次
+      }, 2000); // เช็คทุก 2 วินาที
 
       this.isListening = true;
-      console.log('[Live App] ✅ 启动轮询监听方案');
+      console.log('[Live App] ✅ เริ่มระบบ Polling เรียบร้อย');
     }
 
     /**
-     * 检查新消息
+     * เช็คข้อความใหม่
      */
     checkForNewMessages() {
       const currentMessageCount = this.getCurrentMessageCount();
       if (currentMessageCount > this.lastMessageCount) {
-        console.log(`[Live App] 轮询检测到新消息: ${this.lastMessageCount} → ${currentMessageCount}`);
+        console.log(`[Live App] Polling พบข้อความใหม่: ${this.lastMessageCount} → ${currentMessageCount}`);
         this.onMessageReceived(currentMessageCount);
       }
     }
 
     /**
-     * 处理AI消息接收事件
-     * @param {number} messageId - 接收到的消息ID
+     * จัดการเมื่อได้รับข้อความ AI ใหม่
+     * @param {number} messageId - ID ของข้อความที่ได้รับ
      */
     async onMessageReceived(messageId) {
       try {
-        console.log(`[Watch Live App] 🎯 接收到AI消息事件，ID: ${messageId}`);
+        console.log(`[Watch Live App] 🎯 ได้รับ Event ข้อความ AI, ID: ${messageId}`);
 
-        // 检查是否有新消息
+        // เช็คว่ามีข้อความใหม่จริงไหม
         const currentMessageCount = this.getCurrentMessageCount();
-        console.log(`[Watch Live App] 消息数量检查: 当前=${currentMessageCount}, 上次=${this.lastMessageCount}`);
+        console.log(
+          `[Watch Live App] ตรวจสอบจำนวนข้อความ: ปัจจุบัน=${currentMessageCount}, ล่าสุด=${this.lastMessageCount}`,
+        );
 
         if (currentMessageCount <= this.lastMessageCount) {
-          console.log('[Watch Live App] 没有检测到新消息，跳过解析');
+          console.log('[Watch Live App] ไม่พบข้อความใหม่ ข้ามการวิเคราะห์ข้อมูล');
           return;
         }
 
         console.log(
-          `[Watch Live App] ✅ 检测到新消息，消息数量从 ${this.lastMessageCount} 增加到 ${currentMessageCount}`,
+          `[Watch Live App] ✅ พบข้อความใหม่ จำนวนข้อความเพิ่มจาก ${this.lastMessageCount} เป็น ${currentMessageCount}`,
         );
         this.lastMessageCount = currentMessageCount;
 
-        // 如果正在等待直播间列表
+        // ถ้ากำลังรอรายการไลฟ์
         if (this.liveApp.isWaitingForLiveList) {
-          console.log('[Watch Live App] 检测到直播间列表回复，更新列表');
+          console.log('[Watch Live App] ได้รับข้อมูลรายการไลฟ์แล้ว กำลังอัปเดต...');
           this.liveApp.isWaitingForLiveList = false;
           this.liveApp.updateAppContent();
           return;
         }
 
-        // 检查直播是否活跃
+        // เช็คว่าไลฟ์ยัง Active อยู่ไหม
         if (!this.liveApp || !this.liveApp.isLiveActive) {
-          console.log('[Watch Live App] 直播未激活，跳过处理');
+          console.log('[Watch Live App] ไลฟ์ไม่ได้ Active อยู่ ข้ามการทำงาน');
           return;
         }
 
-        // 触发数据解析
-        console.log('[Watch Live App] 开始解析新的直播数据...');
+        // เริ่มวิเคราะห์ข้อมูล
+        console.log('[Watch Live App] เริ่มวิเคราะห์ข้อมูลไลฟ์ใหม่...');
         await this.liveApp.parseNewLiveData();
       } catch (error) {
-        console.error('[Watch Live App] 处理消息接收事件失败:', error);
+        console.error('[Watch Live App] เกิดข้อผิดพลาดในการรับข้อความ:', error);
       }
     }
 
     /**
-     * 获取当前消息数量
+     * ดึงจำนวนข้อความปัจจุบัน
      */
     getCurrentMessageCount() {
       try {
-        // 方法1: 使用SillyTavern.getContext().chat（正确的接口）
+        // วิธีที่ 1: SillyTavern.getContext().chat
         if (
           typeof window !== 'undefined' &&
           window.SillyTavern &&
@@ -210,62 +212,62 @@ if (typeof window.WatchLiveApp === 'undefined') {
           const context = window.SillyTavern.getContext();
           if (context && context.chat && Array.isArray(context.chat)) {
             const count = context.chat.length;
-            console.log(`[Live App] 通过SillyTavern.getContext().chat获取到 ${count} 条消息`);
+            console.log(`[Live App] ดึงข้อมูลผ่าน SillyTavern.getContext().chat ได้ ${count} ข้อความ`);
             return count;
           }
         }
 
-        // 方法2: 使用mobileContextEditor作为备用
+        // วิธีที่ 2: mobileContextEditor (สำรอง)
         const mobileContextEditor = window['mobileContextEditor'];
         if (mobileContextEditor && typeof mobileContextEditor.getCurrentChatData === 'function') {
           const chatData = mobileContextEditor.getCurrentChatData();
           if (chatData && chatData.messages && Array.isArray(chatData.messages)) {
-            console.log(`[Live App] 通过mobileContextEditor获取到 ${chatData.messages.length} 条消息`);
+            console.log(`[Live App] ดึงข้อมูลผ่าน mobileContextEditor ได้ ${chatData.messages.length} ข้อความ`);
             return chatData.messages.length;
           }
         }
 
-        // 方法3: 尝试从父窗口获取chat变量
+        // วิธีที่ 3: chat variable จาก parent window
         if (typeof window !== 'undefined' && window.parent && window.parent.chat && Array.isArray(window.parent.chat)) {
           const count = window.parent.chat.length;
-          console.log(`[Live App] 通过父窗口chat变量获取到 ${count} 条消息`);
+          console.log(`[Live App] ดึงข้อมูลผ่าน parent window chat variable ได้ ${count} ข้อความ`);
           return count;
         }
 
-        // 方法4: 使用getContext()方法（如果可用）
+        // วิธีที่ 4: getContext() (ถ้ามี)
         if (typeof window !== 'undefined' && window.getContext && typeof window.getContext === 'function') {
           const context = window.getContext();
           if (context && context.chat && Array.isArray(context.chat)) {
             const count = context.chat.length;
-            console.log(`[Live App] 通过getContext()获取到 ${count} 条消息`);
+            console.log(`[Live App] ดึงข้อมูลผ่าน getContext() ได้ ${count} ข้อความ`);
             return count;
           }
         }
 
-        console.warn('[Live App] 无法获取消息数量，使用默认值0');
+        console.warn('[Live App] ไม่สามารถดึงจำนวนข้อความได้ ใช้ค่าเริ่มต้น 0');
         return 0;
       } catch (error) {
-        console.warn('[Live App] 获取消息数量失败:', error);
+        console.warn('[Live App] ล้มเหลวในการดึงจำนวนข้อความ:', error);
         return 0;
       }
     }
 
     /**
-     * 更新消息计数
+     * อัปเดตตัวนับข้อความ
      */
     updateMessageCount() {
       this.lastMessageCount = this.getCurrentMessageCount();
-      console.log(`[Live App] 初始化消息计数: ${this.lastMessageCount}`);
+      console.log(`[Live App] ค่าเริ่มต้นจำนวนข้อความ: ${this.lastMessageCount}`);
     }
   }
 
   /**
-   * 直播数据解析器
-   * 负责解析SillyTavern消息中的直播格式数据
+   * ตัวแปลงข้อมูลไลฟ์ (Live Data Parser)
+   * หน้าที่: แกะข้อมูลจากข้อความของ SillyTavern ให้อยู่ในรูปแบบที่เอาไปโชว์ได้
    */
   class LiveDataParser {
     constructor() {
-      // 正则表达式模式
+      // รูปแบบ Regex สำหรับดักจับข้อมูล (ห้ามแก้ภาษาจีนตรงนี้ เพราะต้องตรงกับ Prompt ที่สั่ง AI)
       this.patterns = {
         viewerCount: /\[直播\|本场人数\|([^\]]+)\]/g,
         liveContent: /\[直播\|直播内容\|([^\]]+)\]/g,
@@ -276,9 +278,9 @@ if (typeof window.WatchLiveApp === 'undefined') {
     }
 
     /**
-     * 解析直播数据
-     * @param {string} content - 要解析的文本内容
-     * @returns {Object} 解析后的直播数据
+     * แปลงข้อมูลไลฟ์
+     * @param {string} content - ข้อความดิบที่จะแปลง
+     * @returns {Object} ข้อมูลที่แปลงเสร็จแล้ว
      */
     parseLiveData(content) {
       const liveData = {
@@ -293,31 +295,31 @@ if (typeof window.WatchLiveApp === 'undefined') {
         return liveData;
       }
 
-      // 1. 解析直播人数
+      // 1. แปลงจำนวนคนดู
       liveData.viewerCount = this.parseViewerCount(content);
 
-      // 2. 解析直播内容
+      // 2. แปลงเนื้อหาไลฟ์
       liveData.liveContent = this.parseLiveContent(content);
 
-      // 3. 解析所有弹幕（保持原始顺序）
+      // 3. แปลงคอมเมนต์และของขวัญ (รักษาลำดับเวลา)
       const { danmakuList, giftList } = this.parseAllDanmaku(content);
       liveData.danmakuList = danmakuList;
       liveData.giftList = giftList;
 
-      // 5. 解析推荐互动
+      // 5. แปลงแชทแนะนำ
       liveData.recommendedInteractions = this.parseRecommendedInteractions(content);
 
       return liveData;
     }
 
     /**
-     * 解析直播人数
+     * แปลงจำนวนคนดู
      */
     parseViewerCount(content) {
       const matches = [...content.matchAll(this.patterns.viewerCount)];
       if (matches.length === 0) return 0;
 
-      // 取最后一个匹配（最新的人数）
+      // เอาค่าล่าสุด
       const lastMatch = matches[matches.length - 1];
       const viewerStr = lastMatch[1].trim();
 
@@ -325,70 +327,70 @@ if (typeof window.WatchLiveApp === 'undefined') {
     }
 
     /**
-     * 格式化观看人数
+     * จัดรูปแบบตัวเลขคนดู
      */
     formatViewerCount(viewerStr) {
-      // 移除非数字字符，保留数字和字母
+      // ลบตัวอักษรที่ไม่ใช่ตัวเลข/อังกฤษออก
       const cleanStr = viewerStr.replace(/[^\d\w]/g, '');
 
-      // 尝试解析数字
+      // ลองแปลงเป็นตัวเลข
       const num = parseInt(cleanStr);
       if (isNaN(num)) return 0;
 
-      // 格式化大数字
+      // จัดรูปแบบตัวเลขหลักหมื่น/พัน
       if (num >= 10000) {
-        return (num / 10000).toFixed(1) + 'W';
+        return (num / 10000).toFixed(1) + 'หมื่น'; // แก้จาก W เป็น หมื่น
       } else if (num >= 1000) {
-        return (num / 1000).toFixed(1) + 'K';
+        return (num / 1000).toFixed(1) + 'k';
       }
 
       return num.toString();
     }
 
     /**
-     * 解析直播内容
+     * แปลงเนื้อหาไลฟ์
      */
     parseLiveContent(content) {
       const matches = [...content.matchAll(this.patterns.liveContent)];
       if (matches.length === 0) return '';
 
-      // 取最后一个匹配（最新的内容）
+      // เอาเนื้อหาล่าสุด
       const lastMatch = matches[matches.length - 1];
       return lastMatch[1].trim();
     }
 
     /**
-     * 解析所有弹幕（保持原始顺序）
+     * แปลงคอมเมนต์ทั้งหมด (รักษาลำดับ)
      */
     parseAllDanmaku(content) {
       const danmakuList = [];
       const giftList = [];
       const allMatches = [];
 
-      // 收集所有普通弹幕匹配
+      // เก็บ Match แชทปกติ
       const normalMatches = [...content.matchAll(this.patterns.normalDanmaku)];
       normalMatches.forEach(match => {
         allMatches.push({
           type: 'normal',
           match: match,
-          index: match.index, // 在原文中的位置
+          index: match.index, // ตำแหน่งในข้อความเดิม
         });
       });
 
-      // 收集所有礼物弹幕匹配
+      // เก็บ Match ของขวัญ
       const giftMatches = [...content.matchAll(this.patterns.giftDanmaku)];
       giftMatches.forEach(match => {
         allMatches.push({
           type: 'gift',
           match: match,
-          index: match.index, // 在原文中的位置
+          index: match.index, // ตำแหน่งในข้อความเดิม
         });
       });
 
-      // 按照在原文中的位置排序，保持原始顺序
+      // เรียงตามตำแหน่งที่ปรากฏจริง
       allMatches.sort((a, b) => a.index - b.index);
 
-      // 按顺序处理所有弹幕
+      // วนลูปสร้างรายการ
       allMatches.forEach((item, index) => {
         const match = item.match;
         const username = match[1].trim();
@@ -396,7 +398,7 @@ if (typeof window.WatchLiveApp === 'undefined') {
         const timestamp = new Date().toLocaleString();
 
         if (item.type === 'normal') {
-          // 普通弹幕
+          // แชทปกติ
           danmakuList.push({
             id: Date.now() + index,
             username: username,
@@ -405,16 +407,16 @@ if (typeof window.WatchLiveApp === 'undefined') {
             timestamp: timestamp,
           });
         } else if (item.type === 'gift') {
-          // 礼物弹幕
+          // แชทของขวัญ
           danmakuList.push({
-            id: Date.now() + index + 10000, // 避免ID冲突
+            id: Date.now() + index + 10000, // ป้องกัน ID ซ้ำ
             username: username,
             content: content,
             type: 'gift',
             timestamp: timestamp,
           });
 
-          // 添加到礼物列表
+          // เพิ่มลงรายการของขวัญ
           giftList.push({
             username: username,
             gift: content,
@@ -427,92 +429,36 @@ if (typeof window.WatchLiveApp === 'undefined') {
     }
 
     /**
-     * 解析普通弹幕（保留原方法以备兼容）
-     */
-    parseNormalDanmaku(content) {
-      const danmakuList = [];
-      const matches = [...content.matchAll(this.patterns.normalDanmaku)];
-
-      matches.forEach((match, index) => {
-        const username = match[1].trim();
-        const danmakuContent = match[2].trim();
-
-        danmakuList.push({
-          id: Date.now() + index,
-          username: username,
-          content: danmakuContent,
-          type: 'normal',
-          timestamp: new Date().toLocaleString(),
-        });
-      });
-
-      return danmakuList;
-    }
-
-    /**
-     * 解析打赏弹幕
-     */
-    parseGiftDanmaku(content) {
-      const danmakuList = [];
-      const giftList = [];
-      const matches = [...content.matchAll(this.patterns.giftDanmaku)];
-
-      matches.forEach((match, index) => {
-        const username = match[1].trim();
-        const giftContent = match[2].trim();
-        const timestamp = new Date().toLocaleString();
-
-        // 添加到弹幕列表
-        danmakuList.push({
-          id: Date.now() + index + 10000, // 避免ID冲突
-          username: username,
-          content: giftContent,
-          type: 'gift',
-          timestamp: timestamp,
-        });
-
-        // 添加到礼物列表
-        giftList.push({
-          username: username,
-          gift: giftContent,
-          timestamp: timestamp,
-        });
-      });
-
-      return { danmakuList, giftList };
-    }
-
-    /**
-     * 解析推荐互动
+     * แปลงแชทแนะนำ
      */
     parseRecommendedInteractions(content) {
       const interactions = [];
       const matches = [...content.matchAll(this.patterns.recommendedInteraction)];
 
-      console.log(`[Live App] 推荐互动解析: 找到 ${matches.length} 个匹配项`);
+      console.log(`[Live App] เจอแชทแนะนำทั้งหมด ${matches.length} รายการ`);
 
-      // 只取最后4个匹配项（最新的推荐互动）
+      // เอาแค่ 4 อันล่าสุด
       const recentMatches = matches.slice(-4);
-      console.log(`[Live App] 取最新的 ${recentMatches.length} 个推荐互动`);
+      console.log(`[Live App] เลือกใช้ ${recentMatches.length} รายการล่าสุด`);
 
       recentMatches.forEach((match, index) => {
         const interactionContent = match[1].trim();
-        console.log(`[Live App] 推荐互动 ${index + 1}: "${interactionContent}"`);
+        console.log(`[Live App] แชทแนะนำ ${index + 1}: "${interactionContent}"`);
         if (!interactions.includes(interactionContent)) {
           interactions.push(interactionContent);
         }
       });
 
-      console.log(`[Live App] 最终推荐互动列表:`, interactions);
+      console.log(`[Live App] รายการแชทแนะนำสุดท้าย:`, interactions);
       return interactions;
     }
 
     /**
-     * 获取聊天消息内容
+     * ดึงเนื้อหาแชททั้งหมด
      */
     getChatContent() {
       try {
-        // 方法1: 使用SillyTavern.getContext().chat（正确的接口）
+        // วิธีที่ 1: SillyTavern.getContext().chat
         if (
           typeof window !== 'undefined' &&
           window.SillyTavern &&
@@ -523,58 +469,58 @@ if (typeof window.WatchLiveApp === 'undefined') {
             const messages = context.chat;
             if (messages && messages.length > 0) {
               const content = messages.map(msg => msg.mes || '').join('\n');
-              console.log(`[Live App] 通过SillyTavern.getContext().chat获取到聊天内容，长度: ${content.length}`);
+              console.log(`[Live App] ดึงแชทจาก SillyTavern.getContext().chat ความยาว: ${content.length}`);
               return content;
             }
           }
         }
 
-        // 方法2: 使用mobileContextEditor作为备用
+        // วิธีที่ 2: mobileContextEditor
         const mobileContextEditor = window['mobileContextEditor'];
         if (mobileContextEditor && typeof mobileContextEditor.getCurrentChatData === 'function') {
           const chatData = mobileContextEditor.getCurrentChatData();
           if (chatData && chatData.messages && Array.isArray(chatData.messages)) {
             const content = chatData.messages.map(msg => msg.mes || '').join('\n');
-            console.log(`[Live App] 通过mobileContextEditor获取到聊天内容，长度: ${content.length}`);
+            console.log(`[Live App] ดึงแชทจาก mobileContextEditor ความยาว: ${content.length}`);
             return content;
           }
         }
 
-        // 方法3: 尝试从父窗口获取chat变量
+        // วิธีที่ 3: parent window chat
         if (typeof window !== 'undefined' && window.parent && window.parent.chat && Array.isArray(window.parent.chat)) {
           const messages = window.parent.chat;
           if (messages && messages.length > 0) {
             const content = messages.map(msg => msg.mes || '').join('\n');
-            console.log(`[Live App] 通过父窗口chat变量获取到聊天内容，长度: ${content.length}`);
+            console.log(`[Live App] ดึงแชทจาก parent window ความยาว: ${content.length}`);
             return content;
           }
         }
 
-        // 方法4: 使用getContext()方法（如果可用）
+        // วิธีที่ 4: getContext()
         if (typeof window !== 'undefined' && window.getContext && typeof window.getContext === 'function') {
           const context = window.getContext();
           if (context && context.chat && Array.isArray(context.chat)) {
             const messages = context.chat;
             if (messages && messages.length > 0) {
               const content = messages.map(msg => msg.mes || '').join('\n');
-              console.log(`[Live App] 通过getContext()获取到聊天内容，长度: ${content.length}`);
+              console.log(`[Live App] ดึงแชทจาก getContext() ความยาว: ${content.length}`);
               return content;
             }
           }
         }
 
-        console.warn('[Live App] 无法获取聊天内容');
+        console.warn('[Live App] ไม่สามารถดึงเนื้อหาแชทได้');
         return '';
       } catch (error) {
-        console.warn('[Live App] 获取聊天内容失败:', error);
+        console.warn('[Live App] การดึงเนื้อหาแชทล้มเหลว:', error);
         return '';
       }
     }
   }
 
   /**
-   * 直播状态管理器
-   * 负责管理直播状态和数据存储
+   * ตัวจัดการสถานะไลฟ์ (Live State Manager)
+   * หน้าที่: เก็บข้อมูลสถานะปัจจุบันและข้อมูลที่จะเอาไปโชว์
    */
   class LiveStateManager {
     constructor() {
@@ -584,11 +530,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
       this.danmakuList = [];
       this.giftList = [];
       this.recommendedInteractions = [];
-      // 移除弹幕数量限制，显示所有历史弹幕
     }
 
     /**
-     * 开始直播
+     * เริ่มไลฟ์
      */
     startLive() {
       this.isLiveActive = true;
@@ -597,45 +542,44 @@ if (typeof window.WatchLiveApp === 'undefined') {
       this.danmakuList = [];
       this.giftList = [];
       this.recommendedInteractions = [];
-      console.log('[Live App] 直播状态已激活');
+      console.log('[Live App] สถานะไลฟ์: Active');
     }
 
     /**
-     * 结束直播
+     * จบไลฟ์
      */
     endLive() {
       this.isLiveActive = false;
-      console.log('[Live App] 直播状态已停止');
+      console.log('[Live App] สถานะไลฟ์: Stopped');
     }
 
     /**
-     * 更新直播数据
-     * @param {Object} liveData - 解析后的直播数据
+     * อัปเดตข้อมูลไลฟ์
+     * @param {Object} liveData - ข้อมูลที่แปลงมาแล้ว
      */
     updateLiveData(liveData) {
       if (!this.isLiveActive) return;
 
-      // 更新观看人数（仅保留最新的）
+      // อัปเดตคนดู
       if (liveData.viewerCount !== undefined && liveData.viewerCount !== 0) {
         this.currentViewerCount = liveData.viewerCount;
-        console.log(`[Live App] 更新观看人数: ${this.currentViewerCount}`);
+        console.log(`[Live App] อัปเดตคนดู: ${this.currentViewerCount}`);
       }
 
-      // 更新直播内容（仅保留最新的）
+      // อัปเดตเนื้อหา
       if (liveData.liveContent && liveData.liveContent.trim() !== '') {
         this.currentLiveContent = liveData.liveContent;
-        console.log(`[Live App] 更新直播内容: ${this.currentLiveContent.substring(0, 50)}...`);
+        console.log(`[Live App] อัปเดตเนื้อหา: ${this.currentLiveContent.substring(0, 50)}...`);
       }
 
-      // 更新推荐互动（仅保留最新的）
+      // อัปเดตแชทแนะนำ
       if (liveData.recommendedInteractions && liveData.recommendedInteractions.length > 0) {
         this.recommendedInteractions = liveData.recommendedInteractions;
-        console.log(`[Live App] 更新推荐互动: ${this.recommendedInteractions.length} 个`);
+        console.log(`[Live App] อัปเดตแชทแนะนำ: ${this.recommendedInteractions.length} รายการ`);
       }
 
-      // 添加新弹幕（累积所有历史弹幕）
+      // เพิ่มแชทใหม่ (สะสมไปเรื่อยๆ)
       if (liveData.danmakuList && liveData.danmakuList.length > 0) {
-        // 过滤掉已存在的弹幕（基于内容和用户名）
         const newDanmaku = liveData.danmakuList.filter(newItem => {
           return !this.danmakuList.some(
             existingItem =>
@@ -647,16 +591,14 @@ if (typeof window.WatchLiveApp === 'undefined') {
 
         if (newDanmaku.length > 0) {
           this.danmakuList = this.danmakuList.concat(newDanmaku);
-          console.log(`[Watch Live App] 添加 ${newDanmaku.length} 条新弹幕，总计 ${this.danmakuList.length} 条`);
-
-          // 移除弹幕数量限制，保留所有历史弹幕
-          console.log(`[Watch Live App] 保留所有弹幕，当前总数: ${this.danmakuList.length}`);
+          console.log(
+            `[Watch Live App] เพิ่มแชทใหม่ ${newDanmaku.length} รายการ, รวมทั้งหมด ${this.danmakuList.length}`,
+          );
         }
       }
 
-      // 添加新礼物（累积所有历史礼物）
+      // เพิ่มของขวัญใหม่
       if (liveData.giftList && liveData.giftList.length > 0) {
-        // 过滤掉已存在的礼物
         const newGifts = liveData.giftList.filter(newGift => {
           return !this.giftList.some(
             existingGift =>
@@ -668,27 +610,27 @@ if (typeof window.WatchLiveApp === 'undefined') {
 
         if (newGifts.length > 0) {
           this.giftList = this.giftList.concat(newGifts);
-          console.log(`[Live App] 添加 ${newGifts.length} 个新礼物，总计 ${this.giftList.length} 个`);
+          console.log(`[Live App] เพิ่มของขวัญใหม่ ${newGifts.length} ชิ้น, รวมทั้งหมด ${this.giftList.length}`);
         }
       }
     }
 
     /**
-     * 获取当前直播状态
+     * ดึงสถานะปัจจุบัน
      */
     getCurrentState() {
       return {
         isLiveActive: this.isLiveActive,
         viewerCount: this.currentViewerCount,
         liveContent: this.currentLiveContent,
-        danmakuList: [...this.danmakuList], // 返回副本
-        giftList: [...this.giftList], // 返回副本
-        recommendedInteractions: [...this.recommendedInteractions], // 返回副本
+        danmakuList: [...this.danmakuList],
+        giftList: [...this.giftList],
+        recommendedInteractions: [...this.recommendedInteractions],
       };
     }
 
     /**
-     * 清空所有数据
+     * ล้างข้อมูลทั้งหมด
      */
     clearAllData() {
       this.currentViewerCount = 0;
@@ -696,13 +638,13 @@ if (typeof window.WatchLiveApp === 'undefined') {
       this.danmakuList = [];
       this.giftList = [];
       this.recommendedInteractions = [];
-      console.log('[Live App] 已清空所有直播数据');
+      console.log('[Live App] ล้างข้อมูลไลฟ์ทั้งหมดแล้ว');
     }
   }
 
   /**
-   * 观看直播应用主类
-   * 协调各个模块，提供统一的接口
+   * คลาสหลัก Watch Live App
+   * ศูนย์กลางการควบคุม
    */
   class WatchLiveApp {
     constructor() {
@@ -712,81 +654,74 @@ if (typeof window.WatchLiveApp === 'undefined') {
       this.currentView = 'start'; // 'start', 'live'
       this.isInitialized = false;
       this.lastRenderTime = 0;
-      this.renderCooldown = 500; // 渲染冷却时间
-      this.scrollTimeout = null; // 滚动防抖定时器
-      this.typingTimer = null; // 直播内容打字机计时器
-      this.isTyping = false; // 是否正在打字机效果
-      this.pendingAppearDanmakuSigs = new Set(); // 待逐条出现的弹幕签名
-      this.pendingAppearGiftSigs = new Set(); // 待逐条出现的礼物签名
+      this.renderCooldown = 500;
+      this.scrollTimeout = null;
+      this.typingTimer = null;
+      this.isTyping = false;
+      this.pendingAppearDanmakuSigs = new Set();
+      this.pendingAppearGiftSigs = new Set();
       this.saveTimeout = null;
-      this.saveDebounceMs = 2000; // 2秒防抖
+      this.saveDebounceMs = 2000;
 
       this.init();
     }
 
     /**
-     * 初始化应用
+     * เริ่มต้นแอป
      */
     init() {
-      console.log('[Watch Live App] 观看直播应用初始化开始');
+      console.log('[Watch Live App] กำลังเริ่มต้น Watch Live App');
 
-      // 检查渲染权状态
+      // ตรวจสอบสิทธิ์การแสดงผล
       const renderingRight = this.getRenderingRight();
-      console.log('[Watch Live App] 当前渲染权状态:', renderingRight);
+      console.log('[Watch Live App] สถานะ Rendering Right:', renderingRight);
 
-      // 如果渲染权不是watch或end，不进行检测
       if (renderingRight && renderingRight !== 'watch' && renderingRight !== 'end') {
-        console.log('[Watch Live App] 渲染权不匹配，跳过初始化检测');
+        console.log('[Watch Live App] Rendering Right ไม่ถูกต้อง ข้ามการตรวจสอบ');
         this.isInitialized = true;
         return;
       }
 
-      // 检测是否有活跃的直播数据
+      // ตรวจสอบข้อมูลไลฟ์ที่มีอยู่
       this.detectActiveLive();
 
       this.isInitialized = true;
-      console.log('[Watch Live App] 观看直播应用初始化完成');
+      console.log('[Watch Live App] เริ่มต้น Watch Live App เสร็จสมบูรณ์');
     }
 
     /**
-     * 检测是否有活跃的直播数据
+     * ตรวจจับข้อมูลไลฟ์ที่มีอยู่แล้ว
      */
     detectActiveLive() {
       try {
-        console.log('[Watch Live App] 检测活跃的直播数据...');
+        console.log('[Watch Live App] กำลังค้นหาข้อมูลไลฟ์...');
 
-        // 检查渲染权
         const renderingRight = this.getRenderingRight();
         if (renderingRight && renderingRight !== 'watch' && renderingRight !== 'end') {
-          console.log(`[Watch Live App] 渲染权被${renderingRight}占用，跳过检测`);
+          console.log(`[Watch Live App] Rendering Right ถูกใช้โดย ${renderingRight}, ข้ามการตรวจสอบ`);
           return;
         }
 
-        // 获取聊天内容
         const chatContent = this.dataParser.getChatContent();
         if (!chatContent) {
-          console.log('[Watch Live App] 没有聊天内容，保持观看直播状态');
+          console.log('[Watch Live App] ไม่พบเนื้อหาแชท');
           return;
         }
 
-        // 检查是否有活跃的直播格式（非历史格式）
         const hasActiveLive = this.hasActiveLiveFormats(chatContent);
 
         if (hasActiveLive && renderingRight === 'watch') {
-          console.log('[Watch Live App] 🎯 检测到活跃的直播数据，自动进入观看直播状态');
+          console.log('[Watch Live App] 🎯 เจอข้อมูลไลฟ์ เข้าสู่โหมดดูไลฟ์อัตโนมัติ');
 
-          // 设置为直播中状态
           this.stateManager.startLive();
           this.currentView = 'live';
 
-          // 解析并加载现有的直播数据
           const liveData = this.dataParser.parseLiveData(chatContent);
           this.stateManager.updateLiveData(liveData);
 
-          // 开始监听新的消息
           this.eventListener.startListening();
 
-          console.log('[Watch Live App] ✅ 已自动恢复观看直播状态，数据:', {
+          console.log('[Watch Live App] ✅ กู้คืนสถานะดูไลฟ์สำเร็จ, ข้อมูล:', {
             viewerCount: this.stateManager.currentViewerCount,
             liveContent: this.stateManager.currentLiveContent
               ? this.stateManager.currentLiveContent.substring(0, 50) + '...'
@@ -796,22 +731,22 @@ if (typeof window.WatchLiveApp === 'undefined') {
             interactionCount: this.stateManager.recommendedInteractions.length,
           });
         } else {
-          console.log('[Watch Live App] 没有检测到活跃的直播数据或渲染权不匹配，保持观看直播选择状态');
+          console.log('[Watch Live App] ไม่พบข้อมูลไลฟ์ที่ Active หรือ Rendering Right ไม่ตรงกัน');
         }
       } catch (error) {
-        console.error('[Watch Live App] 检测活跃直播数据失败:', error);
+        console.error('[Watch Live App] ตรวจจับข้อมูลไลฟ์ล้มเหลว:', error);
       }
     }
 
     /**
-     * 检查是否有活跃的直播格式
+     * เช็คว่ามีรูปแบบข้อความไลฟ์ไหม
      */
     hasActiveLiveFormats(content) {
       if (!content || typeof content !== 'string') {
         return false;
       }
 
-      // 检查是否有任何活跃的直播格式（非历史格式）
+      // Regex สำหรับเช็ค (ห้ามแก้ภาษาจีนใน Regex)
       const activeLivePatterns = [
         /\[直播\|本场人数\|[^\]]+\]/,
         /\[直播\|直播内容\|[^\]]+\]/,
@@ -822,7 +757,7 @@ if (typeof window.WatchLiveApp === 'undefined') {
 
       for (const pattern of activeLivePatterns) {
         if (pattern.test(content)) {
-          console.log('[Live App] 找到活跃的直播格式:', pattern.toString());
+          console.log('[Live App] พบแพทเทิร์นไลฟ์:', pattern.toString());
           return true;
         }
       }
@@ -830,39 +765,28 @@ if (typeof window.WatchLiveApp === 'undefined') {
       return false;
     }
 
-    /**
-     * 获取直播状态
-     */
     get isLiveActive() {
       return this.stateManager.isLiveActive;
     }
 
     /**
-     * 结束直播
+     * จบการดูไลฟ์
      */
     async endLive() {
       try {
-        console.log('[Watch Live App] 结束观看直播');
+        console.log('[Watch Live App] จบการดูไลฟ์');
 
-        // 设置渲染权为end，允许用户重新选择
         await this.setRenderingRight('end');
-
-        // 停止监听事件
         this.eventListener.stopListening();
-
-        // 转换历史弹幕格式
         await this.convertLiveToHistory();
 
-        // 完全重置状态，确保下次进入时是全新状态
         this.stateManager.endLive();
-        this.stateManager.clearAllData(); // 清空所有数据
+        this.stateManager.clearAllData();
         this.currentView = 'start';
 
-        // 重置其他状态
-        this.isInitialized = false; // 重置初始化状态
+        this.isInitialized = false;
         this.lastRenderTime = 0;
 
-        // 清理定时器
         if (this.scrollTimeout) {
           clearTimeout(this.scrollTimeout);
           this.scrollTimeout = null;
@@ -872,62 +796,57 @@ if (typeof window.WatchLiveApp === 'undefined') {
           this.typingTimer = null;
         }
 
-        // 更新界面
         this.updateAppContent();
 
-        this.showToast('已退出直播间', 'success');
-        console.log('[Watch Live App] 已退出直播间，状态已完全重置');
+        this.showToast('ออกจากห้องไลฟ์แล้ว', 'success');
+        console.log('[Watch Live App] ออกจากห้องไลฟ์และรีเซ็ตค่าเรียบร้อย');
       } catch (error) {
-        console.error('[Watch Live App] 退出直播间失败:', error);
-        this.showToast('退出直播间失败: ' + error.message, 'error');
+        console.error('[Watch Live App] ออกจากห้องไลฟ์ล้มเหลว:', error);
+        this.showToast('ไม่สามารถออกจากห้องไลฟ์ได้: ' + error.message, 'error');
       }
     }
 
     /**
-     * 继续直播互动
-     * @param {string} interaction - 互动内容
+     * ส่งข้อความโต้ตอบ
      */
     async continueInteraction(interaction) {
       try {
-        console.log('[Live App] 继续直播互动:', interaction);
+        console.log('[Live App] ส่งข้อความโต้ตอบ:', interaction);
 
         if (!this.isLiveActive) {
-          console.warn('[Live App] 直播未激活，无法继续互动');
+          console.warn('[Live App] ไลฟ์ไม่ Active ไม่สามารถโต้ตอบได้');
           return;
         }
 
-        // 发送继续直播消息到SillyTavern
+        // ข้อความคำสั่งสำหรับ AI (ต้องคงภาษาจีนในคำสั่งไว้ เพื่อให้ AI ตอบกลับมาใน Format ที่ Regex อ่านรู้เรื่อง)
         const message = `用户继续直播，互动为（${interaction}），请按照正确的直播格式要求生成本场人数，直播内容，弹幕，打赏和推荐互动。此次回复内仅生成一次本场人数和直播内容格式，直播内容需要简洁。最后需要生成四条推荐互动。禁止使用错误格式。`;
 
         await this.sendToSillyTavern(message);
 
-        console.log('[Live App] 互动消息已发送');
+        console.log('[Live App] ส่งข้อความเรียบร้อย');
       } catch (error) {
-        console.error('[Live App] 继续互动失败:', error);
-        this.showToast('发送互动失败: ' + error.message, 'error');
+        console.error('[Live App] ส่งข้อความล้มเหลว:', error);
+        this.showToast('ส่งข้อความล้มเหลว: ' + error.message, 'error');
       }
     }
 
     /**
-     * 解析新的直播数据
+     * วิเคราะห์ข้อมูลใหม่ที่เข้ามา
      */
     async parseNewLiveData() {
       try {
-        console.log('[Live App] 开始解析新的直播数据');
+        console.log('[Live App] เริ่มวิเคราะห์ข้อมูลใหม่');
 
-        // 获取聊天内容
         const chatContent = this.dataParser.getChatContent();
         if (!chatContent) {
-          console.warn('[Live App] 无法获取聊天内容');
+          console.warn('[Live App] ไม่พบเนื้อหาแชท');
           return;
         }
 
-        // 双通道：在更新前记录现有弹幕签名，用于识别"真正新增"
         const existingDanmakuSigs = new Set(
           (this.stateManager.danmakuList || []).map(item => this.createDanmakuSignature(item)),
         );
 
-        // 单独解析"最新楼层"的内容（仅用于决定动画）
         const latestFloorText = this.getLatestFloorTextSafe();
         let latestNewDanmaku = [];
         let latestNewGifts = [];
@@ -938,9 +857,8 @@ if (typeof window.WatchLiveApp === 'undefined') {
           latestNewGifts = latestGiftList || [];
         }
 
-        // 解析直播数据
         const liveData = this.dataParser.parseLiveData(chatContent);
-        console.log('[Live App] 解析到的直播数据:', {
+        console.log('[Live App] ข้อมูลที่แกะได้:', {
           viewerCount: liveData.viewerCount,
           liveContent: liveData.liveContent ? liveData.liveContent.substring(0, 50) + '...' : '',
           danmakuCount: liveData.danmakuList.length,
@@ -948,10 +866,9 @@ if (typeof window.WatchLiveApp === 'undefined') {
           interactionCount: liveData.recommendedInteractions.length,
         });
 
-        // 更新状态
         this.stateManager.updateLiveData(liveData);
 
-        // 计算需要动画显示的"新增弹幕/礼物"（仅来自最新楼层）
+        // เช็คว่าต้องเล่น Animation ไหม
         if (latestNewDanmaku.length > 0) {
           latestNewDanmaku.forEach(item => {
             const sig = this.createDanmakuSignature(item);
@@ -973,12 +890,9 @@ if (typeof window.WatchLiveApp === 'undefined') {
           });
         }
 
-        // 更新界面（带防抖）
         this.updateAppContentDebounced();
 
-        // 若有新的弹幕，刷新后进行一次"必要时跳底"
         setTimeout(() => {
-          // 先处理需要动画的节点为隐藏状态，避免定位到空白
           this.runAppearSequence();
           const danmakuContainer = document.getElementById('danmaku-container');
           if (danmakuContainer) {
@@ -986,12 +900,12 @@ if (typeof window.WatchLiveApp === 'undefined') {
           }
         }, 30);
       } catch (error) {
-        console.error('[Live App] 解析直播数据失败:', error);
+        console.error('[Live App] วิเคราะห์ข้อมูลล้มเหลว:', error);
       }
     }
 
     /**
-     * 防抖更新界面内容
+     * อัปเดตหน้าจอ (แบบ Debounce)
      */
     updateAppContentDebounced() {
       const currentTime = Date.now();
@@ -1001,29 +915,26 @@ if (typeof window.WatchLiveApp === 'undefined') {
 
       this.lastRenderTime = currentTime;
       this.updateAppContent();
-      this.updateHeader(); // 同时更新header
+      this.updateHeader();
     }
 
     /**
-     * 更新应用内容
+     * อัปเดตเนื้อหา UI
      */
     updateAppContent() {
       const content = this.getAppContent();
       const appElement = document.getElementById('app-content');
       if (appElement) {
         appElement.innerHTML = content;
-        // 延迟绑定事件，确保DOM已更新
         setTimeout(() => {
           this.bindEvents();
-          this.updateHeader(); // 确保header也被更新
-          // 渲染后启动直播内容打字机效果
+          this.updateHeader();
           if (this.currentView === 'live') {
             const state = this.stateManager.getCurrentState();
             const liveContentEl = document.querySelector('.live-content-text');
             if (liveContentEl) {
               this.applyTypingEffect(liveContentEl, state.liveContent || '');
             }
-            // 渲染后尝试触发逐条出现动画（避免丢帧）
             this.runAppearSequence();
           }
         }, 50);
@@ -1031,7 +942,7 @@ if (typeof window.WatchLiveApp === 'undefined') {
     }
 
     /**
-     * 获取应用内容
+     * เลือกหน้าที่จะแสดง
      */
     getAppContent() {
       switch (this.currentView) {
@@ -1047,7 +958,7 @@ if (typeof window.WatchLiveApp === 'undefined') {
     }
 
     /**
-     * 渲染观看直播界面
+     * Render หน้าแรก
      */
     renderStartView() {
       return `
@@ -1075,10 +986,9 @@ if (typeof window.WatchLiveApp === 'undefined') {
     }
 
     /**
-     * 渲染直播间列表界面
+     * Render หน้ารายการไลฟ์
      */
     renderListView() {
-      // 解析直播间列表数据（无论是否在等待，都先解析现有数据）
       const liveRooms = this.parseLiveRoomList();
 
       const roomsHtml = liveRooms
@@ -1099,15 +1009,12 @@ if (typeof window.WatchLiveApp === 'undefined') {
         )
         .join('');
 
-      // 构建列表内容
       let listContent = '';
 
-      // 如果有现有直播间，显示它们
       if (roomsHtml) {
         listContent = roomsHtml;
       }
 
-      // ถ้ายังอยู่ในขั้นตอนรอโหลดรายการไลฟ์ใหม่ ให้แสดงข้อความกำลังโหลด
       if (this.isWaitingForLiveList) {
         const loadingHtml = `
           <div class="live-loading-update">
@@ -1119,7 +1026,6 @@ if (typeof window.WatchLiveApp === 'undefined') {
           ? listContent + loadingHtml
           : '<div class="live-loading">กำลังโหลดรายการไลฟ์...</div>';
       } else if (!roomsHtml) {
-        // 如果没有现有数据且不在等待，显示无数据提示
         listContent = '<div class="no-rooms">ยังไม่มีใครไลฟ์ ลองกลับมาดูอีกทีนะ!</div>';
       }
 
@@ -1140,17 +1046,15 @@ if (typeof window.WatchLiveApp === 'undefined') {
     }
 
     /**
-     * 渲染直播中界面
+     * Render หน้าดูไลฟ์
      */
     renderLiveView() {
       const state = this.stateManager.getCurrentState();
 
-      // 渲染推荐互动按钮
       const recommendedButtons = state.recommendedInteractions
         .map(interaction => `<button class="rec-btn" data-interaction="${interaction}">${interaction}</button>`)
         .join('');
 
-      // 渲染弹幕列表
       const danmakuItems = state.danmakuList
         .map(danmaku => {
           const sig = this.createDanmakuSignature(danmaku);
@@ -1160,7 +1064,7 @@ if (typeof window.WatchLiveApp === 'undefined') {
             <div class="danmaku-item gift${needAppearClass}" data-sig="${sig}">
               <i class="fas fa-gift"></i>
               <span class="username">${danmaku.username}</span>
-              <span class="content">送出 ${danmaku.content}</span>
+              <span class="content">ส่งของขวัญ ${danmaku.content}</span>
             </div>
           `;
           } else {
@@ -1177,7 +1081,6 @@ if (typeof window.WatchLiveApp === 'undefined') {
       return `
         <div class="live-app">
           <div class="live-container">
-            <!-- ส่วนของหน้าจอไลฟ์สด -->
             <div class="video-placeholder">
               <p class="live-content-text">${state.liveContent || 'กำลังรอเนื้อหาไลฟ์...'}</p>
               <div class="live-status-bottom">
@@ -1186,7 +1089,6 @@ if (typeof window.WatchLiveApp === 'undefined') {
               </div>
             </div>
 
-            <!-- พื้นที่โต้ตอบระหว่างการรับชม -->
             <div class="interaction-panel">
               <div class="interaction-header">
                 <h4>แชทแนะนำ：</h4>
@@ -1204,16 +1106,13 @@ if (typeof window.WatchLiveApp === 'undefined') {
               </div>
             </div>
 
-            <!-- กล่องแสดงข้อความแชต -->
             <div class="danmaku-container" id="danmaku-container">
               <div class="danmaku-list" id="danmaku-list">
                 ${danmakuItems || '<div class="no-danmaku">ยังไม่มีข้อความแชท...</div>'}
               </div>
             </div>
           </div>
-
-          <!-- หน้าต่างส่งข้อความ -->
-          <div id="danmaku-modal" class="modal">
+<div id="danmaku-modal" class="modal">
             <div class="modal-content">
               <div class="modal-header">
                 <h3>ส่งข้อความ</h3>
@@ -1226,7 +1125,6 @@ if (typeof window.WatchLiveApp === 'undefined') {
             </div>
           </div>
 
-          <!-- รายการของขวัญ -->
           <div id="gift-send-modal" class="modal">
             <div class="gift-modal-container">
               <div class="gift-modal-header">
@@ -1236,7 +1134,6 @@ if (typeof window.WatchLiveApp === 'undefined') {
 
               <div class="gift-modal-body">
                 <div class="gift-list-container">
-                    <!-- ของขวัญและราคา -->
                     <div class="gift-card" data-gift="ใจส้ม" data-price="1">
                       <div class="gift-icon">🧡</div>
                       <div class="gift-info">
@@ -1405,10 +1302,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
                         <button class="qty-btn plus">+</button>
                       </div>
                     </div>
-                    <div class="gift-card" data-gift="庆功香槟" data-price="488">
+                    <div class="gift-card" data-gift="แชมเปญฉลอง" data-price="488">
                       <div class="gift-icon">🥂</div>
                       <div class="gift-info">
-                        <div class="gift-name">庆功香槟</div>
+                        <div class="gift-name">แชมเปญฉลอง</div>
                         <div class="gift-price">¥488</div>
                       </div>
                       <div class="gift-controls">
@@ -1417,10 +1314,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
                         <button class="qty-btn plus">+</button>
                       </div>
                     </div>
-                    <div class="gift-card" data-gift="巨星墨镜" data-price="588">
+                    <div class="gift-card" data-gift="แว่นกันแดดซุปตาร์" data-price="588">
                       <div class="gift-icon">🕶️</div>
                       <div class="gift-info">
-                        <div class="gift-name">巨星墨镜</div>
+                        <div class="gift-name">แว่นกันแดดซุปตาร์</div>
                         <div class="gift-price">¥588</div>
                       </div>
                       <div class="gift-controls">
@@ -1429,10 +1326,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
                         <button class="qty-btn plus">+</button>
                       </div>
                     </div>
-                    <div class="gift-card" data-gift="人气喷射器" data-price="666">
+                    <div class="gift-card" data-gift="จรวดดันยอดวิว" data-price="666">
                       <div class="gift-icon">🚀</div>
                       <div class="gift-info">
-                        <div class="gift-name">人气喷射器</div>
+                        <div class="gift-name">จรวดดันยอดวิว</div>
                         <div class="gift-price">¥666</div>
                       </div>
                       <div class="gift-controls">
@@ -1441,10 +1338,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
                         <button class="qty-btn plus">+</button>
                       </div>
                     </div>
-                    <div class="gift-card" data-gift="星际飞船" data-price="888">
+                    <div class="gift-card" data-gift="ยานอวกาศ" data-price="888">
                       <div class="gift-icon">🚁</div>
                       <div class="gift-info">
-                        <div class="gift-name">星际飞船</div>
+                        <div class="gift-name">ยานอวกาศ</div>
                         <div class="gift-price">¥888</div>
                       </div>
                       <div class="gift-controls">
@@ -1453,10 +1350,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
                         <button class="qty-btn plus">+</button>
                       </div>
                     </div>
-                    <div class="gift-card" data-gift="星光大道" data-price="999">
+                    <div class="gift-card" data-gift="ถนนสายดวงดาว" data-price="999">
                       <div class="gift-icon">📢</div>
                       <div class="gift-info">
-                        <div class="gift-name">星光大道</div>
+                        <div class="gift-name">ถนนสายดวงดาว</div>
                         <div class="gift-price">¥999</div>
                       </div>
                       <div class="gift-controls">
@@ -1465,10 +1362,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
                         <button class="qty-btn plus">+</button>
                       </div>
                     </div>
-                    <div class="gift-card" data-gift="神谕剧本" data-price="1288">
+                    <div class="gift-card" data-gift="บทละครเทพพยากรณ์" data-price="1288">
                       <div class="gift-icon">📜</div>
                       <div class="gift-info">
-                        <div class="gift-name">神谕剧本</div>
+                        <div class="gift-name">บทละครเทพพยากรณ์</div>
                         <div class="gift-price">¥1288</div>
                       </div>
                       <div class="gift-controls">
@@ -1477,10 +1374,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
                         <button class="qty-btn plus">+</button>
                       </div>
                     </div>
-                    <div class="gift-card" data-gift="天空之城" data-price="1888">
+                    <div class="gift-card" data-gift="ปราสาทลอยฟ้า" data-price="1888">
                       <div class="gift-icon">🏰</div>
                       <div class="gift-info">
-                        <div class="gift-name">天空之城</div>
+                        <div class="gift-name">ปราสาทลอยฟ้า</div>
                         <div class="gift-price">¥1888</div>
                       </div>
                       <div class="gift-controls">
@@ -1489,10 +1386,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
                         <button class="qty-btn plus">+</button>
                       </div>
                     </div>
-                    <div class="gift-card" data-gift="光速超跑" data-price="2888">
+                    <div class="gift-card" data-gift="ซูเปอร์คาร์ความเร็วแสง" data-price="2888">
                       <div class="gift-icon">🏎️</div>
                       <div class="gift-info">
-                        <div class="gift-name">光速超跑</div>
+                        <div class="gift-name">ซูเปอร์คาร์ความเร็วแสง</div>
                         <div class="gift-price">¥2888</div>
                       </div>
                       <div class="gift-controls">
@@ -1501,10 +1398,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
                         <button class="qty-btn plus">+</button>
                       </div>
                     </div>
-                    <div class="gift-card" data-gift="宇宙巡回" data-price="3888">
+                    <div class="gift-card" data-gift="ทัวร์รอบจักรวาล" data-price="3888">
                       <div class="gift-icon">🌍</div>
                       <div class="gift-info">
-                        <div class="gift-name">宇宙巡回</div>
+                        <div class="gift-name">ทัวร์รอบจักรวาล</div>
                         <div class="gift-price">¥3888</div>
                       </div>
                       <div class="gift-controls">
@@ -1513,10 +1410,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
                         <button class="qty-btn plus">+</button>
                       </div>
                     </div>
-                    <div class="gift-card" data-gift="梦幻游轮" data-price="4888">
+                    <div class="gift-card" data-gift="เรือสำราญในฝัน" data-price="4888">
                       <div class="gift-icon">🛳️</div>
                       <div class="gift-info">
-                        <div class="gift-name">梦幻游轮</div>
+                        <div class="gift-name">เรือสำราญในฝัน</div>
                         <div class="gift-price">¥4888</div>
                       </div>
                       <div class="gift-controls">
@@ -1525,10 +1422,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
                         <button class="qty-btn plus">+</button>
                       </div>
                     </div>
-                    <div class="gift-card" data-gift="星河舰队" data-price="5888">
+                    <div class="gift-card" data-gift="กองยานแห่งดวงดาว" data-price="5888">
                       <div class="gift-icon">🌌</div>
                       <div class="gift-info">
-                        <div class="gift-name">星河舰队</div>
+                        <div class="gift-name">กองยานแห่งดวงดาว</div>
                         <div class="gift-price">¥5888</div>
                       </div>
                       <div class="gift-controls">
@@ -1537,10 +1434,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
                         <button class="qty-btn plus">+</button>
                       </div>
                     </div>
-                    <div class="gift-card" data-gift="专属星球" data-price="6888">
+                    <div class="gift-card" data-gift="ดาวเคราะห์ส่วนตัว" data-price="6888">
                       <div class="gift-icon">🪐</div>
                       <div class="gift-info">
-                        <div class="gift-name">专属星球</div>
+                        <div class="gift-name">ดาวเคราะห์ส่วนตัว</div>
                         <div class="gift-price">¥6888</div>
                       </div>
                       <div class="gift-controls">
@@ -1549,10 +1446,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
                         <button class="qty-btn plus">+</button>
                       </div>
                     </div>
-                    <div class="gift-card" data-gift="奇迹工厂" data-price="7888">
+                    <div class="gift-card" data-gift="โรงงานปาฏิหาริย์" data-price="7888">
                       <div class="gift-icon">✨</div>
                       <div class="gift-info">
-                        <div class="gift-name">奇迹工厂</div>
+                        <div class="gift-name">โรงงานปาฏิหาริย์</div>
                         <div class="gift-price">¥7888</div>
                       </div>
                       <div class="gift-controls">
@@ -1561,10 +1458,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
                         <button class="qty-btn plus">+</button>
                       </div>
                     </div>
-                    <div class="gift-card" data-gift="永恒之星" data-price="8888">
+                    <div class="gift-card" data-gift="ดวงดาวนิรันดร์" data-price="8888">
                       <div class="gift-icon">🌠</div>
                       <div class="gift-info">
-                        <div class="gift-name">永恒之星</div>
+                        <div class="gift-name">ดวงดาวนิรันดร์</div>
                         <div class="gift-price">¥8888</div>
                       </div>
                       <div class="gift-controls">
@@ -1573,10 +1470,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
                         <button class="qty-btn plus">+</button>
                       </div>
                     </div>
-                    <div class="gift-card" data-gift="星辰主宰" data-price="9999">
+                    <div class="gift-card" data-gift="ผู้บัญชาการดวงดาว" data-price="9999">
                       <div class="gift-icon">🔱</div>
                       <div class="gift-info">
-                        <div class="gift-name">星辰主宰</div>
+                        <div class="gift-name">ผู้บัญชาการดวงดาว</div>
                         <div class="gift-price">¥9999</div>
                       </div>
                       <div class="gift-controls">
@@ -1585,10 +1482,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
                         <button class="qty-btn plus">+</button>
                       </div>
                     </div>
-                    <div class="gift-card" data-gift="以你为名" data-price="10000">
+                    <div class="gift-card" data-gift="ตั้งชื่อตามคุณ" data-price="10000">
                       <div class="gift-icon">🔭</div>
                       <div class="gift-info">
-                        <div class="gift-name">以你为名</div>
+                        <div class="gift-name">ตั้งชื่อตามคุณ</div>
                         <div class="gift-price">¥10000</div>
                       </div>
                       <div class="gift-controls">
@@ -1601,29 +1498,28 @@ if (typeof window.WatchLiveApp === 'undefined') {
                 </div>
 
                 <div class="gift-message-section">
-                  <div class="message-label">💬 打赏留言</div>
-                  <textarea id="gift-message-input" placeholder="说点什么吧..."></textarea>
+                  <div class="message-label">💬 ข้อความโดเนท</div>
+                  <textarea id="gift-message-input" placeholder="พิมพ์อะไรสักหน่อย..."></textarea>
                 </div>
 
                 <div class="gift-summary">
                   <div class="total-amount">
-                    <span class="amount-label">总金额</span>
+                    <span class="amount-label">ยอดรวม</span>
                     <span class="amount-value">¥<span id="gift-total-amount">0</span></span>
                   </div>
                   <button class="send-gift-btn" id="confirm-send-gift">
                     <span class="btn-icon">🎁</span>
-                    <span class="btn-text">送礼</span>
+                    <span class="btn-text">ส่งของขวัญ</span>
                   </button>
                 </div>
               </div>
             </div>
           </div>
 
-          <!-- 礼物流水弹窗 -->
           <div id="gift-modal" class="modal">
             <div class="modal-content">
               <div class="modal-header">
-                <h3>礼物流水</h3>
+                <h3>ประวัติของขวัญ</h3>
                 <button class="modal-close-btn">&times;</button>
               </div>
               <ul class="gift-list">
@@ -1634,9 +1530,9 @@ if (typeof window.WatchLiveApp === 'undefined') {
                       const needAppearClass = this.pendingAppearGiftSigs.has(gsig) ? ' need-appear' : '';
                       return `<li class="${needAppearClass.trim()}" data-sig="${gsig}"><span class="username">${
                         gift.username
-                      }</span>送出 <span class="gift-name">${gift.gift}</span></li>`;
+                      }</span>ส่ง <span class="gift-name">${gift.gift}</span></li>`;
                     })
-                    .join('') || '<li class="no-gifts">暂无礼物</li>'
+                    .join('') || '<li class="no-gifts">ยังไม่มีของขวัญ</li>'
                 }
               </ul>
             </div>
@@ -1649,11 +1545,11 @@ if (typeof window.WatchLiveApp === 'undefined') {
      * 绑定事件
      */
     bindEvents() {
-      console.log('[Live App] 绑定事件...');
+      console.log('[Live App] ผูกเหตุการณ์...');
 
       const appContainer = document.getElementById('app-content');
       if (!appContainer) {
-        console.error('[Live App] 应用容器未找到');
+        console.error('[Live App] ไม่พบคอนเทนเนอร์แอพ');
         return;
       }
 
@@ -1741,7 +1637,7 @@ if (typeof window.WatchLiveApp === 'undefined') {
                 textarea.value = '';
                 this.hideAllModals();
               } else {
-                this.showToast('请输入弹幕内容', 'warning');
+                this.showToast('กรุณาพิมพ์ข้อความ', 'warning');
               }
             });
           }
@@ -1777,10 +1673,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
           }
         }
 
-        console.log('[Live App] 事件绑定完成');
+        console.log('[Live App] ผูกเหตุการณ์เสร็จสิ้น');
       } catch (error) {
-        console.error('[Live App] 绑定事件时发生错误:', error);
-        this.showToast('事件绑定失败: ' + error.message, 'error');
+        console.error('[Live App] เกิดข้อผิดพลาดในการผูกเหตุการณ์:', error);
+        this.showToast('เกิดข้อผิดพลาดในการผูกเหตุการณ์: ' + error.message, 'error');
       }
     }
 
@@ -1799,27 +1695,27 @@ if (typeof window.WatchLiveApp === 'undefined') {
      */
     async requestCurrentLiveList() {
       try {
-        console.log('[Watch Live App] 请求当前开播列表...');
+        console.log('[Watch Live App] กำลังขอรายการไลฟ์...');
 
         // 先切换到列表视图
         this.currentView = 'list';
         this.isWaitingForLiveList = false; // 先设为false，立即解析现有内容
 
         // 立即解析并渲染现有的直播间列表
-        console.log('[Watch Live App] 立即解析现有直播间列表...');
+        console.log('[Watch Live App] กำลังประมวลผลรายการไลฟ์ที่มีอยู่...');
         this.updateAppContent();
 
         // 检查是否已有直播间数据
         const existingRooms = this.parseLiveRoomList();
         if (existingRooms.length > 0) {
-          console.log(`[Watch Live App] 找到 ${existingRooms.length} 个现有直播间，已立即渲染`);
+          console.log(`[Watch Live App] พบห้องไลฟ์เดิม ${existingRooms.length} ห้อง เรนเดอร์ทันที`);
         } else {
-          console.log('[Watch Live App] 没有找到现有直播间数据');
+          console.log('[Watch Live App] ไม่พบข้อมูลห้องไลฟ์เดิม');
         }
 
         // 然后发送请求获取新的直播间列表
         const message =
-          '用户希望观看直播，请按照正确格式生成5-10个当前可能正在开播的直播间，每个直播间的格式为[直播|直播间名称|主播用户名|直播类别|观看人数]。主播可能是角色，NPC或者是无关路人。每个直播间格式之间需要正确换行';
+          'ผู้ใช้ต้องการรับชมไลฟ์ โปรดสร้างรายการห้องไลฟ์ที่อาจกำลังออกอากาศอยู่ 5-10 ห้องตามรูปแบบที่ถูกต้อง รูปแบบของแต่ละห้องคือ [直播|ชื่อห้องไลฟ์|ชื่อสตรีมเมอร์|หมวดหมู่ไลฟ์|จำนวนผู้ชม] สตรีมเมอร์อาจเป็นตัวละคร NPC หรือคนทั่วไป โปรดเว้นบรรทัดระหว่างแต่ละรูปแบบห้องให้ถูกต้อง';
 
         // 设置等待状态，准备接收新回复
         this.isWaitingForLiveList = true;
@@ -1829,10 +1725,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
 
         await this.sendToSillyTavern(message);
 
-        console.log('[Watch Live App] 已发送开播列表请求，等待AI回复以更新列表...');
+        console.log('[Watch Live App] ส่งคำขอรายการไลฟ์แล้ว รอการตอบกลับ...');
       } catch (error) {
-        console.error('[Watch Live App] 请求开播列表失败:', error);
-        this.showToast('请求开播列表失败: ' + error.message, 'error');
+        console.error('[Watch Live App] ขอรายการไลฟ์ล้มเหลว:', error);
+        this.showToast('ขอรายการไลฟ์ล้มเหลว: ' + error.message, 'error');
         this.isWaitingForLiveList = false;
       }
     }
@@ -1886,12 +1782,12 @@ if (typeof window.WatchLiveApp === 'undefined') {
      */
     async watchSpecificLive(streamerName) {
       try {
-        console.log('[Watch Live App] 观看指定直播:', streamerName);
+        console.log('[Watch Live App] รับชมไลฟ์ของ:', streamerName);
 
         // 设置渲染权为watch
         await this.setRenderingRight('watch');
 
-        const message = `用户选择观看${streamerName}的直播，请按照正确的直播格式要求生成本场人数，直播内容，弹幕，打赏和推荐互动。此次回复内仅生成一次本场人数和直播内容格式，直播内容需要简洁。最后需要生成四条推荐互动。禁止使用错误格式。当前用户正在观看直播，推荐互动需要是用户可能会发送的弹幕。`;
+        const message = `ผู้ใช้เลือกรับชมไลฟ์ของ ${streamerName} โปรดสร้างข้อมูลตามรูปแบบที่ถูกต้อง: จำนวนผู้ชม เนื้อหาการไลฟ์ ข้อความแชท การโดเนท และการโต้ตอบที่แนะนำ ในการตอบกลับครั้งนี้ให้สร้างรูปแบบจำนวนผู้ชมและเนื้อหาไลฟ์เพียงครั้งเดียว เนื้อหาต้องกระชับ ท้ายสุดให้สร้างข้อความแนะนำ 4 ข้อความ ห้ามใช้รูปแบบที่ผิด ผู้ใช้กำลังดูไลฟ์อยู่ ข้อความแนะนำควรเป็นสิ่งที่ผู้ใช้อาจพิมพ์ส่งไป`;
 
         // 隐藏弹窗
         this.hideModal('specific-live-modal');
@@ -1904,10 +1800,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
         await this.sendToSillyTavern(message);
         this.updateAppContent();
 
-        console.log('[Watch Live App] 已进入指定直播间');
+        console.log('[Watch Live App] เข้าสู่ห้องไลฟ์ที่ระบุแล้ว');
       } catch (error) {
-        console.error('[Watch Live App] 观看指定直播失败:', error);
-        this.showToast('进入直播间失败: ' + error.message, 'error');
+        console.error('[Watch Live App] เข้าสู่ห้องไลฟ์ล้มเหลว:', error);
+        this.showToast('เข้าสู่ห้องไลฟ์ล้มเหลว: ' + error.message, 'error');
       }
     }
 
@@ -1920,11 +1816,11 @@ if (typeof window.WatchLiveApp === 'undefined') {
         // 获取最新的聊天内容
         const chatContent = this.dataParser.getChatContent();
         if (!chatContent) {
-          console.log('[Watch Live App] 没有聊天内容可解析');
+          console.log('[Watch Live App] ไม่พบเนื้อหาแชท');
           return [];
         }
 
-        console.log('[Watch Live App] 开始解析直播间列表，内容长度:', chatContent.length);
+        console.log('[Watch Live App] เริ่มประมวลผลรายการห้องไลฟ์ ความยาวเนื้อหา:', chatContent.length);
 
         // 匹配直播间格式：[直播|直播间名称|主播用户名|直播类别|观看人数]
         // 使用更严格的正则表达式，确保正确匹配
@@ -1948,22 +1844,22 @@ if (typeof window.WatchLiveApp === 'undefined') {
           // 验证数据有效性
           if (roomData.name && roomData.streamer && roomData.category && roomData.viewers) {
             rooms.push(roomData);
-            console.log(`[Watch Live App] 解析到直播间 ${matchCount}:`, roomData);
+            console.log(`[Watch Live App] พบห้องไลฟ์ ${matchCount}:`, roomData);
           } else {
-            console.warn('[Watch Live App] 跳过无效的直播间数据:', roomData);
+            console.warn('[Watch Live App] ข้ามข้อมูลห้องไลฟ์ที่ไม่ถูกต้อง:', roomData);
           }
 
           // 防止无限循环
           if (matchCount > 50) {
-            console.warn('[Watch Live App] 达到最大解析数量限制，停止解析');
+            console.warn('[Watch Live App] ถึงขีดจำกัดการประมวลผล หยุดการทำงาน');
             break;
           }
         }
 
-        console.log(`[Watch Live App] 解析完成，共找到 ${rooms.length} 个有效直播间`);
+        console.log(`[Watch Live App] ประมวลผลเสร็จสิ้น พบห้องไลฟ์ที่ถูกต้อง ${rooms.length} ห้อง`);
         return rooms;
       } catch (error) {
-        console.error('[Watch Live App] 解析直播间列表失败:', error);
+        console.error('[Watch Live App] ประมวลผลรายการห้องไลฟ์ล้มเหลว:', error);
         return [];
       }
     }
@@ -1973,12 +1869,12 @@ if (typeof window.WatchLiveApp === 'undefined') {
      */
     async watchSelectedRoom(roomData) {
       try {
-        console.log('[Watch Live App] 观看选中的直播间:', roomData);
+        console.log('[Watch Live App] รับชมห้องไลฟ์ที่เลือก:', roomData);
 
         // 设置渲染权为watch
         await this.setRenderingRight('watch');
 
-        const message = `用户选择观看直播：直播间名称：${roomData.name}，主播用户名：${roomData.streamer}，直播类别：${roomData.category}，本次观看人数：${roomData.viewers}。请按照正确的直播格式要求生成本场人数，直播内容，弹幕，打赏和推荐互动。此次回复内仅生成一次本场人数和直播内容格式，直播内容需要简洁，当前直播可以是刚开播或者已经直播一段时间了。最后需要生成四条推荐互动。禁止使用错误格式。当前用户正在观看直播，推荐互动需要是用户可能会发送的弹幕。`;
+        const message = `ผู้ใช้เลือกรับชมไลฟ์: ชื่อห้องไลฟ์: ${roomData.name}, สตรีมเมอร์: ${roomData.streamer}, หมวดหมู่: ${roomData.category}, จำนวนผู้ชม: ${roomData.viewers} โปรดสร้างข้อมูลตามรูปแบบที่ถูกต้อง: จำนวนผู้ชม เนื้อหาการไลฟ์ ข้อความแชท การโดเนท และการโต้ตอบที่แนะนำ ในการตอบกลับครั้งนี้ให้สร้างรูปแบบจำนวนผู้ชมและเนื้อหาไลฟ์เพียงครั้งเดียว เนื้อหาต้องกระชับ ไลฟ์อาจจะเพิ่งเริ่มหรือดำเนินมาระยะหนึ่งแล้ว ท้ายสุดให้สร้างข้อความแนะนำ 4 ข้อความ ห้ามใช้รูปแบบที่ผิด ผู้ใช้กำลังดูไลฟ์อยู่ ข้อความแนะนำควรเป็นสิ่งที่ผู้ใช้อาจพิมพ์ส่งไป`;
 
         // 切换到直播间视图
         this.currentView = 'live';
@@ -1988,10 +1884,10 @@ if (typeof window.WatchLiveApp === 'undefined') {
         await this.sendToSillyTavern(message);
         this.updateAppContent();
 
-        console.log('[Watch Live App] 已进入选中的直播间');
+        console.log('[Watch Live App] เข้าสู่ห้องไลฟ์แล้ว');
       } catch (error) {
-        console.error('[Watch Live App] 观看选中直播间失败:', error);
-        this.showToast('进入直播间失败: ' + error.message, 'error');
+        console.error('[Watch Live App] เข้าสู่ห้องไลฟ์ล้มเหลว:', error);
+        this.showToast('เข้าสู่ห้องไลฟ์ล้มเหลว: ' + error.message, 'error');
       }
     }
 
@@ -2000,16 +1896,16 @@ if (typeof window.WatchLiveApp === 'undefined') {
      */
     async sendDanmaku(danmaku) {
       try {
-        console.log('[Watch Live App] 发送推荐弹幕:', danmaku);
+        console.log('[Watch Live App] ส่งข้อความแนะนำ:', danmaku);
 
-        const message = `用户正在观看直播，并发送弹幕"${danmaku}"，请勿重复或替用户发送弹幕。请按照正确的直播格式要求生成本场人数，直播内容，其余弹幕，打赏和推荐互动。此次回复内仅生成一次本场人数和直播内容格式，直播内容需要简洁。最后需要生成四条推荐互动，内容为用户可能会发送的弹幕。禁止使用错误格式。
+        const message = `ผู้ใช้กำลังรับชมไลฟ์ และส่งข้อความ "${danmaku}" ห้ามส่งข้อความซ้ำหรือส่งแทนผู้ใช้ โปรดสร้างข้อมูลตามรูปแบบที่ถูกต้อง: จำนวนผู้ชม เนื้อหาการไลฟ์ ข้อความแชทอื่น ๆ การโดเนท และการโต้ตอบที่แนะนำ ในการตอบกลับครั้งนี้ให้สร้างรูปแบบจำนวนผู้ชมและเนื้อหาไลฟ์เพียงครั้งเดียว เนื้อหาต้องกระชับ ท้ายสุดให้สร้างข้อความแนะนำ 4 ข้อความ ซึ่งเป็นสิ่งที่ผู้ใช้อาจพิมพ์ส่งไป ห้ามใช้รูปแบบที่ผิด
 [直播|{{user}}|弹幕|${danmaku}]`;
 
         await this.sendToSillyTavern(message);
-        console.log('[Watch Live App] 推荐弹幕已发送');
+        console.log('[Watch Live App] ส่งข้อความแนะนำแล้ว');
       } catch (error) {
-        console.error('[Watch Live App] 发送推荐弹幕失败:', error);
-        this.showToast('发送弹幕失败: ' + error.message, 'error');
+        console.error('[Watch Live App] ส่งข้อความแนะนำล้มเหลว:', error);
+        this.showToast('ส่งข้อความล้มเหลว: ' + error.message, 'error');
       }
     }
 
@@ -2018,16 +1914,16 @@ if (typeof window.WatchLiveApp === 'undefined') {
      */
     async sendCustomDanmaku(danmaku) {
       try {
-        console.log('[Watch Live App] 发送自定义弹幕:', danmaku);
+        console.log('[Watch Live App] ส่งข้อความกำหนดเอง:', danmaku);
 
-        const message = `用户正在观看直播，并发送弹幕"${danmaku}"，请勿重复或替用户发送弹幕。请按照正确的直播格式要求生成本场人数，直播内容，其余弹幕，打赏和推荐互动。此次回复内仅生成一次本场人数和直播内容格式，直播内容需要简洁。最后需要生成四条推荐互动，内容为用户可能会发送的弹幕。禁止使用错误格式。
+        const message = `ผู้ใช้กำลังรับชมไลฟ์ และส่งข้อความ "${danmaku}" ห้ามส่งข้อความซ้ำหรือส่งแทนผู้ใช้ โปรดสร้างข้อมูลตามรูปแบบที่ถูกต้อง: จำนวนผู้ชม เนื้อหาการไลฟ์ ข้อความแชทอื่น ๆ การโดเนท และการโต้ตอบที่แนะนำ ในการตอบกลับครั้งนี้ให้สร้างรูปแบบจำนวนผู้ชมและเนื้อหาไลฟ์เพียงครั้งเดียว เนื้อหาต้องกระชับ ท้ายสุดให้สร้างข้อความแนะนำ 4 ข้อความ ซึ่งเป็นสิ่งที่ผู้ใช้อาจพิมพ์ส่งไป ห้ามใช้รูปแบบที่ผิด
 [直播|{{user}}|弹幕|${danmaku}]`;
 
         await this.sendToSillyTavern(message);
-        console.log('[Watch Live App] 自定义弹幕已发送');
+        console.log('[Watch Live App] ส่งข้อความกำหนดเองแล้ว');
       } catch (error) {
-        console.error('[Watch Live App] 发送自定义弹幕失败:', error);
-        this.showToast('发送弹幕失败: ' + error.message, 'error');
+        console.error('[Watch Live App] ส่งข้อความกำหนดเองล้มเหลว:', error);
+        this.showToast('ส่งข้อความล้มเหลว: ' + error.message, 'error');
       }
     }
 
@@ -2135,14 +2031,14 @@ if (typeof window.WatchLiveApp === 'undefined') {
         });
 
         if (selectedGifts.length === 0) {
-          this.showToast('请选择要打赏的礼物', 'warning');
+          this.showToast('กรุณาเลือกของขวัญที่ต้องการส่ง', 'warning');
           return;
         }
 
         const totalAmount = selectedGifts.reduce((sum, gift) => sum + gift.total, 0);
         const giftMessage = document.getElementById('gift-message-input')?.value.trim() || '';
 
-        console.log('[Watch Live App] 发送礼物:', selectedGifts);
+        console.log('[Watch Live App] ส่งของขวัญ:', selectedGifts);
 
         // 构建礼物描述
         const giftDescriptions = selectedGifts
@@ -2150,11 +2046,11 @@ if (typeof window.WatchLiveApp === 'undefined') {
           .join('，');
 
         // 构建消息
-        let message = `用户正在观看直播，并打赏礼物"${giftDescriptions}"，花费"${totalAmount}元"`;
+        let message = `ผู้ใช้กำลังรับชมไลฟ์ และส่งของขวัญ "${giftDescriptions}" มูลค่า "${totalAmount} หยวน"`;
         if (giftMessage) {
-          message += `，用户打赏留言为"${giftMessage}"`;
+          message += ` ข้อความโดเนท: "${giftMessage}"`;
         }
-        message += `，请勿重复或替用户发送弹幕。请按照正确的直播格式要求生成本场人数，直播内容，其余弹幕，打赏和推荐互动。此次回复内仅生成一次本场人数和直播内容格式，直播内容需要简洁。最后需要生成四条推荐互动，内容为用户可能会发送的弹幕。禁止使用错误格式。
+        message += ` ห้ามส่งข้อความซ้ำหรือส่งแทนผู้ใช้ โปรดสร้างข้อมูลตามรูปแบบที่ถูกต้อง: จำนวนผู้ชม เนื้อหาการไลฟ์ ข้อความแชทอื่น ๆ การโดเนท และการโต้ตอบที่แนะนำ ในการตอบกลับครั้งนี้ให้สร้างรูปแบบจำนวนผู้ชมและเนื้อหาไลฟ์เพียงครั้งเดียว เนื้อหาต้องกระชับ ท้ายสุดให้สร้างข้อความแนะนำ 4 ข้อความ ซึ่งเป็นสิ่งที่ผู้ใช้อาจพิมพ์ส่งไป ห้ามใช้รูปแบบที่ผิด
 `;
 
         // 添加打赏格式 - 每种礼物一条记录
@@ -2174,11 +2070,11 @@ if (typeof window.WatchLiveApp === 'undefined') {
         this.resetGiftModal();
         this.hideAllModals();
 
-        console.log('[Watch Live App] 礼物已发送');
-        this.showToast('礼物发送成功！', 'success');
+        console.log('[Watch Live App] ส่งของขวัญเรียบร้อยแล้ว');
+        this.showToast('ส่งของขวัญสำเร็จ!', 'success');
       } catch (error) {
-        console.error('[Watch Live App] 发送礼物失败:', error);
-        this.showToast('发送礼物失败: ' + error.message, 'error');
+        console.error('[Watch Live App] ส่งของขวัญล้มเหลว:', error);
+        this.showToast('ส่งของขวัญล้มเหลว: ' + error.message, 'error');
       }
     }
 
@@ -2245,16 +2141,16 @@ if (typeof window.WatchLiveApp === 'undefined') {
      */
     async setRenderingRight(type) {
       try {
-        console.log(`[Watch Live App] 设置渲染权为: ${type}`);
+        console.log(`[Watch Live App] ตั้งค่าสิทธิ์การเรนเดอร์เป็น: ${type}`);
 
         if (!window.mobileContextEditor) {
-          console.warn('[Watch Live App] 上下文编辑器未就绪，无法设置渲染权');
+          console.warn('[Watch Live App] โปรแกรมแก้ไขบริบทไม่พร้อม ไม่สามารถตั้งค่าสิทธิ์การเรนเดอร์');
           return false;
         }
 
         const chatData = window.mobileContextEditor.getCurrentChatData();
         if (!chatData || !chatData.messages || chatData.messages.length === 0) {
-          console.warn('[Watch Live App] 无聊天数据，无法设置渲染权');
+          console.warn('[Watch Live App] ไม่พบข้อมูลแชท ไม่สามารถตั้งค่าสิทธิ์การเรนเดอร์');
           return false;
         }
 
@@ -2262,8 +2158,8 @@ if (typeof window.WatchLiveApp === 'undefined') {
         let originalContent = firstMessage.mes || '';
 
         // 检查是否已经包含渲染权标记
-        const renderingRightRegex = /<!-- LIVE_RENDERING_RIGHT_START -->([\s\S]*?)<!-- LIVE_RENDERING_RIGHT_END -->/;
-        const renderingRightSection = `<!-- LIVE_RENDERING_RIGHT_START -->\n[直播渲染权: ${type}]\n<!-- LIVE_RENDERING_RIGHT_END -->`;
+        const renderingRightRegex = /([\s\S]*?)/;
+        const renderingRightSection = `\n[直播渲染权: ${type}]\n`;
 
         if (renderingRightRegex.test(originalContent)) {
           // 更新现有的渲染权标记
@@ -2276,14 +2172,14 @@ if (typeof window.WatchLiveApp === 'undefined') {
         // 更新第1楼层
         const success = await window.mobileContextEditor.modifyMessage(0, originalContent);
         if (success) {
-          console.log(`[Watch Live App] ✅ 渲染权已设置为: ${type}`);
+          console.log(`[Watch Live App] ✅ ตั้งค่าสิทธิ์การเรนเดอร์สำเร็จ: ${type}`);
           return true;
         } else {
-          console.error('[Watch Live App] 设置渲染权失败');
+          console.error('[Watch Live App] ตั้งค่าสิทธิ์การเรนเดอร์ล้มเหลว');
           return false;
         }
       } catch (error) {
-        console.error('[Watch Live App] 设置渲染权时出错:', error);
+        console.error('[Watch Live App] เกิดข้อผิดพลาดขณะตั้งค่าสิทธิ์การเรนเดอร์:', error);
         return false;
       }
     }
@@ -2305,126 +2201,125 @@ if (typeof window.WatchLiveApp === 'undefined') {
         const firstMessage = chatData.messages[0];
         const content = firstMessage.mes || '';
 
-        const renderingRightRegex =
-          /<!-- LIVE_RENDERING_RIGHT_START -->\s*\[直播渲染权:\s*(\w+)\]\s*<!-- LIVE_RENDERING_RIGHT_END -->/;
+        const renderingRightRegex = /\s*\[直播渲染权:\s*(\w+)\]\s*/;
         const match = content.match(renderingRightRegex);
 
         return match ? match[1] : null;
       } catch (error) {
-        console.error('[Watch Live App] 获取渲染权时出错:', error);
+        console.error('[Watch Live App] เกิดข้อผิดพลาดขณะดึงสิทธิ์การเรนเดอร์:', error);
         return null;
       }
     }
 
     /**
-     * 清除渲染权
+     * ล้างสิทธิ์การเรนเดอร์ (Clear Rendering Right)
      */
     async clearRenderingRight() {
       try {
-        console.log('[Watch Live App] 清除渲染权');
+        console.log('[Watch Live App] ล้างสิทธิ์การเรนเดอร์');
 
         if (!window.mobileContextEditor) {
-          console.warn('[Watch Live App] 上下文编辑器未就绪，无法清除渲染权');
+          console.warn('[Watch Live App] ตัวแก้ไขบริบท (Context Editor) ไม่พร้อม ไม่สามารถล้างสิทธิ์การเรนเดอร์ได้');
           return false;
         }
 
         const chatData = window.mobileContextEditor.getCurrentChatData();
         if (!chatData || !chatData.messages || chatData.messages.length === 0) {
-          console.warn('[Watch Live App] 无聊天数据，无法清除渲染权');
+          console.warn('[Watch Live App] ไม่พบข้อมูลแชท ไม่สามารถล้างสิทธิ์การเรนเดอร์ได้');
           return false;
         }
 
         const firstMessage = chatData.messages[0];
         let originalContent = firstMessage.mes || '';
 
-        // 移除渲染权标记
-        const renderingRightRegex =
-          /<!-- LIVE_RENDERING_RIGHT_START -->([\s\S]*?)<!-- LIVE_RENDERING_RIGHT_END -->\s*\n*/;
+        // ลบแท็กสิทธิ์การเรนเดอร์ออก
+        const renderingRightRegex = /([\s\S]*?)\s*\n*/;
         if (renderingRightRegex.test(originalContent)) {
           originalContent = originalContent.replace(renderingRightRegex, '').trim();
 
-          // 更新第1楼层
+          // อัปเดตข้อความในชั้นที่ 1 (First floor/message)
           const success = await window.mobileContextEditor.modifyMessage(0, originalContent);
           if (success) {
-            console.log('[Watch Live App] ✅ 渲染权已清除');
+            console.log('[Watch Live App] ✅ ล้างสิทธิ์การเรนเดอร์เรียบร้อยแล้ว');
             return true;
           } else {
-            console.error('[Watch Live App] 清除渲染权失败');
+            console.error('[Watch Live App] ล้างสิทธิ์การเรนเดอร์ล้มเหลว');
             return false;
           }
         } else {
-          console.log('[Watch Live App] 没有找到渲染权标记');
+          console.log('[Watch Live App] ไม่พบเครื่องหมายสิทธิ์การเรนเดอร์');
           return true;
         }
       } catch (error) {
-        console.error('[Watch Live App] 清除渲染权时出错:', error);
+        console.error('[Watch Live App] เกิดข้อผิดพลาดขณะล้างสิทธิ์การเรนเดอร์:', error);
         return false;
       }
     }
 
     /**
-     * 发送消息到SillyTavern
+     * ส่งข้อความไปยัง SillyTavern
      */
     async sendToSillyTavern(message) {
       try {
-        console.log('[Live App] 发送消息到SillyTavern:', message);
+        console.log('[Live App] ส่งข้อความไปยัง SillyTavern:', message);
 
-        // 尝试找到文本输入框
+        // พยายามหากล่องรับข้อความ
         const textarea = document.querySelector('#send_textarea');
         if (!textarea) {
-          console.error('[Live App] 未找到消息输入框');
-          throw new Error('未找到消息输入框');
+          console.error('[Live App] ไม่พบกล่องข้อความ');
+          throw new Error('ไม่พบกล่องข้อความ');
         }
 
-        // 设置消息内容
+        // กำหนดเนื้อหาข้อความ
         textarea.value = message;
         textarea.focus();
 
-        // 触发输入事件
+        // กระตุ้น event input
         textarea.dispatchEvent(new Event('input', { bubbles: true }));
 
-        // 触发发送按钮点击
+        // กระตุ้นการคลิกปุ่มส่ง
         const sendButton = document.querySelector('#send_but');
         if (sendButton) {
           sendButton.click();
-          console.log('[Live App] 已点击发送按钮');
+          console.log('[Live App] คลิกปุ่มส่งแล้ว');
           return true;
         }
 
-        throw new Error('未找到发送按钮');
+        throw new Error('ไม่พบปุ่มส่งข้อความ');
       } catch (error) {
-        console.error('[Live App] 发送消息时出错:', error);
+        console.error('[Live App] เกิดข้อผิดพลาดขณะส่งข้อความ:', error);
         throw error;
       }
     }
 
     /**
-     * 将直播格式转换为直播历史格式
+     * แปลงรูปแบบไลฟ์เป็นรูปแบบประวัติไลฟ์
+     * (เพื่อให้ระบบรู้ว่าเป็นไลฟ์ที่จบไปแล้ว)
      */
     async convertLiveToHistory() {
       try {
-        console.log('[Watch Live App] 开始转换直播格式为直播历史格式');
+        console.log('[Watch Live App] เริ่มแปลงรูปแบบไลฟ์เป็นรูปแบบประวัติไลฟ์');
 
-        // 获取当前聊天数据
+        // ดึงข้อมูลแชทปัจจุบัน
         const contextData = this.getChatData();
         if (!contextData || contextData.length === 0) {
-          console.log('[Watch Live App] 没有找到聊天数据');
+          console.log('[Watch Live App] ไม่พบข้อมูลแชท');
           return;
         }
 
-        // 查找包含直播内容的消息
+        // ค้นหาข้อความที่มีเนื้อหาไลฟ์
         let hasLiveContent = false;
         let updatedCount = 0;
-        const messagesToUpdate = []; // 收集需要更新的消息
+        const messagesToUpdate = []; // รวบรวมข้อความที่ต้องอัปเดต
 
-        // 第一遍：收集所有需要转换的消息
+        // รอบที่ 1: รวบรวมข้อความทั้งหมดที่ต้องแปลง
         for (let i = 0; i < contextData.length; i++) {
           const message = contextData[i];
           const content = message.mes || message.content || '';
 
           if (content.includes('[直播|')) {
             hasLiveContent = true;
-            // 转换格式
+            // แปลงรูปแบบ
             const convertedContent = this.convertLiveFormats(content);
 
             if (convertedContent !== content) {
@@ -2438,18 +2333,18 @@ if (typeof window.WatchLiveApp === 'undefined') {
         }
 
         if (!hasLiveContent) {
-          console.log('[Watch Live App] 没有找到需要转换的直播内容');
+          console.log('[Watch Live App] ไม่พบเนื้อหาไลฟ์ที่ต้องแปลง');
           return;
         }
 
-        // 第二遍：批量更新消息，减少频繁的DOM操作和保存
-        console.log(`[Watch Live App] 开始批量更新 ${messagesToUpdate.length} 条消息`);
+        // รอบที่ 2: อัปเดตข้อความแบบกลุ่ม ลดการจัดการ DOM และการบันทึกที่บ่อยเกินไป
+        console.log(`[Watch Live App] เริ่มอัปเดตข้อความแบบกลุ่มจำนวน ${messagesToUpdate.length} ข้อความ`);
 
-        // 临时禁用自动保存机制，避免每次更新都触发保存
+        // ปิดการบันทึกอัตโนมัติชั่วคราว เพื่อป้องกันการบันทึกซ้ำซ้อน
         const originalSaveChatDebounced = window.saveChatDebounced;
         const originalSaveChatConditional = window.saveChatConditional;
 
-        // 临时替换为空函数
+        // แทนที่ด้วยฟังก์ชันว่างชั่วคราว
         if (window.saveChatDebounced) {
           window.saveChatDebounced = () => {};
         }
@@ -2459,17 +2354,17 @@ if (typeof window.WatchLiveApp === 'undefined') {
 
         try {
           for (const messageUpdate of messagesToUpdate) {
-            // 批量处理时跳过自动保存，避免频繁保存
+            // ข้ามการบันทึกอัตโนมัติขณะประมวลผลแบบกลุ่ม
             const success = await this.updateMessageContent(messageUpdate.index, messageUpdate.convertedContent, true);
             if (success) {
               updatedCount++;
               console.log(
-                `[Watch Live App] 已转换消息 ${messageUpdate.index}，原始长度: ${messageUpdate.originalContent.length}，转换后长度: ${messageUpdate.convertedContent.length}`,
+                `[Watch Live App] แปลงข้อความที่ ${messageUpdate.index} แล้ว, ความยาวเดิม: ${messageUpdate.originalContent.length}, ความยาวใหม่: ${messageUpdate.convertedContent.length}`,
               );
             }
           }
         } finally {
-          // 恢复原始的保存函数
+          // คืนค่าฟังก์ชันบันทึกเดิม
           if (originalSaveChatDebounced) {
             window.saveChatDebounced = originalSaveChatDebounced;
           }
@@ -2478,35 +2373,36 @@ if (typeof window.WatchLiveApp === 'undefined') {
           }
         }
 
-        console.log(`[Watch Live App] 直播格式转换完成，共更新了 ${updatedCount} 条消息`);
+        console.log(`[Watch Live App] การแปลงรูปแบบไลฟ์เสร็จสมบูรณ์ อัปเดตไปทั้งหมด ${updatedCount} ข้อความ`);
 
-        // 只在最后保存一次聊天数据，避免频繁保存导致卡顿
+        // บันทึกข้อมูลแชทเพียงครั้งเดียวในตอนท้าย
         if (updatedCount > 0) {
           await this.saveChatData();
-          console.log('[Watch Live App] 转换完成并已保存聊天数据');
+          console.log('[Watch Live App] แปลงเสร็จสิ้นและบันทึกข้อมูลแชทแล้ว');
         }
       } catch (error) {
-        console.error('[Watch Live App] 转换直播格式失败:', error);
-        this.showToast('转换直播格式失败: ' + error.message, 'error');
+        console.error('[Watch Live App] แปลงรูปแบบไลฟ์ล้มเหลว:', error);
+        this.showToast('แปลงรูปแบบไลฟ์ล้มเหลว: ' + error.message, 'error');
       }
     }
 
     /**
-     * 转换直播格式字符串
+     * ฟังก์ชันแปลง string รูปแบบไลฟ์
+     * หมายเหตุ: ส่วนที่เป็น Regex และ Tag (เช่น [直播|...]) ต้องคงภาษาจีนไว้ตาม Logic เดิมของระบบ
      */
     convertLiveFormats(content) {
       let convertedContent = content;
       let conversionCount = 0;
 
-      // 转换弹幕格式: [直播|用户|弹幕|内容] -> [直播历史|用户|弹幕|内容]
+      // แปลงรูปแบบข้อความวิ่ง (Danmaku): [直播|用户|弹幕|内容] -> [直播历史|用户|弹幕|内容]
       const danmuMatches = convertedContent.match(/\[直播\|([^|]+)\|弹幕\|([^\]]+)\]/g);
       if (danmuMatches) {
         convertedContent = convertedContent.replace(/\[直播\|([^|]+)\|弹幕\|([^\]]+)\]/g, '[直播历史|$1|弹幕|$2]');
         conversionCount += danmuMatches.length;
       }
 
-      // 转换礼物格式: [直播|用户|礼物|内容] -> [直播历史|用户|礼物|内容]
-      // 转换打赏格式: [直播|用户|打赏|内容] -> [直播历史|用户|打赏|内容]
+      // แปลงรูปแบบของขวัญ: [直播|用户|礼物|内容] -> [直播历史|用户|礼物|内容]
+      // แปลงรูปแบบการโดเนท: [直播|用户|打赏|内容] -> [直播历史|用户|打赏|内容]
       const giftMatches = convertedContent.match(/\[直播\|([^|]+)\|(?:礼物|打赏)\|([^\]]+)\]/g);
       if (giftMatches) {
         convertedContent = convertedContent.replace(/\[直播\|([^|]+)\|礼物\|([^\]]+)\]/g, '[直播历史|$1|礼物|$2]');
@@ -2514,31 +2410,31 @@ if (typeof window.WatchLiveApp === 'undefined') {
         conversionCount += giftMatches.length;
       }
 
-      // 转换推荐互动格式: [直播|推荐互动|内容] -> [直播历史|推荐互动|内容]
+      // แปลงรูปแบบการโต้ตอบแนะนำ: [直播|推荐互动|内容] -> [直播历史|推荐互动|内容]
       const recommendMatches = convertedContent.match(/\[直播\|推荐互动\|([^\]]+)\]/g);
       if (recommendMatches) {
         convertedContent = convertedContent.replace(/\[直播\|推荐互动\|([^\]]+)\]/g, '[直播历史|推荐互动|$1]');
         conversionCount += recommendMatches.length;
       }
 
-      // 转换本场人数格式: [直播|本场人数|数字] -> [直播历史|本场人数|数字]
+      // แปลงรูปแบบจำนวนผู้ชม: [直播|本场人数|数字] -> [直播历史|本场人数|数字]
       const audienceMatches = convertedContent.match(/\[直播\|本场人数\|([^\]]+)\]/g);
       if (audienceMatches) {
         convertedContent = convertedContent.replace(/\[直播\|本场人数\|([^\]]+)\]/g, '[直播历史|本场人数|$1]');
         conversionCount += audienceMatches.length;
       }
 
-      // 转换直播内容格式: [直播|直播内容|内容] -> [直播历史|直播内容|内容]
+      // แปลงรูปแบบเนื้อหาไลฟ์: [直播|直播内容|内容] -> [直播历史|直播内容|内容]
       const contentMatches = convertedContent.match(/\[直播\|直播内容\|([^\]]+)\]/g);
       if (contentMatches) {
         convertedContent = convertedContent.replace(/\[直播\|直播内容\|([^\]]+)\]/g, '[直播历史|直播内容|$1]');
         conversionCount += contentMatches.length;
       }
 
-      // 转换其他可能的直播格式 (兼容旧格式)
+      // แปลงรูปแบบอื่นๆ ที่อาจเป็นไปได้ (รองรับรูปแบบเก่า)
       const otherMatches = convertedContent.match(/\[直播\|([^|]+)\|([^\]]+)\]/g);
       if (otherMatches) {
-        // 排除已经处理过的格式
+        // กรองรูปแบบที่ถูกประมวลผลไปแล้วออก
         const filteredMatches = otherMatches.filter(
           match =>
             !match.includes('弹幕|') &&
@@ -2566,29 +2462,29 @@ if (typeof window.WatchLiveApp === 'undefined') {
         }
       }
 
-      // 移除单个消息转换的日志，避免批量处理时重复输出
+      // ลบ log การแปลงข้อความเดี่ยว เพื่อไม่ให้รก console
       // if (conversionCount > 0) {
-      //   console.log(`[Watch Live App] 转换了 ${conversionCount} 个直播格式`);
+      //    console.log(`[Watch Live App] แปลงรูปแบบไลฟ์ไปแล้ว ${conversionCount} รายการ`);
       // }
 
       return convertedContent;
     }
 
     /**
-     * 更新消息内容
-     * @param {number} messageIndex - 消息索引
-     * @param {string} newContent - 新内容
-     * @param {boolean} skipAutoSave - 是否跳过自动保存（用于批量处理）
+     * อัปเดตเนื้อหาข้อความ
+     * @param {number} messageIndex - ดัชนีข้อความ
+     * @param {string} newContent - เนื้อหาใหม่
+     * @param {boolean} skipAutoSave - ข้ามการบันทึกอัตโนมัติหรือไม่ (สำหรับ batch processing)
      */
     async updateMessageContent(messageIndex, newContent, skipAutoSave = false) {
       try {
-        // 简化日志输出，避免批量处理时过多日志
-        console.log(`[Watch Live App] 正在更新消息 ${messageIndex}`);
+        // ลด log output เพื่อไม่ให้รก
+        console.log(`[Watch Live App] กำลังอัปเดตข้อความที่ ${messageIndex}`);
 
-        // 方法1: 使用与getChatData相同的方法获取chat数组（推荐，不会触发自动保存）
+        // วิธีที่ 1: ใช้ getChatData เพื่อดึง array chat (แนะนำ วิธีนี้จะไม่ trigger auto-save)
         let chat = null;
 
-        // 优先使用SillyTavern.getContext().chat
+        // ลองใช้ SillyTavern.getContext().chat ก่อน
         if (
           typeof window !== 'undefined' &&
           window.SillyTavern &&
@@ -2600,117 +2496,121 @@ if (typeof window.WatchLiveApp === 'undefined') {
           }
         }
 
-        // 如果上面的方法失败，尝试从全局变量获取
+        // ถ้าไม่เจอ ให้ลองดึงจาก global variable
         if (!chat) {
           chat = window['chat'];
         }
 
         if (chat && Array.isArray(chat)) {
-          // 添加边界检查
+          // ตรวจสอบขอบเขต
           if (messageIndex < 0 || messageIndex >= chat.length) {
-            console.warn(`[Watch Live App] 消息索引 ${messageIndex} 超出范围，chat数组长度: ${chat.length}`);
+            console.warn(`[Watch Live App] ดัชนีข้อความ ${messageIndex} อยู่นอกขอบเขต, ความยาว chat: ${chat.length}`);
             return false;
           }
 
           if (!chat[messageIndex]) {
-            console.warn(`[Watch Live App] 消息索引 ${messageIndex} 处的消息不存在`);
+            console.warn(`[Watch Live App] ไม่พบข้อความที่ดัชนี ${messageIndex}`);
             return false;
           }
 
           const originalContent = chat[messageIndex].mes || '';
           chat[messageIndex].mes = newContent;
 
-          // 如果消息有swipes，也需要更新
+          // ถ้าข้อความมี swipes ต้องอัปเดตด้วย
           if (chat[messageIndex].swipes && chat[messageIndex].swipe_id !== undefined) {
             chat[messageIndex].swipes[chat[messageIndex].swipe_id] = newContent;
           }
 
-          // 标记聊天数据已被修改
+          // ทำเครื่องหมายว่าข้อมูลแชทมีการเปลี่ยนแปลง
           if (window.chat_metadata) {
             window.chat_metadata.tainted = true;
           }
 
           console.log(
-            `[Watch Live App] 已更新消息 ${messageIndex}，原内容长度:${originalContent.length}，新内容长度:${newContent.length}`,
+            `[Watch Live App] อัปเดตข้อความที่ ${messageIndex} แล้ว, ความยาวเดิม:${originalContent.length}, ความยาวใหม่:${newContent.length}`,
           );
           return true;
         }
 
-        // 添加调试信息
-        console.warn(`[Watch Live App] 无法访问chat数组，chat类型: ${typeof chat}, 是否为数组: ${Array.isArray(chat)}`);
+        // ข้อมูล Debug
+        console.warn(
+          `[Watch Live App] ไม่สามารถเข้าถึงอาร์เรย์ chat, ประเภท chat: ${typeof chat}, เป็น Array ไหม: ${Array.isArray(
+            chat,
+          )}`,
+        );
         if (chat && Array.isArray(chat)) {
-          console.warn(`[Watch Live App] chat数组长度: ${chat.length}, 请求的消息索引: ${messageIndex}`);
+          console.warn(`[Watch Live App] ความยาว chat: ${chat.length}, ดัชนีที่ขอ: ${messageIndex}`);
         }
 
-        // 如果直接方法失败，尝试备用方法（即使在批量处理时也要尝试）
-        // 方法2: 尝试通过编辑器功能更新（可能会触发自动保存）
+        // ถ้าวิธีตรงๆ ล้มเหลว ให้ลองวิธีสำรอง (แม้จะเป็น batch processing ก็ตาม)
+        // วิธีที่ 2: ลองใช้ mobileContextEditor (อาจ trigger auto-save)
         if (window.mobileContextEditor && window.mobileContextEditor.modifyMessage) {
           try {
             await window.mobileContextEditor.modifyMessage(messageIndex, newContent);
-            console.log(`[Watch Live App] 已通过mobileContextEditor更新消息 ${messageIndex}`);
+            console.log(`[Watch Live App] อัปเดตข้อความ ${messageIndex} ผ่าน mobileContextEditor แล้ว`);
             return true;
           } catch (error) {
-            console.warn(`[Watch Live App] mobileContextEditor更新失败:`, error);
+            console.warn(`[Watch Live App] mobileContextEditor อัปเดตล้มเหลว:`, error);
           }
         }
 
-        // 方法3: 尝试通过context-editor更新（可能会触发自动保存）
+        // วิธีที่ 3: ลองใช้ contextEditor (อาจ trigger auto-save)
         if (window.contextEditor && window.contextEditor.modifyMessage) {
           try {
             await window.contextEditor.modifyMessage(messageIndex, newContent);
-            console.log(`[Watch Live App] 已通过contextEditor更新消息 ${messageIndex}`);
+            console.log(`[Watch Live App] อัปเดตข้อความ ${messageIndex} ผ่าน contextEditor แล้ว`);
             return true;
           } catch (error) {
-            console.warn(`[Watch Live App] contextEditor更新失败:`, error);
+            console.warn(`[Watch Live App] contextEditor อัปเดตล้มเหลว:`, error);
           }
         }
 
-        console.warn('[Watch Live App] 没有找到有效的消息更新方法');
+        console.warn('[Watch Live App] ไม่พบวิธีอัปเดตข้อความที่ใช้งานได้');
         return false;
       } catch (error) {
-        console.error('[Watch Live App] 更新消息内容失败:', error);
+        console.error('[Watch Live App] อัปเดตเนื้อหาข้อความล้มเหลว:', error);
         return false;
       }
     }
 
     /**
-     * 保存聊天数据
+     * บันทึกข้อมูลแชท
      */
     async saveChatData() {
       try {
-        console.log('[Live App] 开始保存聊天数据...');
+        console.log('[Live App] เริ่มบันทึกข้อมูลแชท...');
 
-        // 方法1: 使用SillyTavern的保存函数
+        // วิธีที่ 1: ใช้ฟังก์ชัน save ของ SillyTavern
         if (typeof window.saveChatConditional === 'function') {
           await window.saveChatConditional();
-          console.log('[Live App] 已通过saveChatConditional保存聊天数据');
+          console.log('[Live App] บันทึกข้อมูลแชทผ่าน saveChatConditional แล้ว');
           return true;
         }
 
-        // 方法2: 使用延迟保存
+        // วิธีที่ 2: ใช้การบันทึกแบบหน่วงเวลา (Debounced)
         if (typeof window.saveChatDebounced === 'function') {
           window.saveChatDebounced();
-          console.log('[Live App] 已通过saveChatDebounced保存聊天数据');
-          // 等待一下确保保存完成
+          console.log('[Live App] บันทึกข้อมูลแชทผ่าน saveChatDebounced แล้ว');
+          // รอสักครู่เพื่อให้แน่ใจว่าบันทึกเสร็จ
           await new Promise(resolve => setTimeout(resolve, 1000));
           return true;
         }
 
-        // 方法3: 使用编辑器的保存功能
+        // วิธีที่ 3: ใช้ฟังก์ชันบันทึกของ Editor
         if (window.mobileContextEditor && typeof window.mobileContextEditor.saveChatData === 'function') {
           await window.mobileContextEditor.saveChatData();
-          console.log('[Live App] 已通过mobileContextEditor保存聊天数据');
+          console.log('[Live App] บันทึกข้อมูลแชทผ่าน mobileContextEditor แล้ว');
           return true;
         }
 
-        // 方法4: 使用context-editor的保存功能
+        // วิธีที่ 4: ใช้ฟังก์ชันบันทึกของ context-editor
         if (window.contextEditor && typeof window.contextEditor.saveChatData === 'function') {
           await window.contextEditor.saveChatData();
-          console.log('[Live App] 已通过contextEditor保存聊天数据');
+          console.log('[Live App] บันทึกข้อมูลแชทผ่าน contextEditor แล้ว');
           return true;
         }
 
-        // 方法5: 尝试手动保存
+        // วิธีที่ 5: พยายามบันทึกด้วยตัวเอง (Manual AJAX)
         try {
           if (window.jQuery && window.chat && window.this_chid) {
             const response = await window.jQuery.ajax({
@@ -2726,27 +2626,27 @@ if (typeof window.WatchLiveApp === 'undefined') {
               dataType: 'json',
               contentType: 'application/json',
             });
-            console.log('[Live App] 已通过手动AJAX保存聊天数据');
+            console.log('[Live App] บันทึกข้อมูลแชทผ่าน Manual AJAX แล้ว');
             return true;
           }
         } catch (ajaxError) {
-          console.warn('[Live App] 手动AJAX保存失败:', ajaxError);
+          console.warn('[Live App] Manual AJAX บันทึกล้มเหลว:', ajaxError);
         }
 
-        console.warn('[Live App] 没有找到有效的保存方法');
+        console.warn('[Live App] ไม่พบวิธีบันทึกที่ใช้งานได้');
         return false;
       } catch (error) {
-        console.error('[Live App] 保存聊天数据失败:', error);
+        console.error('[Live App] บันทึกข้อมูลแชทล้มเหลว:', error);
         return false;
       }
     }
 
     /**
-     * 获取聊天数据
+     * ดึงข้อมูลแชท
      */
     getChatData() {
       try {
-        // 优先使用SillyTavern.getContext().chat
+        // ลองใช้ SillyTavern.getContext().chat ก่อน
         if (
           typeof window !== 'undefined' &&
           window.SillyTavern &&
@@ -2758,7 +2658,7 @@ if (typeof window.WatchLiveApp === 'undefined') {
           }
         }
 
-        // 尝试从全局变量获取
+        // ลองดึงจาก global variable
         const chat = window['chat'];
         if (chat && Array.isArray(chat)) {
           return chat;
@@ -2766,19 +2666,19 @@ if (typeof window.WatchLiveApp === 'undefined') {
 
         return [];
       } catch (error) {
-        console.error('[Live App] 获取聊天数据失败:', error);
+        console.error('[Live App] ดึงข้อมูลแชทล้มเหลว:', error);
         return [];
       }
     }
 
     /**
-     * 更新header
+     * อัปเดตส่วนหัว (Header)
      */
     updateHeader() {
       if (window.mobilePhone && window.mobilePhone.updateAppHeader) {
         const state = {
-          app: 'watch-live', // 修复：使用正确的应用名称
-          title: this.currentView === 'live' ? 'กำลังดูไลฟ์สด' : 'ดูไลฟ์สด',
+          app: 'watch-live', // แก้ไข: ใช้ชื่อแอพที่ถูกต้อง
+          title: this.currentView === 'live' ? 'กำลังรับชมไลฟ์' : 'รับชมไลฟ์',
           view: this.currentView,
           viewerCount: this.stateManager.currentViewerCount,
         };
@@ -2787,7 +2687,7 @@ if (typeof window.WatchLiveApp === 'undefined') {
     }
 
     /**
-     * 显示提示消息
+     * แสดงข้อความแจ้งเตือน (Toast)
      */
     showToast(message, type = 'info') {
       const toast = document.createElement('div');
@@ -2809,23 +2709,23 @@ if (typeof window.WatchLiveApp === 'undefined') {
     }
 
     /**
-     * 打字机效果：将文本逐字显示，速度适中
+     * เอฟเฟกต์เครื่องพิมพ์ดีด: แสดงข้อความทีละตัวอักษร ความเร็วปานกลาง
      */
     applyTypingEffect(element, fullText) {
-      // 若正在打字，先终止
+      // ถ้ากำลังพิมพ์อยู่ ให้หยุดก่อน
       if (this.typingTimer) {
         clearInterval(this.typingTimer);
         this.typingTimer = null;
       }
 
-      // 若内容相同且元素已经显示完整文本，则不重复打字
+      // ถ้าเนื้อหาเหมือนเดิมและแสดงผลครบแล้ว ไม่ต้องพิมพ์ซ้ำ
       if (element.getAttribute('data-full-text') === fullText && element.textContent === fullText) {
         return;
       }
 
       element.setAttribute('data-full-text', fullText);
       element.textContent = '';
-      // 确保从顶部开始可见
+      // ตรวจสอบให้แน่ใจว่าเริ่มแสดงจากด้านบน
       if (typeof element.scrollTop === 'number') {
         element.scrollTop = 0;
       }
@@ -2833,11 +2733,11 @@ if (typeof window.WatchLiveApp === 'undefined') {
 
       const chars = Array.from(fullText);
       let index = 0;
-      const stepMsHead = 35; // 前100字：逐字
-      const stepMsTailChunk = 18; // 尾部：较快的块状显示（非逐字）
-      const tailChunkSize = 6; // 每次追加的字符数（流畅但不突兀）
+      const stepMsHead = 35; // 100 ตัวอักษรแรก: ทีละตัว
+      const stepMsTailChunk = 18; // ส่วนท้าย: แสดงเป็นกลุ่ม (ไม่ทีละตัว)
+      const tailChunkSize = 6; // จำนวนตัวอักษรที่เพิ่มต่อครั้ง (ลื่นไหลแต่ไม่กระตุก)
 
-      // 在开始打字前确保滚动位置合理
+      // ก่อนเริ่มพิมพ์ ตรวจสอบตำแหน่ง scroll
       const danmakuContainer = document.getElementById('danmaku-container');
       if (danmakuContainer) {
         this.jumpToBottomIfNeeded(danmakuContainer);
@@ -2852,15 +2752,15 @@ if (typeof window.WatchLiveApp === 'undefined') {
         }
 
         if (index < 100) {
-          // 前100字逐字
+          // 100 ตัวแรกพิมพ์ทีละตัว
           element.textContent += chars[index++];
         } else {
-          // 之后采用块状追加
+          // หลังจากนั้นเพิ่มเป็นกลุ่ม
           const end = Math.min(index + tailChunkSize, chars.length);
           const slice = chars.slice(index, end).join('');
           element.textContent += slice;
           index = end;
-          // 动态调整节奏：短暂停顿营造流畅感
+          // ปรับจังหวะ: หยุดชั่วคราวเพื่อความลื่นไหล
           clearInterval(this.typingTimer);
           this.typingTimer = setInterval(() => {
             if (index >= chars.length) {
@@ -2884,15 +2784,15 @@ if (typeof window.WatchLiveApp === 'undefined') {
     }
 
     /**
-     * 销毁应用，清理资源
+     * ทำลายแอพพลิเคชั่น ล้างทรัพยากร
      */
     destroy() {
-      console.log('[Live App] 销毁应用，清理资源');
+      console.log('[Live App] ทำลายแอพพลิเคชั่นและล้างทรัพยากร');
 
-      // 停止监听
+      // หยุดการฟังเหตุการณ์
       this.eventListener.stopListening();
 
-      // 清理定时器
+      // ล้างตัวจับเวลา (Timer)
       if (this.scrollTimeout) {
         clearTimeout(this.scrollTimeout);
         this.scrollTimeout = null;
@@ -2902,37 +2802,37 @@ if (typeof window.WatchLiveApp === 'undefined') {
         this.typingTimer = null;
       }
 
-      // 清空状态
+      // ล้างข้อมูลสถานะ
       this.stateManager.clearAllData();
 
-      // 重置状态
+      // รีเซ็ตสถานะ
       this.isInitialized = false;
       this.currentView = 'start';
     }
 
     /**
-     * 从最新楼层提取文本（优先使用 getChatMessages 接口）
+     * ดึงข้อความจากชั้นล่าสุด (ปลอดภัย) - (เน้นใช้ interface getChatMessages)
      */
     getLatestFloorTextSafe() {
       try {
         const gm = (typeof window !== 'undefined' && (window.getChatMessages || globalThis.getChatMessages)) || null;
         if (typeof gm === 'function') {
-          // 仅取最新楼层，优先 assistant
+          // เอาเฉพาะชั้นล่าสุด เน้นบทบาท assistant
           const latestAssistant = gm(-1, { role: 'assistant' });
           if (Array.isArray(latestAssistant) && latestAssistant.length > 0 && latestAssistant[0]?.message) {
             return latestAssistant[0].message;
           }
-          // 退化为任意角色
+          // ถอยไปใช้บทบาทใดก็ได้
           const latestAny = gm(-1);
           if (Array.isArray(latestAny) && latestAny.length > 0 && latestAny[0]?.message) {
             return latestAny[0].message;
           }
         }
       } catch (e) {
-        console.warn('[Live App] 获取最新楼层文本失败（getChatMessages）:', e);
+        console.warn('[Live App] ดึงข้อความชั้นล่าสุดล้มเหลว (getChatMessages):', e);
       }
 
-      // 兜底：从上下文数组拿最后一条
+      // วิธีสำรอง: ดึงจาก array context ตัวสุดท้าย
       try {
         if (
           typeof window !== 'undefined' &&
@@ -2946,12 +2846,12 @@ if (typeof window.WatchLiveApp === 'undefined') {
           }
         }
       } catch (e2) {
-        console.warn('[Live App] 获取最新楼层文本失败（chat兜底）:', e2);
+        console.warn('[Live App] ดึงข้อความชั้นล่าสุดล้มเหลว (chat backup):', e2);
       }
       return '';
     }
 
-    /** 生成弹幕签名（稳定，不含时间） */
+    /** สร้างลายเซ็นข้อความวิ่ง (เสถียร, ไม่รวมเวลา) */
     createDanmakuSignature(item) {
       const username = (item && item.username) || '';
       const content = (item && item.content) || '';
@@ -2959,20 +2859,20 @@ if (typeof window.WatchLiveApp === 'undefined') {
       return `${username}|${content}|${type}`;
     }
 
-    /** 生成礼物签名（稳定，不含时间） */
+    /** สร้างลายเซ็นของขวัญ (เสถียร, ไม่รวมเวลา) */
     createGiftSignature(item) {
       const username = (item && item.username) || '';
       const gift = (item && (item.gift || item.content)) || '';
       return `${username}|${gift}`;
     }
 
-    /** 按顺序逐条显示需要动画的弹幕与礼物 */
+    /** แสดงข้อความวิ่งและของขวัญที่ต้องมีแอนิเมชั่นตามลำดับ */
     runAppearSequence() {
       try {
         const danmakuList = document.getElementById('danmaku-list');
         if (danmakuList) {
           const nodes = Array.from(danmakuList.querySelectorAll('.danmaku-item.need-appear'));
-          // 初始渲染时先隐藏这些需要动画的节点（使用 display:none 避免空白）
+          // เรนเดอร์ครั้งแรกซ่อนโหนดที่ต้องมีแอนิเมชั่นก่อน (ใช้ display:none เลี่ยงพื้นที่ว่าง)
           nodes.forEach(el => {
             el.style.display = 'none';
           });
@@ -2988,38 +2888,38 @@ if (typeof window.WatchLiveApp === 'undefined') {
           this.sequentialReveal(giftNodes);
         }
 
-        // 清空待动画集合，避免重复动画
+        // ล้างรายการรอแอนิเมชั่น เพื่อไม่ให้เล่นซ้ำ
         this.pendingAppearDanmakuSigs.clear();
         this.pendingAppearGiftSigs.clear();
       } catch (e) {
-        console.warn('[Live App] 逐条出现动画执行失败:', e);
+        console.warn('[Live App] การรันลำดับแอนิเมชั่นล้มเหลว:', e);
       }
     }
 
-    /** 依次为节点添加 appear-init → appear-show（带间隔） */
+    /** ทยอยแสดงโหนดโดยเพิ่ม appear-init → appear-show (มีระยะห่าง) */
     sequentialReveal(nodes) {
       if (!nodes || nodes.length === 0) return;
 
-      // 初始状态（先隐藏，避免"跳一下"），随后统一交由 CSS 过渡
+      // สถานะเริ่มต้น (ซ่อนก่อน เลี่ยงการกระตุก) แล้วค่อยให้ CSS transition จัดการ
       nodes.forEach(el => {
         el.classList.remove('need-appear', 'appear-show');
         el.classList.add('appear-init');
-        // 使用 display:none 避免占位
+        // ใช้ display:none เลี่ยงการกินพื้นที่
         el.style.display = 'none';
       });
 
-      // 逐条显示：每条约 700ms 一条（更慢），单条过渡 ~300ms（参见CSS）
+      // ทยอยแสดง: ประมาณ 700ms ต่อรายการ (ช้าลง), transition เดี่ยว ~300ms (ดู CSS)
       const baseDelay = 150;
-      const stepDelay = 700; // ≈ 0.7 秒/条
+      const stepDelay = 700; // ≈ 0.7 วินาที/รายการ
       nodes.forEach((el, idx) => {
         setTimeout(() => {
-          // 显示并触发过渡
+          // แสดงและเริ่ม transition
           el.style.display = '';
-          // 强制触发一次 reflow，保证过渡生效
+          // บังคับ reflow เพื่อให้ transition ทำงาน
           // eslint-disable-next-line no-unused-expressions
           el.offsetHeight;
           el.classList.add('appear-show');
-          // 每条出现后，若容器存在则将其滚动到可见底部（瞬时，无动画）
+          // เมื่อแสดงแล้ว ถ้ามีคอนเทนเนอร์ให้เลื่อนลงมาล่างสุด (ทันที, ไม่มีแอนิเมชั่น)
           const container = document.getElementById('danmaku-container');
           if (container && el?.scrollIntoView) {
             el.scrollIntoView({ block: 'end', inline: 'nearest' });
@@ -3040,50 +2940,50 @@ if (typeof window.WatchLiveApp === 'undefined') {
     }
   }
 
-  // 创建全局实例
+  // สร้างอินสแตนซ์ global
   window.WatchLiveApp = WatchLiveApp;
   window.watchLiveApp = new WatchLiveApp();
-} // 结束类定义检查
+} // จบการตรวจสอบคลาส
 
-// 全局函数供调用
+// ฟังก์ชัน Global สำหรับเรียกใช้
 window.getWatchLiveAppContent = function () {
-  console.log('[Watch Live App] 获取观看直播应用内容');
+  console.log('[Watch Live App] ดึงเนื้อหาแอพรับชมไลฟ์');
 
   if (!window.watchLiveApp) {
-    console.error('[Watch Live App] watchLiveApp实例不存在');
-    return '<div class="error-message">观看直播应用加载失败</div>';
+    console.error('[Watch Live App] ไม่พบอินสแตนซ์ watchLiveApp');
+    return '<div class="error-message">โหลดแอพรับชมไลฟ์ล้มเหลว</div>';
   }
 
   try {
-    // 每次获取内容时都重新检测活跃直播状态
+    // ตรวจสอบสถานะไลฟ์ทุกครั้งที่ดึงเนื้อหา
     window.watchLiveApp.detectActiveLive();
     return window.watchLiveApp.getAppContent();
   } catch (error) {
-    console.error('[Watch Live App] 获取应用内容失败:', error);
-    return '<div class="error-message">观看直播应用内容加载失败</div>';
+    console.error('[Watch Live App] ดึงเนื้อหาแอพล้มเหลว:', error);
+    return '<div class="error-message">โหลดเนื้อหาแอพรับชมไลฟ์ล้มเหลว</div>';
   }
 };
 
 window.bindWatchLiveAppEvents = function () {
-  console.log('[Watch Live App] 绑定观看直播应用事件');
+  console.log('[Watch Live App] ผูกเหตุการณ์แอพรับชมไลฟ์');
 
   if (!window.watchLiveApp) {
-    console.error('[Watch Live App] watchLiveApp实例不存在');
+    console.error('[Watch Live App] ไม่พบอินสแตนซ์ watchLiveApp');
     return;
   }
 
   try {
-    // 延迟绑定，确保DOM完全加载
+    // หน่วงเวลาผูกเหตุการณ์เพื่อให้ DOM โหลดเสร็จ
     setTimeout(() => {
       window.watchLiveApp.bindEvents();
       window.watchLiveApp.updateHeader();
     }, 100);
   } catch (error) {
-    console.error('[Watch Live App] 绑定事件失败:', error);
+    console.error('[Watch Live App] ผูกเหตุการณ์ล้มเหลว:', error);
   }
 };
 
-// 其他全局函数
+// ฟังก์ชัน Global อื่นๆ
 window.watchLiveAppEndLive = function () {
   if (window.watchLiveApp) {
     window.watchLiveApp.endLive();
@@ -3105,80 +3005,81 @@ window.watchLiveAppHideModal = function (modalId) {
 window.watchLiveAppDestroy = function () {
   if (window.watchLiveApp) {
     window.watchLiveApp.destroy();
-    console.log('[Watch Live App] 应用已销毁');
+    console.log('[Watch Live App] แอพถูกทำลายแล้ว');
   }
 };
 
 window.watchLiveAppDetectActive = function () {
   if (window.watchLiveApp) {
-    console.log('[Watch Live App] 🔍 手动检测活跃直播状态...');
+    console.log('[Watch Live App] 🔍 ตรวจสอบสถานะไลฟ์แบบ manual...');
     window.watchLiveApp.detectActiveLive();
 
-    // 更新界面
+    // อัปเดต UI
     if (typeof window.bindWatchLiveAppEvents === 'function') {
       window.bindWatchLiveAppEvents();
     }
 
-    console.log('[Watch Live App] ✅ 检测完成，当前状态:', {
+    console.log('[Watch Live App] ✅ ตรวจสอบเสร็จสิ้น, สถานะปัจจุบัน:', {
       view: window.watchLiveApp.currentView,
       isLiveActive: window.watchLiveApp.isLiveActive,
     });
   } else {
-    console.error('[Watch Live App] watchLiveApp实例不存在');
+    console.error('[Watch Live App] ไม่พบอินสแตนซ์ watchLiveApp');
   }
 };
 
 window.watchLiveAppForceReload = function () {
-  console.log('[Watch Live App] 🔄 强制重新加载应用...');
+  console.log('[Watch Live App] 🔄 บังคับรีโหลดแอพ...');
 
-  // 先销毁旧实例
+  // ทำลายอินสแตนซ์เก่าก่อน
   if (window.watchLiveApp) {
     window.watchLiveApp.destroy();
   }
 
-  // 创建新实例
+  // สร้างอินสแตนซ์ใหม่
   window.watchLiveApp = new WatchLiveApp();
-  console.log('[Watch Live App] ✅ 应用已重新加载');
+  console.log('[Watch Live App] ✅ รีโหลดแอพเรียบร้อยแล้ว');
 };
 
-// 测试转换功能
+// ทดสอบฟังก์ชันการแปลง
 window.watchLiveAppTestConversion = function () {
-  console.log('[Watch Live App] 🧪 测试转换功能...');
+  console.log('[Watch Live App] 🧪 ทดสอบฟังก์ชันการแปลง...');
 
   if (!window.watchLiveApp) {
-    console.error('[Watch Live App] watchLiveApp实例不存在');
+    console.error('[Watch Live App] ไม่พบอินสแตนซ์ watchLiveApp');
     return;
   }
 
-  const testContent = `这是一条测试消息
+  // ข้อความทดสอบ (ต้องคง Tag ภาษาจีนไว้ทดสอบ Logic)
+  const testContent = `นี่คือข้อความทดสอบ
 [直播|小明|弹幕|主播你好！今天吃的什么呀？]
 [直播|小红|礼物|璀璨火箭*2]
 [直播|推荐互动|回答小明的弹幕问题]
 [直播|推荐互动|感谢小红的礼物]
 [直播|本场人数|55535]
 [直播|直播内容|你微笑着调整了一下耳机，准备开始今天的杂谈直播。]
-测试结束`;
+จบการทดสอบ`;
 
-  console.log('原始内容:', testContent);
+  console.log('เนื้อหาต้นฉบับ:', testContent);
   const converted = window.watchLiveApp.convertLiveFormats(testContent);
-  console.log('转换后内容:', converted);
+  console.log('เนื้อหาหลังแปลง:', converted);
 
   return converted;
 };
 
-// 测试布局高度
+// ทดสอบความสูง Layout
 window.watchLiveAppTestLayout = function () {
-  console.log('[Watch Live App] 📐 测试布局高度...');
+  console.log('[Watch Live App] 📐 ทดสอบความสูง Layout...');
 
   const appContent = document.getElementById('app-content');
   if (!appContent) {
-    console.error('[Watch Live App] app-content元素不存在');
+    console.error('[Watch Live App] ไม่พบองค์ประกอบ app-content');
     return;
   }
 
   const liveContainer = appContent.querySelector('.live-container');
   if (!liveContainer) {
-    console.error('[Live App] live-container元素不存在');
+    console.error('[Live App] ไม่พบองค์ประกอบ live-container');
     return;
   }
 
@@ -3220,43 +3121,44 @@ window.watchLiveAppTestLayout = function () {
       : null,
   };
 
-  console.log('[Live App] 📐 布局测量结果:', measurements);
+  console.log('[Live App] 📐 ผลการวัด Layout:', measurements);
 
-  // 检查是否有溢出
+  // ตรวจสอบว่าล้นหรือไม่
   const hasOverflow = measurements.liveContainer.scrollHeight > measurements.liveContainer.clientHeight;
   const danmakuCanScroll =
     measurements.danmakuContainer &&
     measurements.danmakuContainer.scrollHeight > measurements.danmakuContainer.clientHeight;
 
-  console.log('[Watch Live App] 📐 布局检查:');
-  console.log(`- 容器是否溢出: ${hasOverflow ? '❌ 是' : '✅ 否'}`);
-  console.log(`- 弹幕是否可滚动: ${danmakuCanScroll ? '✅ 是' : '❌ 否'}`);
+  console.log('[Watch Live App] 📐 ตรวจสอบ Layout:');
+  console.log(`- คอนเทนเนอร์ล้นหรือไม่: ${hasOverflow ? '❌ ใช่' : '✅ ไม่'}`);
+  console.log(`- ข้อความวิ่งเลื่อนได้หรือไม่: ${danmakuCanScroll ? '✅ ได้' : '❌ ไม่ได้'}`);
 
   return measurements;
 };
 
-// 测试函数
+// ฟังก์ชันทดสอบ
 window.watchLiveAppTest = function () {
-  console.log('[Watch Live App] 🧪 开始测试观看直播应用...');
+  console.log('[Watch Live App] 🧪 เริ่มทดสอบแอพรับชมไลฟ์...');
 
   const tests = [
     {
-      name: '检查WatchLiveApp类是否存在',
+      name: 'ตรวจสอบว่ามีคลาส WatchLiveApp',
       test: () => typeof window.WatchLiveApp === 'function',
     },
     {
-      name: '检查watchLiveApp实例是否存在',
+      name: 'ตรวจสอบว่ามีอินสแตนซ์ watchLiveApp',
       test: () => window.watchLiveApp instanceof window.WatchLiveApp,
     },
     {
-      name: '检查全局函数是否存在',
+      name: 'ตรวจสอบฟังก์ชัน Global',
       test: () =>
         typeof window.getWatchLiveAppContent === 'function' && typeof window.bindWatchLiveAppEvents === 'function',
     },
     {
-      name: '检查数据解析器',
+      name: 'ตรวจสอบตัวแปลงข้อมูล (Data Parser)',
       test: () => {
         const parser = new window.WatchLiveApp().dataParser;
+        // คง string จีนไว้ทดสอบ parser
         const testData = parser.parseLiveData('[直播|本场人数|1234][直播|直播内容|测试内容][直播|用户1|弹幕|测试弹幕]');
         return (
           testData.viewerCount === '1.2K' && testData.liveContent === '测试内容' && testData.danmakuList.length === 1
@@ -3264,19 +3166,19 @@ window.watchLiveAppTest = function () {
       },
     },
     {
-      name: '检查应用内容生成',
+      name: 'ตรวจสอบการสร้างเนื้อหาแอพ',
       test: () => {
         const content = window.getWatchLiveAppContent();
         return typeof content === 'string' && content.includes('live-app');
       },
     },
     {
-      name: '检查活跃直播检测',
+      name: 'ตรวจสอบการตรวจจับไลฟ์สด',
       test: () => {
         const app = new window.WatchLiveApp();
         const testContent1 = '[直播|本场人数|1234][直播|直播内容|测试内容]';
         const testContent2 = '[直播历史|本场人数|1234][直播历史|直播内容|测试内容]';
-        const testContent3 = '没有直播内容的普通聊天';
+        const testContent3 = 'แชทปกติที่ไม่มีเนื้อหาไลฟ์';
 
         return (
           app.hasActiveLiveFormats(testContent1) === true &&
@@ -3294,33 +3196,33 @@ window.watchLiveAppTest = function () {
     try {
       const result = test.test();
       if (result) {
-        console.log(`✅ ${test.name}: 通过`);
+        console.log(`✅ ${test.name}: ผ่าน`);
         passed++;
       } else {
-        console.log(`❌ ${test.name}: 失败`);
+        console.log(`❌ ${test.name}: ล้มเหลว`);
         failed++;
       }
     } catch (error) {
-      console.log(`❌ ${test.name}: 错误 - ${error.message}`);
+      console.log(`❌ ${test.name}: ผิดพลาด - ${error.message}`);
       failed++;
     }
   });
 
-  console.log(`[Watch Live App] 🧪 测试完成: ${passed} 通过, ${failed} 失败`);
+  console.log(`[Watch Live App] 🧪 ทดสอบเสร็จสิ้น: ผ่าน ${passed}, ล้มเหลว ${failed}`);
 
   if (failed === 0) {
-    console.log('[Watch Live App] 🎉 所有测试通过！观看直播应用已准备就绪');
+    console.log('[Watch Live App] 🎉 การทดสอบทั้งหมดผ่าน! แอพรับชมไลฟ์พร้อมใช้งาน');
   } else {
-    console.log('[Watch Live App] ⚠️ 部分测试失败，请检查相关功能');
+    console.log('[Watch Live App] ⚠️ การทดสอบบางรายการล้มเหลว โปรดตรวจสอบฟังก์ชันที่เกี่ยวข้อง');
   }
 
   return { passed, failed, total: tests.length };
 };
 
-console.log('[Watch Live App] 观看直播应用模块加载完成');
-console.log('[Watch Live App] 💡 可用的函数:');
-console.log('[Watch Live App] - watchLiveAppTest() 测试应用功能');
-console.log('[Watch Live App] - watchLiveAppTestConversion() 测试格式转换功能');
-console.log('[Watch Live App] - watchLiveAppTestLayout() 测试布局高度');
-console.log('[Watch Live App] - watchLiveAppDetectActive() 手动检测活跃直播状态');
-console.log('[Watch Live App] - watchLiveAppForceReload() 强制重新加载应用');
+console.log('[Watch Live App] โหลดโมดูลแอพรับชมไลฟ์เสร็จสมบูรณ์');
+console.log('[Watch Live App] 💡 ฟังก์ชันที่ใช้งานได้:');
+console.log('[Watch Live App] - watchLiveAppTest() ทดสอบฟังก์ชันแอพ');
+console.log('[Watch Live App] - watchLiveAppTestConversion() ทดสอบฟังก์ชันแปลงรูปแบบ');
+console.log('[Watch Live App] - watchLiveAppTestLayout() ทดสอบความสูง Layout');
+console.log('[Watch Live App] - watchLiveAppDetectActive() ตรวจสอบสถานะไลฟ์แบบ manual');
+console.log('[Watch Live App] - watchLiveAppForceReload() บังคับรีโหลดแอพ');
