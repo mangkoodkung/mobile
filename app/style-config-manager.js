@@ -1099,7 +1099,7 @@ ${
     getSettingsAppContent() {
       const config = this.getConfig(); // 使用getConfig()确保获取最新配置
 
-    return `
+      return `
             <div class="style-config-app">
                 <div class="style-config-header">
                     <h2>🎨 การตั้งค่ารูปแบบหน้าจอมือถือ</h2>
@@ -1141,7 +1141,7 @@ ${
                 <div class="style-config-content">
                     ${this.generateConfigSection('homeScreen', 'พื้นหลังหน้าจอหลัก', config.homeScreen)}
                     ${this.generateFriendBackgroundsSection(config.friendBackgrounds || [])}
-                    ${this.generateConfigSection('messagesApp', 'พื้นหลังหน้าต่างแชท', config.messagesApp)}
+                    ${this.generateConfigSection('messagesApp', 'พื้นหลังแอพข้อความ', config.messagesApp)}
                                 ${this.generateAvatarConfigSection(
                                   'messageSentAvatar',
                                   'User Profile',
@@ -1192,7 +1192,7 @@ ${
                             <span>ตัวอย่าง</span>
                         </button>
                         <button class="config-btn save-btn" id="save-new-config-btn">
-                            <span>save</span>
+                            <span>📋save</span>
                         </button>
                         <button class="config-btn reset-btn" id="reset-styles">
                             <span>reset</span>
@@ -3003,7 +3003,7 @@ ${
       return `
             <div class="config-section friend-backgrounds-section">
                 <div class="section-header">
-                    <h3>🎨 Chat Background</h3>
+                    <h3>พื้นหลังแชทของ Character</h3>
                     <p>ตั้งพื้นหลังแชทสำหรับเพื่อนโดยใช้ data-background-id</p>
                 </div>
 
@@ -3047,7 +3047,7 @@ ${
       return `
             <div class="config-section avatars-section">
                 <div class="section-header">
-                    <h3>🎭 Character Profile</h3>
+                    <h3>Character Profile</h3>
                     <p>ตั้งค่ารูปโปรไฟล์</p>
                 </div>
 
