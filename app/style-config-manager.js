@@ -1099,11 +1099,11 @@ ${
     getSettingsAppContent() {
       const config = this.getConfig(); // 使用getConfig()确保获取最新配置
 
-      return `
+    return `
             <div class="style-config-app">
                 <div class="style-config-header">
-                    <h2>🎨 移动端界面样式设置</h2>
-                    <p>自定义移动端界面的背景和样式，配置会保存到全局Data Bank</p>
+                    <h2>🎨 การตั้งค่ารูปแบบหน้าจอมือถือ</h2>
+                    <p>การตั้งค่าจะถูกบันทึกไปยัง Data Bank ส่วนกลาง</p>
                 </div>
 
                 <div class="style-config-tabs">
@@ -1144,7 +1144,7 @@ ${
                     ${this.generateConfigSection('messagesApp', 'พื้นหลังหน้าต่างแชท', config.messagesApp)}
                                 ${this.generateAvatarConfigSection(
                                   'messageSentAvatar',
-                                  'พื้นหลังโปรไฟล์ผู้ส่ง',
+                                  'User Profile',
                                   config.messageSentAvatar,
                                 )}
             ${this.generateReceivedAvatarsSection(config.messageReceivedAvatars)}
@@ -1156,10 +1156,8 @@ ${
                             <div class="config-list-section">
                                 <div class="section-header">
                                     <h3>📋การตั้งค่าที่บันทึกไว้</h3>
-                                    <p>จัดการไฟล์ตั้งค่าที่บันทึกไว้ สร้างใหม่ด้วยปุ่ม "บันทึกเป็น"</p>
+                                    <p>จัดการไฟล์ตั้งค่าที่บันทึกไว้</p>
                                 </div>
-
-
 
                                 <div class="config-list" id="config-list-container">
                                     <div class="loading-configs">
@@ -1191,13 +1189,13 @@ ${
                 <div class="style-config-footer">
                     <div class="config-actions">
                         <button class="config-btn preview-btn" id="preview-styles">
-                            <span>ดูตัวอย่างรูปแบบ</span>
+                            <span>ตัวอย่าง</span>
                         </button>
                         <button class="config-btn save-btn" id="save-new-config-btn">
-                            <span>บันทึกเป็น</span>
+                            <span>save</span>
                         </button>
                         <button class="config-btn reset-btn" id="reset-styles">
-                            <span>รีเซ็ตเป็นค่าเริ่มต้น</span>
+                            <span>reset</span>
                         </button>
                     </div>
 
@@ -3005,7 +3003,7 @@ ${
       return `
             <div class="config-section friend-backgrounds-section">
                 <div class="section-header">
-                    <h3>🎨 พื้นหลังการแชทเฉพาะเพื่อน</h3>
+                    <h3>🎨 Chat Background</h3>
                     <p>ตั้งพื้นหลังแชทสำหรับเพื่อนโดยใช้ data-background-id</p>
                 </div>
 
@@ -3049,8 +3047,8 @@ ${
       return `
             <div class="config-section avatars-section">
                 <div class="section-header">
-                    <h3>🎭 พื้นหลังรูปโปรไฟล์ข้อความที่ได้รับ</h3>
-                    <p>ตั้งพื้นหลังเฉพาะให้รูปโปรไฟล์เพื่อน</p>
+                    <h3>🎭 Character Profile</h3>
+                    <p>ตั้งค่ารูปโปรไฟล์</p>
                 </div>
 
                 <div class="avatars-container">
@@ -3936,28 +3934,28 @@ ${
                     <div class="load-options-overlay"></div>
                     <div class="load-options-content">
                         <div class="load-options-header">
-                            <h3>📥 配置加载成功</h3>
-                            <p>已加载配置："${displayName}"</p>
-                            <p style="color: #f59e0b; font-size: 13px; margin-top: 8px;">💡 请选择如何保存此配置</p>
+                            <h3>📥 โหลดการตั้งค่าสำเร็จ</h3>
+                            <p>โหลดการตั้งค่า: "${displayName}" เรียบร้อยแล้ว</p>
+                            <p style="color: #f59e0b; font-size: 13px; margin-top: 8px;">💡 โปรดเลือกวิธีการบันทึกการตั้งค่านี้</p>
                         </div>
                         <div class="load-options-body">
                             <div class="load-option recommended" data-choice="setDefault">
                                 <div class="option-icon">🏠</div>
                                 <div class="option-content">
-                                    <div class="option-title">设为默认配置 <span class="recommended-badge">推荐</span></div>
-                                    <div class="option-desc">替换当前默认配置，<strong>刷新页面后依然有效</strong></div>
+                                    <div class="option-title">ตั้งเป็นค่าเริ่มต้น <span class="recommended-badge">แนะนำ</span></div>
+                                    <div class="option-desc">แทนที่ค่าเริ่มต้นเดิม <strong>ยังคงอยู่แม้จะรีเฟรชหน้าจอ</strong></div>
                                 </div>
                             </div>
                             <div class="load-option" data-choice="temp">
                                 <div class="option-icon">⚡</div>
                                 <div class="option-content">
-                                    <div class="option-title">仅临时应用</div>
-                                    <div class="option-desc">本次会话有效，<strong style="color: #dc2626;">刷新页面后会恢复原配置</strong></div>
+                                    <div class="option-title">ใช้งานชั่วคราว</div>
+                                    <div class="option-desc">ใช้เฉพาะรอบนี้ <strong style="color: #dc2626;">จะกลับเป็นค่าเดิมเมื่อรีเฟรชหน้าจอ</strong></div>
                                 </div>
                             </div>
                         </div>
                         <div class="load-options-footer">
-                            <button class="load-cancel-btn" data-choice="temp">保持临时</button>
+                            <button class="load-cancel-btn" data-choice="temp">ใช้แบบชั่วคราว</button>
                         </div>
                     </div>
                 </div>
@@ -4093,45 +4091,45 @@ ${
         // 等待DOM更新后再绑定事件
         setTimeout(() => {
           const dialog = document.getElementById('load-options-dialog');
-          console.log('[Load Dialog] 对话框元素:', dialog);
+          console.log('[Load Dialog] องค์ประกอบ Dialog:', dialog);
 
           if (!dialog) {
-            console.error('[Load Dialog] 无法找到对话框元素');
+            console.error('[Load Dialog] ไม่พบองค์ประกอบ Dialog');
             resolve('temp');
             return;
           }
 
-          // 定义关闭函数
+          // กำหนดฟังก์ชันปิด Dialog
           const closeDialog = choice => {
-            console.log('[Load Dialog] 关闭对话框，选择:', choice);
+            console.log('[Load Dialog] ปิด Dialog, ตัวเลือก:', choice);
             if (dialog && dialog.parentNode) {
               dialog.remove();
             }
             resolve(choice);
           };
 
-          // 点击背景遮罩关闭
+          // คลิกที่พื้นหลัง (Overlay) เพื่อปิด
           const overlay = dialog.querySelector('.load-options-overlay');
-          console.log('[Load Dialog] 背景遮罩元素:', overlay);
+          console.log('[Load Dialog] องค์ประกอบพื้นหลัง:', overlay);
           if (overlay) {
             overlay.addEventListener('click', e => {
-              console.log('[Load Dialog] 点击背景遮罩');
+              console.log('[Load Dialog] คลิกที่พื้นหลัง');
               e.preventDefault();
               e.stopPropagation();
               closeDialog('temp');
             });
           } else {
-            console.error('[Load Dialog] 无法找到背景遮罩元素');
+            console.error('[Load Dialog] ไม่พบองค์ประกอบพื้นหลัง');
           }
 
           // 点击选项按钮
           const options = dialog.querySelectorAll('.load-option');
-          console.log('[Load Dialog] 找到选项按钮数量:', options.length);
+          console.log('[Load Dialog] พบจำนวนปุ่มตัวเลือก:', options.length);
           options.forEach((option, index) => {
             const choice = option.getAttribute('data-choice');
-            console.log(`[Load Dialog] 绑定选项 ${index}:`, choice);
+            console.log(`[Load Dialog] กำลังผูกตัวเลือก ${index}:`, choice);
             option.addEventListener('click', e => {
-              console.log('[Load Dialog] 点击选项:', choice);
+              console.log('[Load Dialog] คลิกตัวเลือก:', choice);
               e.preventDefault();
               e.stopPropagation();
               if (choice) {
@@ -4140,23 +4138,23 @@ ${
             });
           });
 
-          // 点击取消按钮
+          // คลิกปุ่มยกเลิก
           const cancelBtn = dialog.querySelector('.load-cancel-btn');
-          console.log('[Load Dialog] 取消按钮元素:', cancelBtn);
+          console.log('[Load Dialog] องค์ประกอบปุ่มยกเลิก:', cancelBtn);
           if (cancelBtn) {
             const choice = cancelBtn.getAttribute('data-choice') || 'temp';
-            console.log('[Load Dialog] 取消按钮选择值:', choice);
+            console.log('[Load Dialog] ค่าตัวเลือกของปุ่มยกเลิก:', choice);
             cancelBtn.addEventListener('click', e => {
-              console.log('[Load Dialog] 点击取消按钮');
+              console.log('[Load Dialog] คลิกที่ปุ่มยกเลิก');
               e.preventDefault();
               e.stopPropagation();
               closeDialog(choice);
             });
           } else {
-            console.error('[Load Dialog] 无法找到取消按钮元素');
+            console.error('[Load Dialog] ไม่พบองค์ประกอบปุ่มยกเลิก');
           }
 
-          // 阻止对话框内容区域的点击传播到背景
+          // ป้องกันการคลิกในส่วนเนื้อหา Dialog ทะลุไปยังพื้นหลัง
           const content = dialog.querySelector('.load-options-content');
           if (content) {
             content.addEventListener('click', e => {
@@ -4164,11 +4162,10 @@ ${
             });
           }
 
-          console.log('[Load Dialog] 事件绑定完成');
+          console.log('[Load Dialog] การผูก Event เสร็จสมบูรณ์');
         }, 100);
       });
     }
-
     // 显示导入选项对话框
     async showImportOptionsDialog() {
       return new Promise(resolve => {
@@ -4178,34 +4175,34 @@ ${
                     <div class="import-options-overlay"></div>
                     <div class="import-options-content">
                         <div class="import-options-header">
-                            <h3>📥 配置导入成功</h3>
-                            <p>请选择如何处理此配置：</p>
+                            <h3>📥 นำเข้าการตั้งค่าสำเร็จ</h3>
+                            <p>โปรดเลือกวิธีจัดการกับการตั้งค่านี้:</p>
                         </div>
                         <div class="import-options-body">
                             <div class="import-option" data-choice="default">
                                 <div class="option-icon">🏠</div>
                                 <div class="option-content">
-                                    <div class="option-title">设为默认配置</div>
-                                    <div class="option-desc">替换当前默认配置，刷新页面后自动生效</div>
+                                    <div class="option-title">ตั้งเป็นค่าเริ่มต้น</div>
+                                    <div class="option-desc">แทนที่ค่าเริ่มต้นปัจจุบัน มีผลอัตโนมัติหลังรีเฟรชหน้าจอ</div>
                                 </div>
                             </div>
                             <div class="import-option" data-choice="named">
                                 <div class="option-icon">📄</div>
                                 <div class="option-content">
-                                    <div class="option-title">保存为具名配置</div>
-                                    <div class="option-desc">保存为新配置，不影响默认配置</div>
+                                    <div class="option-title">บันทึกเป็นชื่อใหม่</div>
+                                    <div class="option-desc">บันทึกเป็นรายการใหม่ ไม่กระทบกับค่าเริ่มต้น</div>
                                 </div>
                             </div>
                             <div class="import-option" data-choice="temp">
                                 <div class="option-icon">⚡</div>
                                 <div class="option-content">
-                                    <div class="option-title">仅临时应用</div>
-                                    <div class="option-desc">本次会话有效，刷新页面后恢复原配置</div>
+                                    <div class="option-title">ใช้งานชั่วคราว</div>
+                                    <div class="option-desc">มีผลเฉพาะรอบนี้ จะกลับเป็นค่าเดิมเมื่อรีเฟรชหน้าจอ</div>
                                 </div>
                             </div>
                         </div>
                         <div class="import-options-footer">
-                            <button class="import-cancel-btn" data-choice="cancel">取消</button>
+                            <button class="import-cancel-btn" data-choice="cancel">ยกเลิก</button>
                         </div>
                     </div>
                 </div>

@@ -2941,7 +2941,7 @@ if (typeof window.FriendsCircle === 'undefined') {
     async sendReplyToComment(circleId, content, replyToAuthor) {
       try {
         // สร้างรูปแบบการตอบกลับความคิดเห็น
-        const replyFormat = `[朋友圈回复|{{user}}|483920|${circleId}|回复${replyToAuthor}：${content}]`; // Note: '回复' is kept as part of the functional format
+        const replyFormat = `[ตอบโพสต์เพื่อน|{{user}}|483920|${circleId}|ตอบกลับ${replyToAuthor}：${content}]`; // Note: '回复' is kept as part of the functional format
 
         // ส่งไปยัง AI
         await this.sendToAI(
