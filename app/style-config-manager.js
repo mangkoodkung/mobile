@@ -15,18 +15,18 @@ const DEFAULT_STYLE_CONFIG = {
   homeScreen: {
     backgroundImage: '',
     backgroundImageUrl: '',
-    description: '主屏幕背景图片',
+    description: 'รูปพื้นหลังหน้าจอหลัก',
   },
   messageDetailApp: {
     backgroundImage: '',
     backgroundImageUrl: '',
-    description: '消息详情应用背景',
+    description: 'พื้นหลังแอปรายละเอียดข้อความ',
   },
   messagesApp: {
     backgroundImage: '',
     backgroundImageUrl: '',
     backgroundPosition: 'center center',
-    description: '消息应用背景',
+    description: 'พื้นหลังแอปข้อความ',
   },
   messageSentAvatar: {
     backgroundImage: '',
@@ -34,7 +34,7 @@ const DEFAULT_STYLE_CONFIG = {
     backgroundPosition: 'center center',
     rotation: '0',
     scale: '1',
-    description: '发送消息头像背景',
+    description: 'พื้นหลังอวาตาร์ข้อความที่ส่ง',
   },
   messageReceivedAvatars: [
     {
@@ -45,8 +45,8 @@ const DEFAULT_STYLE_CONFIG = {
       rotation: '0',
       scale: '1',
       friendId: '',
-      name: '默认好友头像',
-      description: '接收消息头像背景',
+      name: 'อวาตาร์เพื่อนเริ่มต้น',
+      description: 'พื้นหลังอวาตาร์ข้อความที่ได้รับ',
     },
   ],
   // 新增：好友专属背景配置
@@ -54,18 +54,18 @@ const DEFAULT_STYLE_CONFIG = {
     {
       id: 'default',
       friendId: '',
-      name: '默认好友背景',
+      name: 'พื้นหลังเพื่อนเริ่มต้น',
       backgroundImage: '',
       backgroundImageUrl: '',
       backgroundPosition: 'center center',
       rotation: '0',
       scale: '1',
-      description: '好友专属聊天背景',
+      description: 'พื้นหลังแชทเฉพาะเพื่อน',
     },
   ],
   customStyles: {
     cssText: '',
-    description: '自定义CSS样式',
+    description: 'สไตล์ CSS กำหนดเอง',
   },
 };
 
@@ -926,7 +926,7 @@ ${
 
         // 检查是否会与默认配置文件名冲突
         if (fileName === STYLE_CONFIG_FILE_NAME) {
-          throw new Error('此配置名称会与默认配置冲突，请选择其他名称');
+          throw new Error('ชื่อการตั้งค่านี้จะขัดแย้งกับการตั้งค่าเริ่มต้น กรุณาเลือกชื่ออื่น');
         }
 
         if (sillyTavernCoreImported && uploadFileAttachmentToServer) {
@@ -1006,14 +1006,14 @@ ${
             const isDefault = config.name === STYLE_CONFIG_FILE_NAME;
 
             if (isDefault) {
-              displayName = '默认配置';
+              displayName = 'การตั้งค่าเริ่มต้น';
             } else if (config.name.startsWith('mobile_config_') && config.name.includes('_mobile_style_config.json')) {
               // 处理带时间戳的默认配置文件：mobile_config_timestamp_mobile_style_config.json
               const match = config.name.match(/mobile_config_(\d+)_mobile_style_config\.json/);
               if (match) {
                 const timestamp = match[1];
                 const date = new Date(parseInt(timestamp));
-                displayName = `默认配置 (${date.toLocaleString()})`;
+                displayName = `การตั้งค่าเริ่มต้น (${date.toLocaleString()})`;
               } else {
                 displayName = config.name.replace('_style_config.json', '');
               }
@@ -1039,13 +1039,13 @@ ${
                         <div class="config-actions">
                             <button class="config-action-btn load-config" data-config-file="${
                               config.name
-                            }" title="加载此配置">
+                            }" title="โหลดการตั้งค่านี้">
                                 📥 พับ/ขยาย
                             </button>
                             ${
                               !isDefault
                                 ? `
-                                <button class="config-action-btn delete-config" data-config-file="${config.name}" title="删除此配置">
+                                <button class="config-action-btn delete-config" data-config-file="${config.name}" title="ลบการตั้งค่านี้">
                                     🗑️ ลบ
                                 </button>
                             `
@@ -2630,7 +2630,7 @@ ${
               const isDefault = config.name === STYLE_CONFIG_FILE_NAME;
 
               if (isDefault) {
-                displayName = '默认配置';
+                displayName = 'การตั้งค่าเริ่มต้น';
               } else if (
                 config.name.startsWith('mobile_config_') &&
                 config.name.includes('_mobile_style_config.json')
@@ -2640,7 +2640,7 @@ ${
                 if (match) {
                   const timestamp = match[1];
                   const date = new Date(parseInt(timestamp));
-                  displayName = `默认配置 (${date.toLocaleString()})`;
+                  displayName = `การตั้งค่าเริ่มต้น (${date.toLocaleString()})`;
                 } else {
                   displayName = config.name.replace('_style_config.json', '');
                 }
@@ -2666,13 +2666,13 @@ ${
                             <div class="config-actions">
                                 <button class="config-action-btn load-config" data-config-file="${
                                   config.name
-                                }" title="加载此配置">
+                                }" title="โหลดการตั้งค่านี้">
                                     📥 โหลด
                                 </button>
                                 ${
                                   !isDefault
                                     ? `
-                                    <button class="config-action-btn delete-config" data-config-file="${config.name}" title="删除此配置">
+                                    <button class="config-action-btn delete-config" data-config-file="${config.name}" title="ลบการตั้งค่านี้">
                                         🗑️ ลบ
                                     </button>
                                 `
@@ -2763,7 +2763,7 @@ ${
                             value="${value}"
                             data-config-key="${key}"
                             data-config-property="${property}"
-                            placeholder="输入图片链接地址..."
+                            placeholder="ใส่ลิงก์รูปภาพ..."
                         >
                     </div>
                 `;
@@ -2857,7 +2857,7 @@ ${
                             value="${value}"
                             data-config-key="${key}"
                             data-config-property="${property}"
-                            placeholder="输入图片链接地址..."
+                            placeholder="ใส่ลิงก์รูปภาพ..."
                         >
                     </div>
                 `;
@@ -2935,7 +2935,7 @@ ${
                             value="${value}"
                             data-config-key="${key}"
                             data-config-property="${property}"
-                            placeholder="输入好友ID（如：22333）"
+                            placeholder="ใส่ ID เพื่อน (เช่น: 22333)"
                         >
                         <small>💡 这个ID会用于生成CSS选择器：.message-received > .message-avatar#message-avatar-{ID}</small>
                     </div>
@@ -3085,16 +3085,16 @@ ${
                                data-background-index="${index}"
                                data-property="name"
                                value="${name}"
-                               placeholder="背景名称">
+                               placeholder="ชื่อพื้นหลัง">
                     </div>
                     <div class="background-card-actions">
-                        <button class="background-action-btn collapse-btn" onclick="window.styleConfigManager.toggleBackgroundCard(${index})" title="折叠/展开">
+                        <button class="background-action-btn collapse-btn" onclick="window.styleConfigManager.toggleBackgroundCard(${index})" title="พับ/ขยาย">
                             <span>📁</span>
                         </button>
                         ${
                           backgroundsLength > 1
                             ? `
-                        <button class="background-action-btn delete-btn" onclick="window.styleConfigManager.deleteFriendBackground(${index})" title="删除">
+                        <button class="background-action-btn delete-btn" onclick="window.styleConfigManager.deleteFriendBackground(${index})" title="ลบ">
                             <span>🗑️</span>
                         </button>
                         `
@@ -3234,16 +3234,16 @@ ${
                                data-avatar-index="${index}"
                                data-property="name"
                                value="${name}"
-                               placeholder="头像名称">
+                               placeholder="ชื่ออวาตาร์">
                     </div>
                     <div class="avatar-card-actions">
-                        <button class="avatar-action-btn collapse-btn" onclick="window.styleConfigManager.toggleAvatarCard(${index})" title="折叠/展开">
+                        <button class="avatar-action-btn collapse-btn" onclick="window.styleConfigManager.toggleAvatarCard(${index})" title="พับ/ขยาย">
                             <span>📁</span>
                         </button>
                         ${
                           avatarsLength > 1
                             ? `
-                        <button class="avatar-action-btn delete-btn" onclick="window.styleConfigManager.deleteAvatar(${index})" title="删除">
+                        <button class="avatar-action-btn delete-btn" onclick="window.styleConfigManager.deleteAvatar(${index})" title="ลบ">
                             <span>🗑️</span>
                         </button>
                         `
@@ -3416,7 +3416,7 @@ ${
     deleteAvatar(index) {
       const config = this.getConfig();
       if (!config.messageReceivedAvatars || config.messageReceivedAvatars.length <= 1) {
-        this.updateStatus('至少需要保留一个头像配置', 'warning');
+        this.updateStatus('ต้องเก็บการตั้งค่าอวาตาร์อย่างน้อย 1 รายการ', 'warning');
         return;
       }
 
@@ -3426,7 +3426,7 @@ ${
 
         // 重新渲染界面
         this.refreshEditorInterface();
-        this.updateStatus('删除头像成功，点击另存为按钮保存更改', 'info');
+        this.updateStatus('ลบอวาตาร์สำเร็จ คลิกปุ่มบันทึกเป็นเพื่อบันทึกการเปลี่ยนแปลง', 'info');
       }
     }
 
@@ -3446,7 +3446,7 @@ ${
         backgroundPosition: 'center center',
         rotation: '0',
         scale: '1',
-        description: '好友专属聊天背景',
+        description: 'พื้นหลังแชทเฉพาะเพื่อน',
       };
 
       config.friendBackgrounds.push(newBackground);
@@ -3461,7 +3461,7 @@ ${
     deleteFriendBackground(index) {
       const config = this.getConfig();
       if (!config.friendBackgrounds || config.friendBackgrounds.length === 0) {
-        this.updateStatus('没有可删除的背景配置', 'warning');
+        this.updateStatus('ไม่มีการตั้งค่าพื้นหลังที่จะลบ', 'warning');
         return;
       }
 
@@ -3471,7 +3471,7 @@ ${
 
         // 重新渲染界面
         this.refreshEditorInterface();
-        this.updateStatus('删除好友背景成功，点击另存为按钮保存更改', 'info');
+        this.updateStatus('ลบพื้นหลังเพื่อนสำเร็จ คลิกปุ่มบันทึกเป็นเพื่อบันทึกการเปลี่ยนแปลง', 'info');
       }
     }
 
@@ -3518,17 +3518,17 @@ ${
     // 获取字段标题
     getFieldTitle(property) {
       const titleMap = {
-        background: '背景',
-        backgroundImage: '背景图片',
-        backgroundImageUrl: '背景图片链接',
-        borderRadius: '圆角',
-        color: '颜色',
-        fontSize: '字体大小',
-        padding: '内边距',
-        margin: '外边距',
-        rotation: '旋转角度',
-        scale: '缩放比例',
-        friendId: '好友ID',
+        background: 'พื้นหลัง',
+        backgroundImage: 'รูปพื้นหลัง',
+        backgroundImageUrl: 'ลิงก์รูปพื้นหลัง',
+        borderRadius: 'มุมโค้ง',
+        color: 'สี',
+        fontSize: 'ขนาดตัวอักษร',
+        padding: 'ระยะห่างภายใน',
+        margin: 'ระยะห่างภายนอก',
+        rotation: 'มุมหมุน',
+        scale: 'อัตราส่วนซูม',
+        friendId: 'ID เพื่อน',
       };
 
       return titleMap[property] || property;
@@ -3668,14 +3668,14 @@ ${
       const configName = prompt('กรุณาใส่ชื่อการตั้งค่า:', '');
 
       if (!configName) {
-        this.updateStatus('已取消保存', 'info');
+        this.updateStatus('ยกเลิกการบันทึกแล้ว', 'info');
         return;
       }
 
       const trimmedName = configName.trim();
 
       if (!trimmedName) {
-        this.updateStatus('请输入有效的配置名称', 'error');
+        this.updateStatus('กรุณาใส่ชื่อการตั้งค่าที่ถูกต้อง', 'error');
         return;
       }
 
@@ -3717,7 +3717,7 @@ ${
         const isDefaultConfig = fileName === STYLE_CONFIG_FILE_NAME;
 
         if (isDefaultConfig) {
-          this.updateStatus('默认配置加载成功！', 'success');
+          this.updateStatus('โหลดการตั้งค่าเริ่มต้นสำเร็จ!', 'success');
         } else {
           // 对于非默认配置，询问用户是否要设为默认配置
           const loadChoice = await this.showLoadOptionsDialog(fileName);
@@ -3734,7 +3734,7 @@ ${
             console.log('[Style Config Manager] 保存结果:', saveSuccess);
 
             if (saveSuccess) {
-              this.updateStatus('配置已加载并设为默认配置！刷新页面后依然有效', 'success');
+              this.updateStatus('โหลดและตั้งเป็นค่าเริ่มต้นแล้ว! ยังคงมีผลหลังรีเฟรชหน้า', 'success');
               console.log('[Style Config Manager] ✅ 配置已加载并保存为默认配置');
 
               // 验证保存是否成功
@@ -3748,7 +3748,7 @@ ${
                 }
               }
             } else {
-              this.updateStatus('配置加载成功，但设为默认配置失败', 'error');
+              this.updateStatus('โหลดการตั้งค่าสำเร็จ แต่ตั้งเป็นค่าเริ่มต้นล้มเหลว', 'error');
               console.error('[Style Config Manager] ❌ 保存为默认配置失败');
             }
           } else {
@@ -3756,7 +3756,7 @@ ${
           }
         }
       } else {
-        this.updateStatus('加载配置失败', 'error');
+        this.updateStatus('โหลดการตั้งค่าล้มเหลว', 'error');
       }
     }
 
@@ -3772,11 +3772,11 @@ ${
 
       const success = await this.deleteConfigFile(fileName);
       if (success) {
-        this.updateStatus('配置删除成功！', 'success');
+        this.updateStatus('ลบการตั้งค่าสำเร็จ!', 'success');
         // 刷新配置列表
         await this.handleRefreshConfigList();
       } else {
-        this.updateStatus('删除配置失败', 'error');
+        this.updateStatus('ลบการตั้งค่าล้มเหลว', 'error');
       }
     }
 
@@ -3817,7 +3817,7 @@ ${
         console.log('[Style Config Manager] 配置已导出:', configData);
       } catch (error) {
         console.error('[Style Config Manager] 导出配置失败:', error);
-        this.updateStatus('导出配置失败', 'error');
+        this.updateStatus('ส่งออกการตั้งค่าล้มเหลว', 'error');
       }
     }
 
@@ -3867,10 +3867,10 @@ ${
           const saveSuccess = await this.saveConfig();
 
           if (saveSuccess) {
-            this.updateStatus('配置已导入并设为默认配置！刷新页面后依然有效', 'success');
+            this.updateStatus('นำเข้าและตั้งเป็นค่าเริ่มต้นแล้ว! ยังคงมีผลหลังรีเฟรชหน้า', 'success');
             console.log('[Style Config Manager] 配置已导入并保存为默认配置');
           } else {
-            this.updateStatus('配置导入成功，但保存为默认配置失败', 'error');
+            this.updateStatus('นำเข้าการตั้งค่าสำเร็จ แต่บันทึกเป็นค่าเริ่มต้นล้มเหลว', 'error');
           }
         } else if (importChoice === 'named') {
           // 保存为具名配置
@@ -4941,7 +4941,7 @@ ${
 
       // 检查文件类型
       if (!file.type.startsWith('image/')) {
-        this.updateStatus('请选择图片文件', 'error');
+        this.updateStatus('กรุณาเลือกไฟล์รูปภาพ', 'error');
         console.warn('[Style Config Manager] 不支持的文件类型:', file.type);
         return;
       }
@@ -5037,7 +5037,7 @@ ${
         this.updateStatus('头像图片上传成功，点击另存为按钮保存更改', 'info');
       } catch (error) {
         console.error('[Style Config Manager] 头像图片上传失败:', error);
-        this.updateStatus('头像图片上传失败', 'error');
+        this.updateStatus('อัปโหลดรูปอวาตาร์ล้มเหลว', 'error');
       }
     }
 
@@ -5087,7 +5087,7 @@ ${
         this.updateStatus('好友背景图片上传成功，点击另存为按钮保存更改', 'info');
       } catch (error) {
         console.error('[Style Config Manager] 好友背景图片上传失败:', error);
-        this.updateStatus('好友背景图片上传失败', 'error');
+        this.updateStatus('อัปโหลดรูปพื้นหลังเพื่อนล้มเหลว', 'error');
       }
     }
 
@@ -5099,7 +5099,7 @@ ${
 
       if (backgroundIndex !== null && property) {
         this.updateBackgroundProperty(backgroundIndex, property, '');
-        this.updateStatus('好友背景图片已移除，点击另存为按钮保存更改', 'info');
+        this.updateStatus('ลบรูปพื้นหลังเพื่อนแล้ว คลิกปุ่มบันทึกเป็นเพื่อบันทึกการเปลี่ยนแปลง', 'info');
 
         // 重新渲染界面以更新按钮状态
         this.refreshEditorInterface();
@@ -5119,7 +5119,7 @@ ${
 
       // 检查文件类型
       if (!file.type.startsWith('image/')) {
-        this.updateStatus('请选择图片文件', 'error');
+        this.updateStatus('กรุณาเลือกไฟล์รูปภาพ', 'error');
         console.warn('[Style Config Manager] 不支持的文件类型:', file.type);
         return;
       }
@@ -5262,7 +5262,7 @@ ${
         }
       } catch (error) {
         console.error('[Style Config Manager] 图片上传失败:', error);
-        this.updateStatus('图片上传失败', 'error');
+        this.updateStatus('อัปโหลดรูปภาพล้มเหลว', 'error');
       }
     }
 
@@ -5281,7 +5281,7 @@ ${
         if (key && property) {
           this.updateConfig(key, property, '');
           this.updateImagePreview(targetFieldId, '');
-          this.updateStatus('背景图片已移除', 'info');
+          this.updateStatus('ลบรูปพื้นหลังแล้ว', 'info');
         }
       }
     }
@@ -5354,7 +5354,7 @@ ${
         });
 
         this.applyStyles();
-        this.updateStatus('已重置为默认样式', 'info');
+        this.updateStatus('รีเซ็ตเป็นสไตล์เริ่มต้นแล้ว', 'info');
       }
     }
 

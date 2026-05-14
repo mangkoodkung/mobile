@@ -771,13 +771,13 @@ class MobileContextEditor {
                     <div id="mobile-context-editor-status" style="margin-bottom: 15px; padding: 12px; background: #f5f5f5; border-radius: 8px; color: #333; min-height: 20px; font-size: 14px; border-left: 4px solid #2196F3;"></div>
 
                     <div id="mobile-context-editor-content" style="border: 1px solid #ddd; border-radius: 8px; background: #fafafa; min-height: 300px; max-height: 400px; overflow-y: auto;">
-                        <p style="text-align: center; padding: 40px 20px; color: #666; margin: 0; font-size: 16px;">点击"加载聊天"开始编辑</p>
+                        <p style="text-align: center; padding: 40px 20px; color: #666; margin: 0; font-size: 16px;">คลิก "โหลดแชท" เพื่อเริ่มแก้ไข</p>
                     </div>
 
                     <!-- 新增：加载指示器 -->
                     <div id="mobile-loading-indicator" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 20px; border-radius: 10px; text-align: center; z-index: 10000;">
                         <div style="font-size: 24px; margin-bottom: 10px;">⏳</div>
-                        <div>正在加载...</div>
+                        <div>กำลังโหลด...</div>
                     </div>
                 </div>
             </div>
@@ -999,11 +999,11 @@ class MobileContextEditor {
     const waitingHtml = `
             <div style="text-align: center; padding: 30px 20px; color: #666;">
                 <div style="font-size: 48px; margin-bottom: 20px;">⏳</div>
-                <h3 style="margin: 0 0 15px 0; color: #333;">SillyTavern 正在加载...</h3>
-                <p style="margin: 0 0 20px 0;">请等待SillyTavern完全加载后再使用编辑功能</p>
+                <h3 style="margin: 0 0 15px 0; color: #333;">SillyTavern กำลังโหลด...</h3>
+                <p style="margin: 0 0 20px 0;">กรุณารอให้ SillyTavern โหลดเสร็จก่อนใช้ฟีเจอร์แก้ไข</p>
 
                 <div style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin: 20px 0; text-align: left;">
-                    <strong>📊 加载状态：</strong><br>
+                    <strong>📊 สถานะการโหลด:</strong><br>
                     <div id="waiting-status-details" style="margin-top: 10px; font-family: monospace; font-size: 12px;"></div>
                 </div>
 
@@ -1012,18 +1012,18 @@ class MobileContextEditor {
                         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
                         color: white; border: none; padding: 12px 24px; border-radius: 25px;
                         font-size: 16px; cursor: pointer; margin: 5px;
-                    ">🔄 重新检查</button>
+                    ">🔄 ตรวจสอบอีกครั้ง</button>
 
                     <button onclick="window.mobileContextEditor.forceMode()" style="
                         background: linear-gradient(135deg, #FF6B6B 0%, #4ECDC4 100%);
                         color: white; border: none; padding: 12px 24px; border-radius: 25px;
                         font-size: 16px; cursor: pointer; margin: 5px;
-                    ">🛠️ 强制模式</button>
+                    ">🛠️ โหมดบังคับ</button>
                 </div>
 
                 <div style="margin: 20px 0; font-size: 14px; color: #888;">
-                    <p>💡 小贴士：首次加载可能需要1-2分钟</p>
-                    <p>🔧 如果长时间无法加载，请尝试刷新页面</p>
+                    <p>💡 เคล็ดลับ: การโหลดครั้งแรกอาจใช้เวลา 1-2 นาที</p>
+                    <p>🔧 หากโหลดไม่ได้เป็นเวลานาน ลองรีเฟรชหน้า</p>
                 </div>
             </div>
         `;
@@ -1057,11 +1057,11 @@ class MobileContextEditor {
     if (statusDetails) {
       const status = this.debugSillyTavernStatus();
       const details = [
-        `聊天数据 (window.chat): ${status.chatLoaded ? '✅ 已加载' : '❌ 未加载'}`,
-        `角色数据 (window.characters): ${status.charactersLoaded ? '✅ 已加载' : '❌ 未加载'}`,
-        `当前角色 (window.this_chid): ${status.currentCharacter ? '✅ 已选择' : '❌ 未选择'}`,
-        `保存函数 (saveChatConditional): ${status.saveFunctionAvailable ? '✅ 可用' : '❌ 不可用'}`,
-        `渲染函数 (printMessages): ${status.renderFunctionAvailable ? '✅ 可用' : '❌ 不可用'}`,
+        `ข้อมูลแชท (window.chat): ${status.chatLoaded ? '✅ โหลดแล้ว' : '❌ ยังไม่โหลด'}`,
+        `ข้อมูลตัวละคร (window.characters): ${status.charactersLoaded ? '✅ โหลดแล้ว' : '❌ ยังไม่โหลด'}`,
+        `ตัวละครปัจจุบัน (window.this_chid): ${status.currentCharacter ? '✅ เลือกแล้ว' : '❌ ยังไม่เลือก'}`,
+        `ฟังก์ชันบันทึก (saveChatConditional): ${status.saveFunctionAvailable ? '✅ พร้อมใช้' : '❌ ไม่พร้อม'}`,
+        `ฟังก์ชันเรนเดอร์ (printMessages): ${status.renderFunctionAvailable ? '✅ พร้อมใช้' : '❌ ไม่พร้อม'}`,
       ];
       statusDetails.innerHTML = details.join('<br>');
     }
@@ -1073,37 +1073,37 @@ class MobileContextEditor {
   forceMode() {
     const forceHtml = `
             <div style="padding: 20px; color: #333;">
-                <h3 style="margin: 0 0 15px 0; color: #FF6B6B;">🛠️ 强制模式</h3>
-                <p style="margin: 0 0 15px 0;">SillyTavern仍在加载中，但您可以使用以下功能：</p>
+                <h3 style="margin: 0 0 15px 0; color: #FF6B6B;">🛠️ โหมดบังคับ</h3>
+                <p style="margin: 0 0 15px 0;">SillyTavern ยังโหลดอยู่ แต่คุณสามารถใช้ฟีเจอร์ต่อไปนี้:</p>
 
                 <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 15px; margin: 15px 0;">
-                    <strong>⚠️ 注意：</strong> 在此模式下，某些功能可能无法正常工作。建议等待完全加载后使用。
+                    <strong>⚠️ หมายเหตุ:</strong> ในโหมดนี้ บางฟีเจอร์อาจทำงานไม่ปกติ แนะนำให้รอโหลดเสร็จก่อนใช้งาน
                 </div>
 
                 <div style="background: #e7f3ff; border-radius: 8px; padding: 15px; margin: 15px 0;">
-                    <strong>📝 可用的控制台命令：</strong><br>
+                    <strong>📝 คำสั่งคอนโซลที่ใช้ได้:</strong><br>
                     <code style="background: #f8f9fa; padding: 4px 8px; border-radius: 4px; display: block; margin: 8px 0; font-family: monospace;">
-                        MobileContext.debugSillyTavernStatus() // 检查状态<br>
-                        MobileContext.smartLoadChat() // 智能加载<br>
-                        MobileContext.showContextEditor() // 重新打开编辑器
+                        MobileContext.debugSillyTavernStatus() // ตรวจสอบสถานะ<br>
+                        MobileContext.smartLoadChat() // โหลดอัจฉริยะ<br>
+                        MobileContext.showContextEditor() // เปิดตัวแก้ไขอีกครั้ง
                     </code>
                 </div>
 
                 <div style="background: #d1ecf1; border-radius: 8px; padding: 15px; margin: 15px 0;">
-                    <strong>🔄 自动重试：</strong><br>
-                    编辑器会每30秒自动检查一次SillyTavern状态。
+                    <strong>🔄 ลองใหม่อัตโนมัติ:</strong><br>
+                    ตัวแก้ไขจะตรวจสอบสถานะ SillyTavern ทุก 30 วินาที
                 </div>
 
                 <div style="margin: 20px 0;">
                     <button onclick="window.mobileContextEditor.checkAndRefresh()" style="
                         background: #007bff; color: white; border: none; padding: 10px 20px;
                         border-radius: 20px; cursor: pointer; margin: 5px;
-                    ">🔄 立即重试</button>
+                    ">🔄 ลองใหม่ทันที</button>
 
                     <button onclick="window.mobileContextEditor.hideEditor()" style="
                         background: #6c757d; color: white; border: none; padding: 10px 20px;
                         border-radius: 20px; cursor: pointer; margin: 5px;
-                    ">❌ 关闭编辑器</button>
+                    ">❌ ปิดตัวแก้ไข</button>
                 </div>
             </div>
         `;
@@ -1216,7 +1216,7 @@ class MobileContextEditor {
    */
   renderSingleMessage(message) {
     const isUser = message.is_user;
-    const name = message.name || (isUser ? '用户' : '助手');
+    const name = message.name || (isUser ? 'ผู้ใช้' : 'ผู้ช่วย');
     const globalIndex = message.globalIndex;
 
     // 智能截断消息内容
@@ -1339,15 +1339,15 @@ class MobileContextEditor {
                     <h4 style="margin: 0 0 15px 0; color: #333;">⚡ 快速修改最后一条消息</h4>
 
                     <div style="margin-bottom: 15px;">
-                        <strong>消息发送者：</strong> ${
-                          lastMessage.name || (lastMessage.is_user ? '用户' : '角色')
+                        <strong>ผู้ส่งข้อความ:</strong> ${
+                          lastMessage.name || (lastMessage.is_user ? 'ผู้ใช้' : 'ตัวละคร')
                         } <br>
-                        <strong>消息类型：</strong> ${lastMessage.is_user ? '用户消息' : '角色回复'} <br>
-                        <strong>消息索引：</strong> ${lastIndex}
+                        <strong>ประเภทข้อความ:</strong> ${lastMessage.is_user ? 'ข้อความผู้ใช้' : 'การตอบกลับตัวละคร'} <br>
+                        <strong>ดัชนีข้อความ:</strong> ${lastIndex}
                     </div>
 
                     <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">修改内容：</label>
+                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">แก้ไขเนื้อหา:</label>
                         <textarea id="quick-edit-content" style="width: 100%; height: 120px; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-family: inherit; resize: vertical;">${
                           lastMessage.mes
                         }</textarea>
@@ -1445,60 +1445,64 @@ class MobileContextEditor {
       };
 
       // 测试1: SillyTavern基础对象
-      addResult('SillyTavern对象', window.SillyTavern ? 'PASS' : 'FAIL');
+      addResult('SillyTavern Object', window.SillyTavern ? 'PASS' : 'FAIL');
 
       // 测试2: 获取上下文
       let context = null;
       try {
         context = window.SillyTavern.getContext();
-        addResult('获取上下文', context ? 'PASS' : 'FAIL');
+        addResult('Get Context', context ? 'PASS' : 'FAIL');
       } catch (error) {
-        addResult('获取上下文', 'FAIL', `- ${error.message}`);
+        addResult('Get Context', 'FAIL', `- ${error.message}`);
       }
 
       if (context) {
         // 测试3: 聊天数据
-        addResult('聊天数据', Array.isArray(context.chat) ? 'PASS' : 'FAIL', `- ${context.chat?.length || 0} 条消息`);
+        addResult('Chat Data', Array.isArray(context.chat) ? 'PASS' : 'FAIL', `- ${context.chat?.length || 0} ข้อความ`);
 
         // 测试4: 角色数据
         addResult(
-          '角色数据',
+          'Character Data',
           Array.isArray(context.characters) ? 'PASS' : 'FAIL',
-          `- ${context.characters?.length || 0} 个角色`,
+          `- ${context.characters?.length || 0} ตัวละคร`,
         );
 
         // 测试5: 当前角色
-        addResult('当前角色', context.characterId !== undefined ? 'PASS' : 'FAIL', `- ID: ${context.characterId}`);
+        addResult(
+          'Current Character',
+          context.characterId !== undefined ? 'PASS' : 'FAIL',
+          `- ID: ${context.characterId}`,
+        );
 
         // 测试6: 用户名
-        addResult('用户名', context.name1 ? 'PASS' : 'FAIL', `- ${context.name1}`);
+        addResult('Username', context.name1 ? 'PASS' : 'FAIL', `- ${context.name1}`);
 
         // 测试7: 角色名
-        addResult('角色名', context.name2 ? 'PASS' : 'FAIL', `- ${context.name2}`);
+        addResult('Character Name', context.name2 ? 'PASS' : 'FAIL', `- ${context.name2}`);
 
         // 测试8: 保存函数
-        addResult('保存函数', typeof context.saveChat === 'function' ? 'PASS' : 'FAIL');
+        addResult('Save Function', typeof context.saveChat === 'function' ? 'PASS' : 'FAIL');
 
         // 测试9: 重载函数
-        addResult('重载函数', typeof context.reloadCurrentChat === 'function' ? 'PASS' : 'FAIL');
+        addResult('Reload Function', typeof context.reloadCurrentChat === 'function' ? 'PASS' : 'FAIL');
 
         // 测试10: 添加消息函数
-        addResult('添加消息函数', typeof context.addOneMessage === 'function' ? 'PASS' : 'FAIL');
+        addResult('Add Message Function', typeof context.addOneMessage === 'function' ? 'PASS' : 'FAIL');
 
         // 测试11: 尝试获取聊天数据
         try {
           const chatData = this.getCurrentChatData();
-          addResult('获取聊天数据', chatData ? 'PASS' : 'FAIL', `- ${chatData?.messages?.length || 0} 条消息`);
+          addResult('Get Chat Data', chatData ? 'PASS' : 'FAIL', `- ${chatData?.messages?.length || 0} ข้อความ`);
         } catch (error) {
-          addResult('获取聊天数据', 'FAIL', `- ${error.message}`);
+          addResult('Get Chat Data', 'FAIL', `- ${error.message}`);
         }
 
         // 测试12: 尝试获取统计信息
         try {
           const stats = this.getStatistics();
-          addResult('获取统计信息', stats ? 'PASS' : 'FAIL', `- ${stats?.totalMessages || 0} 条消息`);
+          addResult('Get Statistics', stats ? 'PASS' : 'FAIL', `- ${stats?.totalMessages || 0} ข้อความ`);
         } catch (error) {
-          addResult('获取统计信息', 'FAIL', `- ${error.message}`);
+          addResult('Get Statistics', 'FAIL', `- ${error.message}`);
         }
       }
 

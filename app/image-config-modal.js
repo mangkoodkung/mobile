@@ -127,10 +127,10 @@ if (typeof window.ImageConfigModal === 'undefined') {
           
           <div class="modal-tabs">
             <button class="tab-btn ${this.currentTab === 'avatar' ? 'active' : ''}" data-tab="avatar">
-              用户头像
+              อวาตาร์ผู้ใช้
             </button>
             <button class="tab-btn ${this.currentTab === 'background' ? 'active' : ''}" data-tab="background">
-              消息主页背景
+              พื้นหลังหน้าข้อความ
             </button>
           </div>
           
@@ -175,12 +175,12 @@ if (typeof window.ImageConfigModal === 'undefined') {
           
           <div class="controls-section">
             <div class="control-row">
-              <label>旋转:</label>
+              <label>หมุน:</label>
               <input type="range" class="control-slider" min="0" max="360" step="1" value="0" data-type="avatar" data-property="rotation">
               <span class="control-value">0°</span>
             </div>
             <div class="control-row">
-              <label>缩放:</label>
+              <label>ซูม:</label>
               <input type="range" class="control-slider" min="0.5" max="2" step="0.1" value="1" data-type="avatar" data-property="scale">
               <span class="control-value">1.0x</span>
             </div>
@@ -210,12 +210,12 @@ if (typeof window.ImageConfigModal === 'undefined') {
           
           <div class="controls-section">
             <div class="control-row">
-              <label>旋转:</label>
+              <label>หมุน:</label>
               <input type="range" class="control-slider" min="0" max="360" step="1" value="0" data-type="background" data-property="rotation">
               <span class="control-value">0°</span>
             </div>
             <div class="control-row">
-              <label>缩放:</label>
+              <label>ซูม:</label>
               <input type="range" class="control-slider" min="0.5" max="2" step="0.1" value="1" data-type="background" data-property="scale">
               <span class="control-value">1.0x</span>
             </div>
@@ -688,7 +688,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
               backgroundPosition: 'center center',
               rotation: '0',
               scale: '1',
-              description: '发送消息头像背景',
+              description: 'พื้นหลังอวาตาร์ข้อความที่ส่ง',
             };
           }
 
@@ -714,7 +714,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
               backgroundPosition: 'center center',
               rotation: '0',
               scale: '1',
-              description: '消息应用背景',
+              description: 'พื้นหลังแอปข้อความ',
             };
           }
 
@@ -918,16 +918,16 @@ if (typeof window.ImageConfigModal === 'undefined') {
         <div class="modal-backdrop"></div>
         <div class="modal-content">
           <div class="modal-header">
-            <h3 class="modal-title">${this.currentFriendName || '好友'} - 图片设置</h3>
+            <h3 class="modal-title">${this.currentFriendName || 'เพื่อน'} - ตั้งค่ารูปภาพ</h3>
             <button class="modal-close-btn" type="button">×</button>
           </div>
 
           <div class="modal-tabs">
             <button class="tab-btn ${this.currentTab === 'avatar' ? 'active' : ''}" data-tab="avatar">
-              头像设置
+              ตั้งค่าอวาตาร์
             </button>
             <button class="tab-btn ${this.currentTab === 'background' ? 'active' : ''}" data-tab="background">
-              聊天背景
+              พื้นหลังแชท
             </button>
           </div>
 
@@ -975,14 +975,14 @@ if (typeof window.ImageConfigModal === 'undefined') {
 
           <div class="controls-section">
             <div class="control-row">
-              <label>旋转:</label>
+              <label>หมุน:</label>
               <input type="range" class="control-slider" min="0" max="360" step="1" value="${
                 config.rotation
               }" data-type="avatar" data-property="rotation">
               <span class="control-value">${config.rotation}°</span>
             </div>
             <div class="control-row">
-              <label>缩放:</label>
+              <label>ซูม:</label>
               <input type="range" class="control-slider" min="0.5" max="2" step="0.1" value="${
                 config.scale
               }" data-type="avatar" data-property="scale">
@@ -1017,14 +1017,14 @@ if (typeof window.ImageConfigModal === 'undefined') {
 
           <div class="controls-section">
             <div class="control-row">
-              <label>旋转:</label>
+              <label>หมุน:</label>
               <input type="range" class="control-slider" min="0" max="360" step="1" value="${
                 config.rotation
               }" data-type="background" data-property="rotation">
               <span class="control-value">${config.rotation}°</span>
             </div>
             <div class="control-row">
-              <label>缩放:</label>
+              <label>ซูม:</label>
               <input type="range" class="control-slider" min="0.5" max="2" step="0.1" value="${
                 config.scale
               }" data-type="background" data-property="scale">
@@ -1421,8 +1421,8 @@ if (typeof window.ImageConfigModal === 'undefined') {
                   ? config.messageReceivedAvatars[friendAvatarIndex].id
                   : `friend_${this.currentFriendId}_${Date.now()}`,
               friendId: this.currentFriendId,
-              name: this.currentFriendName || `好友${this.currentFriendId}`,
-              description: `${this.currentFriendName || '好友'}的头像`,
+              name: this.currentFriendName || `เพื่อน${this.currentFriendId}`,
+              description: `อวาตาร์ของ${this.currentFriendName || 'เพื่อน'}`,
               backgroundImage: this.currentConfig.avatar.image.startsWith('data:')
                 ? this.currentConfig.avatar.image
                 : '',
@@ -1465,8 +1465,8 @@ if (typeof window.ImageConfigModal === 'undefined') {
                   ? config.friendBackgrounds[friendBgIndex].id
                   : `friend_bg_${this.currentFriendId}_${Date.now()}`,
               friendId: this.currentFriendId,
-              name: `${this.currentFriendName || '好友'}的聊天背景`,
-              description: `${this.currentFriendName || '好友'}的专属聊天背景`,
+              name: `พื้นหลังแชทของ${this.currentFriendName || 'เพื่อน'}`,
+              description: `พื้นหลังแชทเฉพาะของ${this.currentFriendName || 'เพื่อน'}`,
               backgroundImage: this.currentConfig.background.image.startsWith('data:')
                 ? this.currentConfig.background.image
                 : '',

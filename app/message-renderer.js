@@ -1301,7 +1301,7 @@ if (typeof window.MessageRenderer === 'undefined') {
             const displayFileName = imageUrl.split('/').pop() || 'image.png';
 
             // 创建img标签替换原内容 - 使用响应式设计
-            processedContent = `<img src="${imageUrl}" alt="${displayFileName}" class="attachment-image" style="width: 100%; max-width: 100%; height: auto; border-radius: 8px; margin: 4px; cursor: pointer; object-fit: contain;" onclick="this.style.transform=this.style.transform?'':'scale(2)'; setTimeout(()=>this.style.transform='', 3000);" title="点击放大查看: ${displayFileName}" loading="lazy">`;
+            processedContent = `<img src="${imageUrl}" alt="${displayFileName}" class="attachment-image" style="width: 100%; max-width: 100%; height: auto; border-radius: 8px; margin: 4px; cursor: pointer; object-fit: contain;" onclick="this.style.transform=this.style.transform?'':'scale(2)'; setTimeout(()=>this.style.transform='', 3000);" title="คลิกเพื่อขยาย: ${displayFileName}" loading="lazy">`;
 
             console.log(`[Message Renderer] ✅ 已生成图片标签:`, {
               imageUrl,
@@ -1470,7 +1470,7 @@ if (typeof window.MessageRenderer === 'undefined') {
      * 格式化消息时间
      */
     formatMessageTime(timestamp) {
-      if (!timestamp) return '未知时间';
+      if (!timestamp) return 'ไม่ทราบเวลา';
 
       const date = new Date(timestamp);
       const now = new Date();
@@ -1480,15 +1480,15 @@ if (typeof window.MessageRenderer === 'undefined') {
       const diffDays = Math.floor(diffHours / 24);
 
       if (diffMins < 1) {
-        return '刚刚';
+        return 'เมื่อสักครู่';
       } else if (diffMins < 60) {
-        return `${diffMins}分钟前`;
+        return `${diffMins} นาทีที่แล้ว`;
       } else if (diffHours < 24) {
-        return `${diffHours}小时前`;
+        return `${diffHours} ชั่วโมงที่แล้ว`;
       } else if (diffDays < 7) {
-        return `${diffDays}天前`;
+        return `${diffDays} วันที่แล้ว`;
       } else {
-        return date.toLocaleDateString('zh-CN', {
+        return date.toLocaleDateString('th-TH', {
           month: 'short',
           day: 'numeric',
           hour: '2-digit',
@@ -1512,7 +1512,7 @@ if (typeof window.MessageRenderer === 'undefined') {
                 </div>
                 <div class="message-detail-footer">
                     <div class="message-stats">
-                        共 0 条消息 (我方: 0, 对方: 0, 群聊: 0)
+                        ข้อความทั้งหมด 0 รายการ (ฝั่งเรา: 0, ฝั่งตรงข้าม: 0, กลุ่ม: 0)
                     </div>
                     <div class="message-send-area">
                         <div class="send-input-container">
@@ -1543,13 +1543,13 @@ if (typeof window.MessageRenderer === 'undefined') {
                         <div class="error-text">โหลดข้อความล้มเหลว</div>
                         <div class="error-details">${errorMessage}</div>
                         <button class="retry-btn" onclick="window.messageRenderer.renderMessageDetail('${friendId}', '${friendName}')">
-                            重试
+                            ลองใหม่
                         </button>
                     </div>
                 </div>
                 <div class="message-detail-footer">
                     <div class="message-stats">
-                        加载失败，但您仍可以发送消息
+                        โหลดล้มเหลว แต่คุณยังสามารถส่งข้อความได้
                     </div>
                     <div class="message-send-area">
                         <div class="send-input-container">
@@ -1988,30 +1988,30 @@ if (typeof window.MessageRenderer === 'undefined') {
       panel.innerHTML = `
             <div class="special-panel-content" style="max-width: 400px; width: 90%;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
-                    <h3 style="margin: 0; color: #333; font-size: 18px;">🎤 语音消息</h3>
+                    <h3 style="margin: 0; color: #333; font-size: 18px;">🎤 ข้อความเสียง</h3>
                     <button onclick="this.parentElement.parentElement.parentElement.remove()"
                             style="background: none; border: none; font-size: 20px; cursor: pointer; color: #999; padding: 5px;">✕</button>
                 </div>
 
                 <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">请输入语音内容：</label>
+                    <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">กรุณาใส่เนื้อหาเสียง:</label>
                     <textarea id="voice-content-input"
                              placeholder="กรุณาใส่เนื้อหาเสียงที่ต้องการส่ง เช่น: ฉันสั่งอาหาร"
                              style="width: 100%; min-height: 80px; max-height: 150px; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; resize: vertical; font-family: inherit; line-height: 1.4; outline: none; transition: border-color 0.3s ease;"
                              maxlength="200"></textarea>
                     <div style="text-align: right; margin-top: 5px; font-size: 12px; color: #999;">
-                        <span id="voice-char-count">0</span>/200 字符
+                        <span id="voice-char-count">0</span>/200 ตัวอักษร
                     </div>
                 </div>
 
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
                     <button onclick="this.parentElement.parentElement.parentElement.remove()"
                             style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 6px; background: #f8f9fa; color: #333; cursor: pointer; font-size: 14px; transition: all 0.3s ease;">
-                        取消
+                        ยกเลิก
                     </button>
                     <button id="voice-send-confirm-btn"
                             style="padding: 10px 20px; border: none; border-radius: 6px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.3s ease;">
-                        发送语音
+                        ส่งเสียง
                     </button>
                 </div>
             </div>
@@ -2087,10 +2087,10 @@ if (typeof window.MessageRenderer === 'undefined') {
       if (!voiceContent) {
         // 输入框变红提示
         input.style.borderColor = '#dc3545';
-        input.placeholder = '请输入语音内容';
+        input.placeholder = 'กรุณาใส่เนื้อหาเสียง';
         setTimeout(() => {
           input.style.borderColor = '#ddd';
-          input.placeholder = '请输入要发送的语音内容，例如：我叫个外卖';
+          input.placeholder = 'กรุณาใส่เนื้อหาเสียงที่ต้องการส่ง เช่น: ฉันสั่งอาหาร';
         }, 2000);
         return;
       }
@@ -2878,7 +2878,7 @@ if (typeof window.MessageRenderer === 'undefined') {
       toast.innerHTML = `
             <div style="font-weight: bold; margin-bottom: 5px;">
                 ${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}
-                ${type === 'success' ? '成功' : type === 'error' ? '错误' : '提示'}
+                ${type === 'success' ? 'สำเร็จ' : type === 'error' ? 'ข้อผิดพลาด' : 'แจ้งเตือน'}
             </div>
             <div style="font-size: 12px; opacity: 0.9;">
                 ${message}
@@ -2906,42 +2906,42 @@ if (typeof window.MessageRenderer === 'undefined') {
       panel.innerHTML = `
             <div class="special-panel-content" style="max-width: 400px; width: 90%;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
-                    <h3 style="margin: 0; color: #333; font-size: 18px;">🧧 发红包</h3>
+                    <h3 style="margin: 0; color: #333; font-size: 18px;">🧧 ส่งซองแดง</h3>
                     <button onclick="this.parentElement.parentElement.parentElement.remove()"
                             style="background: none; border: none; font-size: 20px; cursor: pointer; color: #999; padding: 5px;">✕</button>
                 </div>
 
                 <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">请输入红包金额：</label>
+                    <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">กรุณาใส่จำนวนเงินซองแดง:</label>
                     <input type="number" id="redpack-amount-input"
                            placeholder="กรุณาใส่จำนวนเงิน เช่น: 88.88"
                            step="0.01" min="0.01" max="9999999"
                            style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; transition: border-color 0.3s ease;" />
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px; font-size: 12px; color: #999;">
-                        <span>金额范围：0.01 - 9999999.00 元</span>
+                        <span>ช่วงจำนวนเงิน: 0.01 - 9999999.00 หยวน</span>
                         <span id="redpack-amount-display">￥0.00</span>
                     </div>
                 </div>
 
                 <div style="margin-bottom: 20px;">
-                    <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">红包祝福语（可选）：</label>
+                    <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">คำอวยพรซองแดง (ไม่บังคับ):</label>
                     <input type="text" id="redpack-message-input"
                            placeholder="ร่ำรวยเงินทอง โชคดีมีชัย"
                            maxlength="20"
                            style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; transition: border-color 0.3s ease;" />
                     <div style="text-align: right; margin-top: 5px; font-size: 12px; color: #999;">
-                        <span id="redpack-message-count">0</span>/20 字符
+                        <span id="redpack-message-count">0</span>/20 ตัวอักษร
                     </div>
                 </div>
 
                 <div style="display: flex; gap: 10px; justify-content: flex-end;">
                     <button onclick="this.parentElement.parentElement.parentElement.remove()"
                             style="padding: 10px 20px; border: 1px solid #ddd; border-radius: 6px; background: #f8f9fa; color: #333; cursor: pointer; font-size: 14px; transition: all 0.3s ease;">
-                        取消
+                        ยกเลิก
                     </button>
                     <button id="redpack-send-confirm-btn"
                             style="padding: 10px 20px; border: none; border-radius: 6px; background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%); color: white; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.3s ease;">
-                        发红包
+                        ส่งซองแดง
                     </button>
                 </div>
             </div>
@@ -3050,16 +3050,16 @@ if (typeof window.MessageRenderer === 'undefined') {
       if (!amount || amount < 0.01 || amount > 9999999) {
         // 输入框变红提示
         amountInput.style.borderColor = '#dc3545';
-        amountInput.placeholder = '请输入0.01-9999999.00之间的金额';
+        amountInput.placeholder = 'กรุณาใส่จำนวนเงินระหว่าง 0.01-9999999.00';
         setTimeout(() => {
           amountInput.style.borderColor = '#ddd';
-          amountInput.placeholder = '请输入金额，例如：88.88';
+          amountInput.placeholder = 'กรุณาใส่จำนวนเงิน เช่น: 88.88';
         }, 2000);
         return;
       }
 
       const message = messageInput ? messageInput.value.trim() : '';
-      const blessing = message || '恭喜发财，大吉大利';
+      const blessing = message || 'ร่ำรวยเงินทอง โชคดีมีชัย';
 
       // 获取当前的输入框
       const appContent = document.getElementById('app-content');
@@ -3460,7 +3460,7 @@ if (typeof window.MessageRenderer === 'undefined') {
             fallbackLoader.onerror = () => {
               // 最终失败
               img.style.background = '#f8d7da';
-              img.alt = '图片加载失败';
+              img.alt = 'โหลดรูปภาพล้มเหลว';
               console.warn(`[Message Renderer] 表情包所有路径都加载失败: ${filename}`);
             };
             fallbackLoader.src = fallbackPath;
@@ -3470,7 +3470,7 @@ if (typeof window.MessageRenderer === 'undefined') {
 
         // 默认错误处理
         img.style.background = '#f8d7da';
-        img.alt = '图片加载失败';
+        img.alt = 'โหลดรูปภาพล้มเหลว';
       };
 
       imageLoader.src = src;

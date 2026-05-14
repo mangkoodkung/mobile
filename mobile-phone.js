@@ -804,7 +804,7 @@ class MobilePhone {
     }
 
     // 设置标题
-    titleElement.textContent = state.title || this.apps[state.app]?.name || '应用';
+    titleElement.textContent = state.title || this.apps[state.app]?.name || 'แอป';
 
     // 标记当前app与view，便于样式与导航判断
     const appScreen = document.getElementById('app-screen');
@@ -2229,7 +2229,7 @@ class MobilePhone {
       document.getElementById('app-content').innerHTML = `
                 <div class="loading-placeholder">
                     <div class="loading-icon">⏳</div>
-                    <div class="loading-text">正在加载消息应用...</div>
+                    <div class="loading-text">กำลังโหลดแอปข้อความ...</div>
                 </div>
             `;
 
@@ -2297,7 +2297,7 @@ class MobilePhone {
       document.getElementById('app-content').innerHTML = `
                 <div class="loading-placeholder">
                     <div class="loading-icon">⏳</div>
-                    <div class="loading-text">正在加载状态应用...</div>
+                    <div class="loading-text">กำลังโหลดแอปสถานะ...</div>
                 </div>
             `;
 
@@ -2349,7 +2349,7 @@ class MobilePhone {
       document.getElementById('app-content').innerHTML = `
                 <div class="loading-placeholder">
                     <div class="loading-icon">⏳</div>
-                    <div class="loading-text">正在加载日记应用...</div>
+                    <div class="loading-text">กำลังโหลดแอปไดอารี่...</div>
                 </div>
             `;
 
@@ -2401,7 +2401,7 @@ class MobilePhone {
       document.getElementById('app-content').innerHTML = `
                 <div class="loading-placeholder">
                     <div class="loading-icon">⏳</div>
-                    <div class="loading-text">正在加载购物应用...</div>
+                    <div class="loading-text">กำลังโหลดแอปช้อปปิ้ง...</div>
                 </div>
             `;
 
@@ -2453,7 +2453,7 @@ class MobilePhone {
       document.getElementById('app-content').innerHTML = `
                 <div class="loading-placeholder">
                     <div class="loading-icon">⏳</div>
-                    <div class="loading-text">正在加载背包应用...</div>
+                    <div class="loading-text">กำลังโหลดแอปกระเป๋า...</div>
                 </div>
             `;
 
@@ -2505,7 +2505,7 @@ class MobilePhone {
       document.getElementById('app-content').innerHTML = `
                 <div class="loading-placeholder">
                     <div class="loading-icon">⏳</div>
-                    <div class="loading-text">正在加载任务应用...</div>
+                    <div class="loading-text">กำลังโหลดแอปภารกิจ...</div>
                 </div>
             `;
 
@@ -2557,7 +2557,7 @@ class MobilePhone {
       document.getElementById('app-content').innerHTML = `
                 <div class="loading-placeholder">
                     <div class="loading-icon">⏳</div>
-                    <div class="loading-text">正在加载直播应用...</div>
+                    <div class="loading-text">กำลังโหลดแอปไลฟ์...</div>
                 </div>
             `;
 
@@ -2609,7 +2609,7 @@ class MobilePhone {
       document.getElementById('app-content').innerHTML = `
                 <div class="loading-placeholder">
                     <div class="loading-icon">⏳</div>
-                    <div class="loading-text">正在加载观看直播应用...</div>
+                    <div class="loading-text">กำลังโหลดแอปดูไลฟ์...</div>
                 </div>
             `;
 
@@ -2661,7 +2661,7 @@ class MobilePhone {
       document.getElementById('app-content').innerHTML = `
                 <div class="loading-placeholder">
                     <div class="loading-icon">⏳</div>
-                    <div class="loading-text">正在加载平行事件应用...</div>
+                    <div class="loading-text">กำลังโหลดแอปเหตุการณ์คู่ขนาน...</div>
                 </div>
             `;
 
@@ -3917,17 +3917,17 @@ class MobilePhone {
       if (window.forumManager && window.forumManager.isInitialized) {
         // 检查是否正在处理
         if (window.forumManager.isProcessing) {
-          forumStatusEl.textContent = '🔄 正在生成论坛...';
+          forumStatusEl.textContent = '🔄 กำลังสร้างฟอรัม...';
           forumStatusEl.style.color = '#007bff';
         } else {
-          forumStatusEl.textContent = '✅ 已就绪';
+          forumStatusEl.textContent = '✅ พร้อมแล้ว';
           forumStatusEl.style.color = '#28a745';
         }
       } else if (window.forumManager) {
-        forumStatusEl.textContent = '⚠️ 初始化中...';
+        forumStatusEl.textContent = '⚠️ กำลังเริ่มต้น...';
         forumStatusEl.style.color = '#ffc107';
       } else {
-        forumStatusEl.textContent = '❌ 未加载';
+        forumStatusEl.textContent = '❌ ยังไม่โหลด';
         forumStatusEl.style.color = '#dc3545';
       }
     }
@@ -3936,17 +3936,17 @@ class MobilePhone {
       if (window.weiboManager && window.weiboManager.isInitialized) {
         // 检查是否正在处理
         if (window.weiboManager.isProcessing) {
-          weiboStatusEl.textContent = '🔄 正在生成微博...';
+          weiboStatusEl.textContent = '🔄 กำลังสร้างเวยป๋อ...';
           weiboStatusEl.style.color = '#007bff';
         } else {
-          weiboStatusEl.textContent = '✅ 已就绪';
+          weiboStatusEl.textContent = '✅ พร้อมแล้ว';
           weiboStatusEl.style.color = '#28a745';
         }
       } else if (window.weiboManager) {
-        weiboStatusEl.textContent = '⚠️ 初始化中...';
+        weiboStatusEl.textContent = '⚠️ กำลังเริ่มต้น...';
         weiboStatusEl.style.color = '#ffc107';
       } else {
-        weiboStatusEl.textContent = '❌ 未加载';
+        weiboStatusEl.textContent = '❌ ยังไม่โหลด';
         weiboStatusEl.style.color = '#dc3545';
       }
     }
@@ -3955,20 +3955,20 @@ class MobilePhone {
       if (window.parallelEventsManager && window.parallelEventsManager.isInitialized) {
         // 检查是否正在处理
         if (window.parallelEventsManager.isProcessing) {
-          parallelEventsStatusEl.textContent = '🔄 正在生成平行事件...';
+          parallelEventsStatusEl.textContent = '🔄 กำลังสร้างเหตุการณ์คู่ขนาน...';
           parallelEventsStatusEl.style.color = '#007bff';
         } else if (window.parallelEventsManager.isListening) {
-          parallelEventsStatusEl.textContent = '👂 监听中';
+          parallelEventsStatusEl.textContent = '👂 กำลังฟัง';
           parallelEventsStatusEl.style.color = '#17a2b8';
         } else {
-          parallelEventsStatusEl.textContent = '✅ 已就绪';
+          parallelEventsStatusEl.textContent = '✅ พร้อมแล้ว';
           parallelEventsStatusEl.style.color = '#28a745';
         }
       } else if (window.parallelEventsManager) {
-        parallelEventsStatusEl.textContent = '⚠️ 初始化中...';
+        parallelEventsStatusEl.textContent = '⚠️ กำลังเริ่มต้น...';
         parallelEventsStatusEl.style.color = '#ffc107';
       } else {
-        parallelEventsStatusEl.textContent = '❌ 未加载';
+        parallelEventsStatusEl.textContent = '❌ ยังไม่โหลด';
         parallelEventsStatusEl.style.color = '#dc3545';
       }
     }
@@ -3979,13 +3979,13 @@ class MobilePhone {
         window.mobileCustomAPIConfig.isAPIAvailable &&
         window.mobileCustomAPIConfig.isAPIAvailable()
       ) {
-        apiConfigStatusEl.textContent = '✅ 已配置';
+        apiConfigStatusEl.textContent = '✅ ตั้งค่าแล้ว';
         apiConfigStatusEl.style.color = '#28a745';
       } else if (window.mobileCustomAPIConfig) {
-        apiConfigStatusEl.textContent = '⚠️ 未配置';
+        apiConfigStatusEl.textContent = '⚠️ ยังไม่ตั้งค่า';
         apiConfigStatusEl.style.color = '#ffc107';
       } else {
-        apiConfigStatusEl.textContent = '❌ 未加载';
+        apiConfigStatusEl.textContent = '❌ ยังไม่โหลด';
         apiConfigStatusEl.style.color = '#dc3545';
       }
     }
@@ -4189,35 +4189,35 @@ class MobilePhone {
           <div class="modal-body">
             <form id="create-style-form">
               <div class="form-group">
-                <label for="style-name-input">风格名称</label>
+                <label for="style-name-input">ชื่อสไตล์</label>
                 <input
                   type="text"
                   id="style-name-input"
-                  placeholder="例如：温柔小姐姐、霸道总裁、二次元宅男..."
+                  placeholder="เช่น: สาวน่ารัก, ผู้บริหาร, โอตาคุ..."
                   maxlength="20"
                   required
                 >
-                <div class="input-hint">建议使用简洁明了的名称</div>
+                <div class="input-hint">แนะนำให้ใช้ชื่อที่กระชับชัดเจน</div>
               </div>
 
               <div class="form-group">
-                <label for="style-description-input">风格描述</label>
+                <label for="style-description-input">คำอธิบายสไตล์</label>
                 <textarea
                   id="style-description-input"
-                  placeholder="描述你想要的论坛风格，ai将会根据你的描述帮你完善并生成对应的论坛风格。例如：小红书的论坛风格，R18论坛风格等。你也可以描述该论坛的语言习惯，用户名特征，语气等。"
+                  placeholder="อธิบายสไตล์ฟอรัมที่คุณต้องการ AI จะช่วยปรับปรุงและสร้างสไตล์ฟอรัมตามคำอธิบายของคุณ เช่น: สไตล์ฟอรัม Xiaohongshu, สไตล์ฟอรัม R18 เป็นต้น คุณยังสามารถอธิบายนิสัยการใช้ภาษา ลักษณะชื่อผู้ใช้ น้ำเสียง ฯลฯ"
                   rows="6"
                   maxlength="500"
                   required
                 ></textarea>
                 <div class="input-hint">
-                  <span class="char-count">0/500</span> - 描述越详细，AI生成的风格越准确
+                  <span class="char-count">0/500</span> - ยิ่งอธิบายละเอียด AI จะสร้างสไตล์ได้แม่นยำยิ่งขึ้น
                 </div>
               </div>
 
               <div class="form-actions">
                 <button type="button" class="btn-secondary" id="cancel-create-style">ยกเลิก</button>
                 <button type="submit" class="btn-primary" id="generate-style-btn">
-                  <i class="fas fa-magic"></i> 生成风格
+                  <i class="fas fa-magic"></i> สร้างสไตล์
                 </button>
               </div>
             </form>
@@ -4257,7 +4257,7 @@ class MobilePhone {
 
       const customStyles = window.forumStyles.getAllCustomStyles();
       if (customStyles.length === 0) {
-        MobilePhone.showToast('没有自定义风格可导出', 'warning');
+        MobilePhone.showToast('ไม่มีสไตล์กำหนดเองให้ส่งออก', 'warning');
         return;
       }
 
@@ -4274,11 +4274,11 @@ class MobilePhone {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      MobilePhone.showToast(`✅ 已导出 ${customStyles.length} 个自定义风格`, 'success');
+      MobilePhone.showToast(`✅ ส่งออก ${customStyles.length} สไตล์กำหนดเองแล้ว`, 'success');
       console.log('[Mobile Phone] 导出自定义风格成功');
     } catch (error) {
       console.error('[Mobile Phone] 导出自定义风格失败:', error);
-      MobilePhone.showToast('导出失败: ' + error.message, 'error');
+      MobilePhone.showToast('ส่งออกล้มเหลว: ' + error.message, 'error');
     }
   }
 
@@ -4309,7 +4309,7 @@ class MobilePhone {
             this.updateStyleSelectors();
             MobilePhone.showToast('✅ ' + message, 'success');
           } else if (results.skipped > 0) {
-            MobilePhone.showToast('⚠️ ' + message + ' (已存在同名风格)', 'warning');
+            MobilePhone.showToast('⚠️ ' + message + ' (มีสไตล์ชื่อเดียวกันอยู่แล้ว)', 'warning');
           } else {
             MobilePhone.showToast('❌ ' + message, 'error');
           }
@@ -4320,19 +4320,19 @@ class MobilePhone {
           }
         } catch (error) {
           console.error('[Mobile Phone] 解析导入文件失败:', error);
-          MobilePhone.showToast('导入失败: 文件格式错误', 'error');
+          MobilePhone.showToast('นำเข้าล้มเหลว: รูปแบบไฟล์ไม่ถูกต้อง', 'error');
         }
       };
 
       reader.onerror = () => {
         console.error('[Mobile Phone] 读取文件失败');
-        MobilePhone.showToast('读取文件失败', 'error');
+        MobilePhone.showToast('อ่านไฟล์ล้มเหลว', 'error');
       };
 
       reader.readAsText(file);
     } catch (error) {
       console.error('[Mobile Phone] 导入自定义风格失败:', error);
-      MobilePhone.showToast('导入失败: ' + error.message, 'error');
+      MobilePhone.showToast('นำเข้าล้มเหลว: ' + error.message, 'error');
     }
   }
 
@@ -4353,8 +4353,8 @@ class MobilePhone {
         container.innerHTML = `
           <div class="no-styles-placeholder">
             <div class="placeholder-icon">🎭</div>
-            <div class="placeholder-text">还没有自定义风格</div>
-            <div class="placeholder-hint">点击上方按钮创建你的第一个风格</div>
+            <div class="placeholder-text">ยังไม่มีสไตล์กำหนดเอง</div>
+            <div class="placeholder-hint">คลิกปุ่มด้านบนเพื่อสร้างสไตล์แรกของคุณ</div>
           </div>
         `;
         return;
@@ -4399,7 +4399,7 @@ class MobilePhone {
       container.innerHTML = `
         <div class="no-styles-placeholder">
           <div class="placeholder-icon">❌</div>
-          <div class="placeholder-text">加载风格失败</div>
+          <div class="placeholder-text">โหลดสไตล์ล้มเหลว</div>
           <div class="placeholder-hint">${error.message}</div>
         </div>
       `;
@@ -4472,7 +4472,7 @@ class MobilePhone {
     const description = descriptionInput?.value.trim();
 
     if (!name || !description) {
-      MobilePhone.showToast('请填写完整的风格信息', 'warning');
+      MobilePhone.showToast('กรุณากรอกข้อมูลสไตล์ให้ครบถ้วน', 'warning');
       return;
     }
 
@@ -4490,7 +4490,7 @@ class MobilePhone {
       })
       .catch(error => {
         console.error('[Mobile Phone] 生成风格失败:', error);
-        MobilePhone.showToast('生成风格失败: ' + error.message, 'error');
+        MobilePhone.showToast('สร้างสไตล์ล้มเหลว: ' + error.message, 'error');
       })
       .finally(() => {
         // 恢复按钮状态
@@ -4673,11 +4673,11 @@ class MobilePhone {
             <div class="style-info">
               <div class="style-meta-info">
                 <div class="meta-item">
-                  <span class="meta-label">风格名称:</span>
+                  <span class="meta-label">ชื่อสไตล์:</span>
                   <span class="meta-value">${this.escapeHtml(name)}</span>
                 </div>
                 <div class="meta-item">
-                  <span class="meta-label">原始描述:</span>
+                  <span class="meta-label">คำอธิบายเดิม:</span>
                   <span class="meta-value">${this.escapeHtml(description)}</span>
                 </div>
               </div>
@@ -4685,28 +4685,28 @@ class MobilePhone {
 
             <form id="style-preview-form">
               <div class="form-group">
-                <label for="style-content-editor">AI生成的风格内容</label>
+                <label for="style-content-editor">เนื้อหาสไตล์ที่ AI สร้าง</label>
                 <div class="editor-toolbar">
-                  <button type="button" class="toolbar-btn" id="format-style-btn" title="格式化内容">
-                    <i class="fas fa-magic"></i> 格式化
+                  <button type="button" class="toolbar-btn" id="format-style-btn" title="จัดรูปแบบเนื้อหา">
+                    <i class="fas fa-magic"></i> จัดรูปแบบ
                   </button>
-                  <button type="button" class="toolbar-btn" id="validate-style-btn" title="验证格式">
-                    <i class="fas fa-check-circle"></i> 验证
+                  <button type="button" class="toolbar-btn" id="validate-style-btn" title="ตรวจสอบรูปแบบ">
+                    <i class="fas fa-check-circle"></i> ตรวจสอบ
                   </button>
                 </div>
                 <textarea
                   id="style-content-editor"
                   class="style-editor"
                   rows="12"
-                  placeholder="AI生成的风格内容将显示在这里..."
+                  placeholder="เนื้อหาสไตล์ที่ AI สร้างจะแสดงที่นี่..."
                 >${this.escapeHtml(generatedStyle)}</textarea>
                 <div class="editor-hint">
                   <div class="hint-text">
                     <i class="fas fa-info-circle"></i>
-                    你可以编辑AI生成的内容，确保风格符合你的需求
+                    คุณสามารถแก้ไขเนื้อหาที่ AI สร้าง เพื่อให้สไตล์ตรงกับความต้องการ
                   </div>
                   <div class="char-count-preview">
-                    <span id="preview-char-count">${generatedStyle.length}</span> 字符
+                    <span id="preview-char-count">${generatedStyle.length}</span> ตัวอักษร
                   </div>
                 </div>
               </div>
@@ -4854,7 +4854,7 @@ class MobilePhone {
       charCount.textContent = content.length;
     }
 
-    MobilePhone.showToast('内容已格式化', 'success');
+    MobilePhone.showToast('จัดรูปแบบเนื้อหาแล้ว', 'success');
   }
 
   // 验证风格内容
@@ -4867,7 +4867,7 @@ class MobilePhone {
 
     // 基本验证
     if (content.length < 50) {
-      issues.push('内容过短，建议至少50个字符');
+      issues.push('เนื้อหาสั้นเกินไป แนะนำอย่างน้อย 50 ตัวอักษร');
     }
 
     if (!content.includes('你是一位')) {
@@ -4879,9 +4879,9 @@ class MobilePhone {
     }
 
     if (issues.length === 0) {
-      MobilePhone.showToast('✅ 风格格式验证通过', 'success');
+      MobilePhone.showToast('✅ ตรวจสอบรูปแบบสไตล์ผ่าน', 'success');
     } else {
-      const message = '格式建议：\n' + issues.join('\n');
+      const message = 'คำแนะนำรูปแบบ:\n' + issues.join('\n');
       MobilePhone.showToast(message, 'warning');
     }
   }
@@ -4893,7 +4893,7 @@ class MobilePhone {
 
     // 显示加载状态
     regenerateBtn.disabled = true;
-    regenerateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 重新生成中...';
+    regenerateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> กำลังสร้างใหม่...';
 
     // 调用AI重新生成
     this.generateCustomStyle(styleName, styleDescription)
@@ -4908,11 +4908,11 @@ class MobilePhone {
             charCount.textContent = newStyle.length;
           }
         }
-        MobilePhone.showToast('风格已重新生成', 'success');
+        MobilePhone.showToast('สร้างสไตล์ใหม่แล้ว', 'success');
       })
       .catch(error => {
         console.error('[Mobile Phone] 重新生成风格失败:', error);
-        MobilePhone.showToast('重新生成失败: ' + error.message, 'error');
+        MobilePhone.showToast('สร้างใหม่ล้มเหลว: ' + error.message, 'error');
       })
       .finally(() => {
         // 恢复按钮状态
@@ -4930,7 +4930,7 @@ class MobilePhone {
 
     const content = editor.value.trim();
     if (!content) {
-      MobilePhone.showToast('风格内容不能为空', 'warning');
+      MobilePhone.showToast('เนื้อหาสไตล์ต้องไม่ว่างเปล่า', 'warning');
       return;
     }
 
@@ -4964,10 +4964,10 @@ class MobilePhone {
       // 更新风格选择器（这个方法将在后续任务中实现）
       this.updateStyleSelectors();
 
-      MobilePhone.showToast('✅ 风格保存成功', 'success');
+      MobilePhone.showToast('✅ บันทึกสไตล์สำเร็จ', 'success');
     } catch (error) {
       console.error('[Mobile Phone] 保存风格失败:', error);
-      MobilePhone.showToast('保存失败: ' + error.message, 'error');
+      MobilePhone.showToast('บันทึกล้มเหลว: ' + error.message, 'error');
     } finally {
       // 恢复按钮状态
       if (saveBtn) {
@@ -5315,7 +5315,7 @@ class MobilePhone {
       customStyles.forEach(style => {
         const option = document.createElement('option');
         option.value = style.name;
-        option.textContent = `${style.name} (自定义)`;
+        option.textContent = `${style.name} (กำหนดเอง)`;
         customGroup.appendChild(option);
       });
 
@@ -5349,7 +5349,7 @@ class MobilePhone {
       this.showStylePreviewModal(style.name, style.description, style.prompt);
     } catch (error) {
       console.error('[Mobile Phone] 编辑自定义风格失败:', error);
-      MobilePhone.showToast('编辑失败: ' + error.message, 'error');
+      MobilePhone.showToast('แก้ไขล้มเหลว: ' + error.message, 'error');
     }
   }
 
@@ -5389,10 +5389,10 @@ class MobilePhone {
       this.loadAndDisplayCustomStyles();
       this.updateStyleSelectors();
 
-      MobilePhone.showToast(`✅ 已复制为 "${finalName}"`, 'success');
+      MobilePhone.showToast(`✅ คัดลอกเป็น "${finalName}" แล้ว`, 'success');
     } catch (error) {
       console.error('[Mobile Phone] 复制自定义风格失败:', error);
-      MobilePhone.showToast('复制失败: ' + error.message, 'error');
+      MobilePhone.showToast('คัดลอกล้มเหลว: ' + error.message, 'error');
     }
   }
 
@@ -5421,10 +5421,10 @@ class MobilePhone {
       this.loadAndDisplayCustomStyles();
       this.updateStyleSelectors();
 
-      MobilePhone.showToast(`✅ 已删除风格 "${styleName}"`, 'success');
+      MobilePhone.showToast(`✅ ลบสไตล์ "${styleName}" แล้ว`, 'success');
     } catch (error) {
       console.error('[Mobile Phone] 删除自定义风格失败:', error);
-      MobilePhone.showToast('删除失败: ' + error.message, 'error');
+      MobilePhone.showToast('ลบล้มเหลว: ' + error.message, 'error');
     }
   }
 
