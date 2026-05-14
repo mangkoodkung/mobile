@@ -1,88 +1,88 @@
-// 平行事件应用调试加载器
-console.log('🔍 [Debug Loader] 开始调试平行事件应用加载过程...');
+// ตัวโหลดดีบักแอปเหตุการณ์คู่ขนาน
+console.log('🔍 [Debug Loader] เริ่มดีบักกระบวนการโหลดแอปเหตุการณ์คู่ขนาน...');
 
-// 检查当前环境
-console.log('📋 [Debug Loader] 环境检查:');
-console.log('  - 当前URL:', window.location.href);
-console.log('  - 用户代理:', navigator.userAgent);
+// ตรวจสอบสภาพแวดล้อมปัจจุบัน
+console.log('📋 [Debug Loader] ตรวจสอบสภาพแวดล้อม:');
+console.log('  - URL ปัจจุบัน:', window.location.href);
+console.log('  - User Agent:', navigator.userAgent);
 
-// 检查文件路径
+// ตรวจสอบเส้นทางไฟล์
 const expectedPaths = [
-    './scripts/extensions/third-party/mobile/app/parallel-events-app/parallel-events-app.css',
-    './scripts/extensions/third-party/mobile/app/parallel-events-app/parallel-events-styles.js',
-    './scripts/extensions/third-party/mobile/app/parallel-events-app/parallel-events-app.js'
+  './scripts/extensions/third-party/mobile/app/parallel-events-app/parallel-events-app.css',
+  './scripts/extensions/third-party/mobile/app/parallel-events-app/parallel-events-styles.js',
+  './scripts/extensions/third-party/mobile/app/parallel-events-app/parallel-events-app.js',
 ];
 
-console.log('📁 [Debug Loader] 预期文件路径:');
+console.log('📁 [Debug Loader] เส้นทางไฟล์ที่คาดหวัง:');
 expectedPaths.forEach((path, index) => {
-    console.log(`  ${index + 1}. ${path}`);
+  console.log(`  ${index + 1}. ${path}`);
 });
 
-// 测试文件是否可访问
+// ทดสอบว่าไฟล์สามารถเข้าถึงได้หรือไม่
 async function testFileAccess() {
-    console.log('🌐 [Debug Loader] 测试文件访问性...');
-    
-    for (let i = 0; i < expectedPaths.length; i++) {
-        const path = expectedPaths[i];
-        try {
-            const response = await fetch(path);
-            console.log(`  ✅ ${path} - 状态: ${response.status}`);
-        } catch (error) {
-            console.log(`  ❌ ${path} - 错误: ${error.message}`);
-        }
+  console.log('🌐 [Debug Loader] ทดสอบการเข้าถึงไฟล์...');
+
+  for (let i = 0; i < expectedPaths.length; i++) {
+    const path = expectedPaths[i];
+    try {
+      const response = await fetch(path);
+      console.log(`  ✅ ${path} - สถานะ: ${response.status}`);
+    } catch (error) {
+      console.log(`  ❌ ${path} - ข้อผิดพลาด: ${error.message}`);
     }
+  }
 }
 
-// 监控全局变量变化
+// ตรวจสอบการเปลี่ยนแปลงตัวแปรส่วนกลาง
 const checkGlobals = () => {
-    const globals = {
-        'ParallelEventsApp': window.ParallelEventsApp,
-        'parallelEventsManager': window.parallelEventsManager,
-        'parallelEventsStyles': window.parallelEventsStyles,
-        'getParallelEventsAppContent': window.getParallelEventsAppContent,
-        'bindParallelEventsAppEvents': window.bindParallelEventsAppEvents
-    };
-    
-    console.log('🔍 [Debug Loader] 全局变量状态:');
-    Object.entries(globals).forEach(([name, value]) => {
-        const type = typeof value;
-        const exists = value !== undefined;
-        console.log(`  - ${name}: ${exists ? '✅' : '❌'} (${type})`);
-    });
-    
-    return globals;
+  const globals = {
+    ParallelEventsApp: window.ParallelEventsApp,
+    parallelEventsManager: window.parallelEventsManager,
+    parallelEventsStyles: window.parallelEventsStyles,
+    getParallelEventsAppContent: window.getParallelEventsAppContent,
+    bindParallelEventsAppEvents: window.bindParallelEventsAppEvents,
+  };
+
+  console.log('🔍 [Debug Loader] สถานะตัวแปรส่วนกลาง:');
+  Object.entries(globals).forEach(([name, value]) => {
+    const type = typeof value;
+    const exists = value !== undefined;
+    console.log(`  - ${name}: ${exists ? '✅' : '❌'} (${type})`);
+  });
+
+  return globals;
 };
 
-// 初始检查
+// ตรวจสอบเริ่มต้น
 checkGlobals();
 
-// 测试文件访问
+// ทดสอบการเข้าถึงไฟล์
 testFileAccess();
 
-// 定期检查全局变量变化
+// ตรวจสอบการเปลี่ยนแปลงตัวแปรส่วนกลางเป็นระยะ
 let checkCount = 0;
 const maxChecks = 20;
 const checkInterval = setInterval(() => {
-    checkCount++;
-    console.log(`🔄 [Debug Loader] 检查 ${checkCount}/${maxChecks}:`);
-    
-    const globals = checkGlobals();
-    
-    // 如果所有变量都存在，停止检查
-    const allExists = Object.values(globals).every(v => v !== undefined);
-    if (allExists) {
-        console.log('🎉 [Debug Loader] 所有全局变量已就绪！');
-        clearInterval(checkInterval);
-        
-        // 尝试调用调试函数
-        if (window.debugParallelEventsApp) {
-            console.log('🔧 [Debug Loader] 调用调试函数...');
-            window.debugParallelEventsApp();
-        }
-    } else if (checkCount >= maxChecks) {
-        console.log('⏰ [Debug Loader] 检查超时，停止监控');
-        clearInterval(checkInterval);
+  checkCount++;
+  console.log(`🔄 [Debug Loader] ตรวจสอบ ${checkCount}/${maxChecks}:`);
+
+  const globals = checkGlobals();
+
+  // ถ้าตัวแปรทั้งหมดมีอยู่แล้ว หยุดตรวจสอบ
+  const allExists = Object.values(globals).every(v => v !== undefined);
+  if (allExists) {
+    console.log('🎉 [Debug Loader] ตัวแปรส่วนกลางทั้งหมดพร้อมแล้ว!');
+    clearInterval(checkInterval);
+
+    // ลองเรียกฟังก์ชันดีบัก
+    if (window.debugParallelEventsApp) {
+      console.log('🔧 [Debug Loader] เรียกฟังก์ชันดีบัก...');
+      window.debugParallelEventsApp();
     }
+  } else if (checkCount >= maxChecks) {
+    console.log('⏰ [Debug Loader] ตรวจสอบหมดเวลา หยุดการตรวจสอบ');
+    clearInterval(checkInterval);
+  }
 }, 1000);
 
-console.log('🔍 [Debug Loader] 调试加载器已启动，将监控全局变量变化...');
+console.log('🔍 [Debug Loader] ตัวโหลดดีบักเริ่มทำงานแล้ว จะตรวจสอบการเปลี่ยนแปลงตัวแปรส่วนกลาง...');
