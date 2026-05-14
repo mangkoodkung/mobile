@@ -871,10 +871,10 @@ function createSettingsUI() {
                         <span>ปิดข้อความหลัก</span>
                     </label>
                     <div class="flex m-t-1" style='flex-wrap: wrap;'>
-                        <button id="mobile_context_status_btn" class="menu_button" style='width: auto;background:#777;color:#fff;display:none'>查看状态</button>
+                        <button id="mobile_context_status_btn" class="menu_button" style='width: auto;background:#777;color:#fff;display:none'>ดูสถานะ</button>
                         <button id="mobile_context_clear_btn" class="menu_button" style='width: auto;background:#777;color:#fff'>ล้าง Log</button>
                         <button id="mobile_custom_api_show_btn" class="menu_button" style='width: auto;background:#777;color:#fff'>ตั้งค่า API แบบกำหนดเอง</button>
-                        <button id="mobile_mesid_floor_status_btn" class="menu_button" style='width: auto;background:#777;color:#fff;display:none'>楼层监听器状态</button>
+                        <button id="mobile_mesid_floor_status_btn" class="menu_button" style='width: auto;background:#777;color:#fff;display:none'>สถานะตัวฟังชั้น</button>
                     </div>
                 </div>
             </div>

@@ -724,26 +724,26 @@ class MobileContextEditor {
             <div id="mobile-context-editor-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; overflow-y: auto;">
 
                 <div style="background: linear-gradient(135deg, #9C27B0, #673AB7); color: white; padding: 15px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.2);">
-                    <h3 style="margin: 0; font-size: 18px;">🛠️ 上下文编辑器 v2.2</h3>
-                    <button id="mobile-context-editor-close" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 12px; border-radius: 15px; cursor: pointer; font-size: 14px;">✖️ 关闭</button>
+                    <h3 style="margin: 0; font-size: 18px;">🛠️ ตัวแก้ไขบริบท v2.2</h3>
+                    <button id="mobile-context-editor-close" style="background: rgba(255,255,255,0.2); color: white; border: none; padding: 8px 12px; border-radius: 15px; cursor: pointer; font-size: 14px;">✖️ ปิด</button>
                 </div>
 
                 <div style="padding: 15px;">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-                        <button id="mobile-load-chat-btn" style="background: #4CAF50; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;">📂 加载聊天</button>
-                        <button id="mobile-save-chat-btn" style="background: #2196F3; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;" disabled>💾 保存</button>
-                        <button id="mobile-add-message-btn" style="background: #FF9800; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;" disabled>➕ 添加</button>
-                        <button id="mobile-stats-btn" style="background: #795548; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;" disabled>📊 统计</button>
+                        <button id="mobile-load-chat-btn" style="background: #4CAF50; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;">📂 โหลดแชท</button>
+                        <button id="mobile-save-chat-btn" style="background: #2196F3; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;" disabled>💾 บันทึก</button>
+                        <button id="mobile-add-message-btn" style="background: #FF9800; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;" disabled>➕ เพิ่ม</button>
+                        <button id="mobile-stats-btn" style="background: #795548; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;" disabled>📊 สถิติ</button>
                     </div>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-                        <button id="mobile-refresh-btn" style="background: #607D8B; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;" disabled>🔄 刷新</button>
-                        <button id="mobile-export-btn" style="background: #E91E63; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;" disabled>📤 导出</button>
+                        <button id="mobile-refresh-btn" style="background: #607D8B; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;" disabled>🔄 รีเฟรช</button>
+                        <button id="mobile-export-btn" style="background: #E91E63; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;" disabled>📤 ส่งออก</button>
                     </div>
 
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px;">
-                        <button id="mobile-quick-edit-btn" style="background: #9C27B0; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;" disabled>⚡ 快速修改</button>
-                        <button id="mobile-test-api-btn" style="background: #00BCD4; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;" disabled>🔧 测试API</button>
+                        <button id="mobile-quick-edit-btn" style="background: #9C27B0; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;" disabled>⚡ แก้ไขด่วน</button>
+                        <button id="mobile-test-api-btn" style="background: #00BCD4; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;" disabled>🔧 ทดสอบ API</button>
                     </div>
 
                     <!-- 新增：分页控制区域 -->
@@ -1245,7 +1245,7 @@ class MobileContextEditor {
           </div>
         </div>
         <div style="color: #555; white-space: pre-wrap; background: white; padding: 8px; border-radius: 5px; border: 1px solid #ddd; font-size: 13px; line-height: 1.4;">${displayContent}</div>
-        ${content.length > maxLength ? `<div style="margin-top: 8px;"><button class="mobile-expand-message-btn" data-index="${globalIndex}" style="padding: 4px 8px; background: #607D8B; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">📖 展开全文</button></div>` : ''}
+        ${content.length > maxLength ? `<div style="margin-top: 8px;"><button class="mobile-expand-message-btn" data-index="${globalIndex}" style="padding: 4px 8px; background: #607D8B; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px;">📖 ดูทั้งหมด</button></div>` : ''}
       </div>
     `;
   }
@@ -1667,8 +1667,8 @@ $(document).on('click', '.mobile-expand-message-btn', function (e) {
       <div id="mobile-full-text-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10001; display: flex; align-items: center; justify-content: center;">
         <div style="background: white; margin: 20px; padding: 20px; border-radius: 10px; max-width: 90%; max-height: 80%; overflow-y: auto;">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid #ddd; padding-bottom: 10px;">
-            <h4 style="margin: 0; color: #333;">消息全文 (#${messageIndex})</h4>
-            <button onclick="$('#mobile-full-text-modal').remove()" style="background: #f44336; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer;">✖️ 关闭</button>
+            <h4 style="margin: 0; color: #333;">ข้อความเต็ม (#${messageIndex})</h4>
+            <button onclick="$('#mobile-full-text-modal').remove()" style="background: #f44336; color: white; border: none; padding: 8px 12px; border-radius: 5px; cursor: pointer;">✖️ ปิด</button>
           </div>
           <div style="white-space: pre-wrap; color: #333; line-height: 1.6; font-size: 14px; max-height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 15px; border-radius: 5px; background: #f9f9f9;">${editor.escapeHtml(fullContent)}</div>
         </div>

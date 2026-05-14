@@ -2968,8 +2968,8 @@ class MobilePhone {
                         </div>
 
                         <div class="action-buttons">
-                            <button id="generate-forum-now" class="btn-primary">🚀 立即生成论坛</button>
-                            <button id="clear-forum-content" class="btn-danger">🗑️ 清除论坛内容</button>
+                            <button id="generate-forum-now" class="btn-primary">🚀 สร้างฟอรัมทันที</button>
+                            <button id="clear-forum-content" class="btn-danger">🗑️ ล้างเนื้อหาฟอรัม</button>
                         </div>
                     </div>
 
@@ -3080,7 +3080,7 @@ class MobilePhone {
                             </div>
 
                             <div class="setting-group">
-                                <button id="test-parallel-events" class="btn-primary">🧪 测试生成</button>
+                                <button id="test-parallel-events" class="btn-primary">🧪 ทดสอบสร้าง</button>
                             </div>
 
                             <div class="parallel-events-info">
@@ -3122,16 +3122,16 @@ class MobilePhone {
                         </div>
 
                         <div class="action-buttons">
-                            <button id="generate-weibo-now" class="btn-primary">🚀 立即生成微博</button>
-                            <button id="clear-weibo-content" class="btn-danger">🗑️ 清除微博内容</button>
+                            <button id="generate-weibo-now" class="btn-primary">🚀 สร้าง Weibo ทันที</button>
+                            <button id="clear-weibo-content" class="btn-danger">🗑️ ล้างเนื้อหา Weibo</button>
                         </div>
                     </div>
 
                     <div class="m-tab-content" id="api-tab" style="display: none;">
                         <div class="setting-group">
-                            <label>API配置:</label>
-                            <button id="open-api-config" class="btn-secondary">🔧 打开API配置面板</button>
-                            <p class="setting-description">配置用于生成论坛和微博内容的API设置</p>
+                            <label>ตั้งค่า API:</label>
+                            <button id="open-api-config" class="btn-secondary">🔧 เปิดแผงตั้งค่า API</button>
+                            <p class="setting-description">ตั้งค่า API สำหรับสร้างเนื้อหาฟอรัมและ Weibo</p>
                         </div>
 
                         <div class="setting-group">
@@ -3157,8 +3157,8 @@ class MobilePhone {
                         </div>
 
                         <div class="action-buttons">
-                            <button id="refresh-status" class="btn-secondary">🔄 刷新状态</button>
-                            <button id="reset-all-settings" class="btn-warning">⚠️ 重置所有设置</button>
+                            <button id="refresh-status" class="btn-secondary">🔄 รีเฟรชสถานะ</button>
+                            <button id="reset-all-settings" class="btn-warning">⚠️ รีเซ็ตการตั้งค่าทั้งหมด</button>
                         </div>
                     </div>
                 </div>
@@ -4215,7 +4215,7 @@ class MobilePhone {
               </div>
 
               <div class="form-actions">
-                <button type="button" class="btn-secondary" id="cancel-create-style">取消</button>
+                <button type="button" class="btn-secondary" id="cancel-create-style">ยกเลิก</button>
                 <button type="submit" class="btn-primary" id="generate-style-btn">
                   <i class="fas fa-magic"></i> 生成风格
                 </button>
