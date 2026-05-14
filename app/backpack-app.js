@@ -1,11 +1,11 @@
 /**
- * Backpack App - 背包应用
- * 为mobile-phone.js提供背包功能
- * 基于shop-app的逻辑，专门处理背包物品
+ * Backpack App - แอปกระเป๋า
+ * ให้ฟังก์ชันกระเป๋าสำหรับ mobile-phone.js
+ * อิงจากลอจิกของ shop-app เฉพาะสำหรับจัดการไอเทมในกระเป๋า
  */
 
 // @ts-nocheck
-// 避免重复定义
+// หลีกเลี่ยงการกำหนดซ้ำ
 if (typeof window.BackpackApp === 'undefined') {
   class BackpackApp {
     constructor() {
@@ -18,108 +18,108 @@ if (typeof window.BackpackApp === 'undefined') {
       this.eventListenersSetup = false;
       this.contextCheckInterval = null;
 
-      // 分类和搜索相关属性
-      this.currentItemType = 'all'; // 当前选中的物品类型
-      this.showCategories = false; // 是否显示分类标签栏
-      this.showSearchBar = false; // 是否显示搜索栏
-      this.searchQuery = ''; // 搜索关键词
-      this.searchDebounceTimer = null; // 搜索防抖定时器
+      // คุณสมบัติที่เกี่ยวข้องกับหมวดหมู่และการค้นหา
+      this.currentItemType = 'all'; // ประเภทไอเทมที่เลือกปัจจุบัน
+      this.showCategories = false; // แสดงแถบหมวดหมู่หรือไม่
+      this.showSearchBar = false; // แสดงแถบค้นหาหรือไม่
+      this.searchQuery = ''; // คำค้นหา
+      this.searchDebounceTimer = null; // timer debounce การค้นหา
 
       this.init();
     }
 
     init() {
-      console.log('[Backpack App] 背包应用初始化开始 - 版本 2.1 (事件驱动刷新)');
+      console.log('[Backpack App] เริ่มต้นแอปกระเป๋า - เวอร์ชัน 2.1 (รีเฟรชแบบ event-driven)');
 
-      // 立即解析一次背包信息
+      // แยกวิเคราะห์ข้อมูลกระเป๋าทันที
       this.parseItemsFromContext();
 
-      // 异步初始化监控，避免阻塞界面渲染
+      // เริ่มต้นการมอนิเตอร์แบบ async เพื่อไม่บล็อกการเรนเดอร์ UI
       setTimeout(() => {
         this.setupContextMonitor();
       }, 100);
 
-      console.log('[Backpack App] 背包应用初始化完成 - 版本 2.1');
+      console.log('[Backpack App] เริ่มต้นแอปกระเป๋าเสร็จ - เวอร์ชัน 2.1');
     }
 
-    // 设置上下文监控
+    // ตั้งค่าการมอนิเตอร์บริบท
     setupContextMonitor() {
-      console.log('[Backpack App] 设置上下文监控...');
+      console.log('[Backpack App] ตั้งค่าการมอนิเตอร์บริบท...');
 
-      // 不再使用定时检查，只通过事件监听
-      // 监听SillyTavern的事件系统（MESSAGE_RECEIVED 和 CHAT_CHANGED）
+      // ไม่ใช้การตรวจสอบตามเวลาอีกต่อไป ใช้เฉพาะ event listener
+      // ฟังระบบอีเวนต์ของ SillyTavern（MESSAGE_RECEIVED และ CHAT_CHANGED）
       this.setupSillyTavernEventListeners();
     }
 
-    // 手动刷新背包数据（在变量操作后调用）
+    // รีเฟรชข้อมูลกระเป๋าด้วยตนเอง（เรียกหลังจากดำเนินการตัวแปร）
     refreshItemsData() {
-      console.log('[Backpack App] 🔄 手动刷新背包数据...');
+      console.log('[Backpack App] 🔄 รีเฟรชข้อมูลกระเป๋าด้วยตนเอง...');
       this.parseItemsFromContext();
     }
 
-    // 设置SillyTavern事件监听器
+    // ตั้งค่า event listener ของ SillyTavern
     setupSillyTavernEventListeners() {
-      // 防止重复设置
+      // ป้องกันการตั้งค่าซ้ำ
       if (this.eventListenersSetup) {
         return;
       }
 
       try {
-        // 监听SillyTavern的事件系统
+        // ฟังระบบอีเวนต์ของ SillyTavern
         const eventSource = window['eventSource'];
         const event_types = window['event_types'];
 
         if (eventSource && event_types) {
           this.eventListenersSetup = true;
 
-          // 创建延迟刷新函数（只在消息接收后刷新）
+          // สร้างฟังก์ชันรีเฟรชแบบหน่วง（รีเฟรชเฉพาะหลังรับข้อความ）
           const handleMessageReceived = () => {
-            console.log('[Backpack App] 📨 收到 MESSAGE_RECEIVED 事件，刷新背包数据...');
+            console.log('[Backpack App] 📨 ได้รับอีเวนต์ MESSAGE_RECEIVED รีเฟรชข้อมูลกระเป๋า...');
             setTimeout(() => {
-              // 先解析数据
+              // แยกวิเคราะห์ข้อมูลก่อน
               this.parseItemsFromContext();
 
-              // 如果应用当前处于活动状态，强制刷新UI
+              // ถ้าแอปอยู่ในสถานะใช้งาน บังคับรีเฟรช UI
               const appContent = document.getElementById('app-content');
               if (appContent && appContent.querySelector('.backpack-item-list')) {
-                console.log('[Backpack App] 🔄 强制刷新背包应用UI...');
+                console.log('[Backpack App] 🔄 บังคับรีเฟรช UI แอปกระเป๋า...');
                 appContent.innerHTML = this.getAppContent();
                 this.bindEvents();
               }
             }, 500);
           };
 
-          // 只监听消息接收事件（AI回复后）
+          // ฟังเฉพาะอีเวนต์รับข้อความ（หลัง AI ตอบ）
           if (event_types.MESSAGE_RECEIVED) {
             eventSource.on(event_types.MESSAGE_RECEIVED, handleMessageReceived);
-            console.log('[Backpack App] ✅ 已注册 MESSAGE_RECEIVED 事件监听');
+            console.log('[Backpack App] ✅ ลงทะเบียน event listener MESSAGE_RECEIVED แล้ว');
           }
 
-          // 监听聊天变化事件（切换对话时）
+          // ฟังอีเวนต์เปลี่ยนแชท（เมื่อสลับบทสนทนา）
           if (event_types.CHAT_CHANGED) {
             eventSource.on(event_types.CHAT_CHANGED, () => {
-              console.log('[Backpack App] 📨 聊天已切换，刷新背包数据...');
+              console.log('[Backpack App] 📨 แชทถูกสลับ รีเฟรชข้อมูลกระเป๋า...');
               setTimeout(() => {
                 this.parseItemsFromContext();
               }, 500);
             });
-            console.log('[Backpack App] ✅ 已注册 CHAT_CHANGED 事件监听');
+            console.log('[Backpack App] ✅ ลงทะเบียน event listener CHAT_CHANGED แล้ว');
           }
 
-          // 保存引用以便后续清理
+          // บันทึกการอ้างอิงเพื่อทำความสะอาดภายหลัง
           this.messageReceivedHandler = handleMessageReceived;
         } else {
-          // 减少重试频率，从2秒改为5秒
+          // ลดความถี่ในการลองใหม่ จาก 2 วินาทีเป็น 5 วินาที
           setTimeout(() => {
             this.setupSillyTavernEventListeners();
           }, 5000);
         }
       } catch (error) {
-        console.warn('[Backpack App] 设置SillyTavern事件监听器失败:', error);
+        console.warn('[Backpack App] ตั้งค่า event listener ของ SillyTavern ล้มเหลว:', error);
       }
     }
 
-    // 防抖函数
+    // ฟังก์ชัน debounce
     debounce(func, wait) {
       let timeout;
       return function executedFunction(...args) {
@@ -132,59 +132,59 @@ if (typeof window.BackpackApp === 'undefined') {
       };
     }
 
-    // 从上下文解析背包物品信息
+    // แยกวิเคราะห์ข้อมูลไอเทมกระเป๋าจากบริบท
     parseItemsFromContext() {
       try {
-        // 获取当前背包数据
+        // ดึงข้อมูลกระเป๋าปัจจุบัน
         const backpackData = this.getCurrentBackpackData();
 
-        // 更新物品列表
+        // อัปเดตรายการไอเทม
         if (backpackData.items.length !== this.items.length || this.hasItemsChanged(backpackData.items)) {
           this.items = backpackData.items;
-          console.log('[Backpack App] 📦 背包数据已更新，物品数:', this.items.length);
+          console.log('[Backpack App] 📦 อัปเดตข้อมูลกระเป๋าแล้ว จำนวนไอเทม:', this.items.length);
 
-          // 只有在当前显示背包应用时才更新UI
+          // อัปเดต UI เฉพาะเมื่อแอปกระเป๋าแสดงอยู่
           if (this.isCurrentlyActive()) {
-            console.log('[Backpack App] 🎨 背包应用处于活动状态，更新UI...');
+            console.log('[Backpack App] 🎨 แอปกระเป๋าอยู่ในสถานะใช้งาน อัปเดต UI...');
             this.updateItemList();
           } else {
-            console.log('[Backpack App] 💤 背包应用未激活，数据已更新但UI延迟渲染');
+            console.log('[Backpack App] 💤 แอปกระเป๋าไม่ได้ใช้งาน ข้อมูลอัปเดตแล้วแต่เลื่อนการเรนเดอร์ UI');
           }
         }
       } catch (error) {
-        console.error('[Backpack App] 解析背包物品信息失败:', error);
+        console.error('[Backpack App] แยกวิเคราะห์ข้อมูลไอเทมกระเป๋าล้มเหลว:', error);
       }
     }
 
-    // 检查背包应用是否当前活动
+    // ตรวจสอบว่าแอปกระเป๋าใช้งานอยู่หรือไม่
     isCurrentlyActive() {
       const appContent = document.getElementById('app-content');
       if (!appContent) return false;
 
-      // 检查是否包含背包应用的特征元素
+      // ตรวจสอบว่ามีอิลิเมนต์เฉพาะของแอปกระเป๋าหรือไม่
       return appContent.querySelector('.backpack-item-list') !== null;
     }
 
     /**
-     * 从变量管理器获取背包数据（参考shop-app的getCurrentShopData方法）
+     * ดึงข้อมูลกระเป๋าจากตัวจัดการตัวแปร（อ้างอิงเมธอด getCurrentShopData ของ shop-app）
      */
     getCurrentBackpackData() {
       try {
-        // 方法1: 使用 Mvu 框架获取变量（与shop-app一致：向上查找有变量的楼层）
+        // วิธีที่ 1: ใช้เฟรมเวิร์ก Mvu ดึงตัวแปร（เหมือน shop-app: ค้นหาขึ้นไปหาชั้นที่มีตัวแปร）
         if (window.Mvu && typeof window.Mvu.getMvuData === 'function') {
-          // 获取目标消息ID（向上查找最近有AI消息且有变量的楼层）
+          // ดึง ID ข้อความเป้าหมาย（ค้นหาขึ้นไปหาข้อความ AI ล่าสุดที่มีตัวแปร）
           let targetMessageId = 'latest';
 
           if (typeof window.getLastMessageId === 'function' && typeof window.getChatMessages === 'function') {
             let currentId = window.getLastMessageId();
 
-            // 向上查找AI消息（跳过用户消息）
+            // ค้นหาข้อความ AI ขึ้นไป（ข้ามข้อความผู้ใช้）
             while (currentId >= 0) {
               const message = window.getChatMessages(currentId).at(-1);
               if (message && message.role !== 'user') {
                 targetMessageId = currentId;
                 if (currentId !== window.getLastMessageId()) {
-                  console.log(`[Backpack App] 📝 向上查找到第 ${currentId} 层的AI消息`);
+                  console.log(`[Backpack App] 📝 ค้นหาขึ้นไปพบข้อความ AI ที่ชั้น ${currentId}`);
                 }
                 break;
               }
@@ -193,105 +193,105 @@ if (typeof window.BackpackApp === 'undefined') {
 
             if (currentId < 0) {
               targetMessageId = 'latest';
-              console.warn('[Backpack App] ⚠️ 没有找到AI消息，使用最后一层');
+              console.warn('[Backpack App] ⚠️ ไม่พบข้อความ AI ใช้ชั้นสุดท้าย');
             }
           }
 
-          console.log('[Backpack App] 使用消息ID:', targetMessageId);
+          console.log('[Backpack App] ใช้ ID ข้อความ:', targetMessageId);
 
-          // 获取变量
+          // ดึงตัวแปร
           const mvuData = window.Mvu.getMvuData({ type: 'message', message_id: targetMessageId });
-          console.log('[Backpack App] 从 Mvu 获取变量数据:', mvuData);
-          console.log('[Backpack App] stat_data 存在:', !!mvuData?.stat_data);
+          console.log('[Backpack App] ดึงข้อมูลตัวแปรจาก Mvu:', mvuData);
+          console.log('[Backpack App] stat_data มีอยู่:', !!mvuData?.stat_data);
           if (mvuData?.stat_data) {
-            console.log('[Backpack App] stat_data 的键:', Object.keys(mvuData.stat_data));
-            console.log('[Backpack App] 道具是否存在:', !!mvuData.stat_data['道具']);
+            console.log('[Backpack App] คีย์ของ stat_data:', Object.keys(mvuData.stat_data));
+            console.log('[Backpack App] 道具 มีอยู่หรือไม่:', !!mvuData.stat_data['道具']);
             if (mvuData.stat_data['道具']) {
-              console.log('[Backpack App] 道具数据:', mvuData.stat_data['道具']);
+              console.log('[Backpack App] ข้อมูล 道具:', mvuData.stat_data['道具']);
             }
           }
 
-          // 尝试从 stat_data 读取
+          // พยายามอ่านจาก stat_data
           if (mvuData && mvuData.stat_data && mvuData.stat_data['道具']) {
             const backpackData = mvuData.stat_data['道具'];
-            console.log('[Backpack App] ✅ 从 stat_data 获取到道具数据:', backpackData);
+            console.log('[Backpack App] ✅ ดึงข้อมูลไอเทมจาก stat_data:', backpackData);
             return this.parseBackpackData(backpackData);
           }
 
-          // 尝试从根级别读取（如果变量不在 stat_data 中）
+          // พยายามอ่านจากระดับราก（ถ้าตัวแปรไม่อยู่ใน stat_data）
           if (mvuData && mvuData['道具']) {
             const backpackData = mvuData['道具'];
-            console.log('[Backpack App] ✅ 从根级别获取到道具数据:', backpackData);
+            console.log('[Backpack App] ✅ ดึงข้อมูลไอเทมจากระดับราก:', backpackData);
             return this.parseBackpackData(backpackData);
           }
 
-          // 如果 stat_data 为空但 variables 存在，尝试从 variables 获取
+          // ถ้า stat_data ว่างแต่ variables มีอยู่ พยายามดึงจาก variables
           if (mvuData && !mvuData.stat_data && window.SillyTavern) {
             const context = window.SillyTavern.getContext ? window.SillyTavern.getContext() : window.SillyTavern;
             if (context && context.chatMetadata && context.chatMetadata.variables) {
               const stat_data = context.chatMetadata.variables['stat_data'];
               if (stat_data && stat_data['道具']) {
-                console.log('[Backpack App] 从 variables.stat_data 获取道具数据');
+                console.log('[Backpack App] ดึงข้อมูลไอเทมจาก variables.stat_data');
                 return this.parseBackpackData(stat_data['道具']);
               }
             }
           }
         }
 
-        // 方法2: 尝试从 SillyTavern 的上下文获取（备用）
+        // วิธีที่ 2: พยายามดึงจากบริบทของ SillyTavern（สำรอง）
         if (window.SillyTavern) {
           const context = window.SillyTavern.getContext ? window.SillyTavern.getContext() : window.SillyTavern;
           if (context && context.chatMetadata && context.chatMetadata.variables) {
-            // 尝试从 variables.stat_data 获取
+            // พยายามดึงจาก variables.stat_data
             const stat_data = context.chatMetadata.variables['stat_data'];
             if (stat_data && stat_data['道具']) {
-              console.log('[Backpack App] 从 context.chatMetadata.variables.stat_data 获取道具数据');
+              console.log('[Backpack App] ดึงข้อมูลไอเทมจาก context.chatMetadata.variables.stat_data');
               return this.parseBackpackData(stat_data['道具']);
             }
 
-            // 尝试直接从 variables 获取
+            // พยายามดึงจาก variables โดยตรง
             const backpackData = context.chatMetadata.variables['道具'];
             if (backpackData && typeof backpackData === 'object') {
-              console.log('[Backpack App] 从 context.chatMetadata.variables 获取道具数据');
+              console.log('[Backpack App] ดึงข้อมูลไอเทมจาก context.chatMetadata.variables');
               return this.parseBackpackData(backpackData);
             }
           }
         }
 
-        console.log('[Backpack App] 未找到道具数据');
+        console.log('[Backpack App] ไม่พบข้อมูลไอเทม');
       } catch (error) {
-        console.warn('[Backpack App] 获取背包数据失败:', error);
+        console.warn('[Backpack App] ดึงข้อมูลกระเป๋าล้มเหลว:', error);
       }
 
       return { items: [] };
     }
 
     /**
-     * 解析背包变量数据（动态读取所有分类）
-     * 道具结构：{ 消耗品: {...}, 装备: {...}, 材料: {...}, ... }
-     * 每个物品结构：{ 名称: [值, ''], 数量: [值, ''], 效果: [值, ''], 品质: [值, ''], ... }
+     * แยกวิเคราะห์ข้อมูลตัวแปรกระเป๋า（อ่านหมวดหมู่ทั้งหมดแบบไดนามิก）
+     * โครงสร้างไอเทม：{ 消耗品: {...}, 装备: {...}, 材料: {...}, ... }
+     * โครงสร้างแต่ละไอเทม：{ 名称: [ค่า, ''], 数量: [ค่า, ''], 效果: [ค่า, ''], 品质: [ค่า, ''], ... }
      */
     parseBackpackData(backpackData) {
       const items = [];
 
       try {
-        // 动态遍历所有分类（不预先定义，直接读取数据中的所有键）
+        // วนซ้ำหมวดหมู่ทั้งหมดแบบไดนามิก（ไม่กำหนดล่วงหน้า อ่านคีย์ทั้งหมดในข้อมูลโดยตรง）
         Object.keys(backpackData).forEach(category => {
-          // 跳过元数据
+          // ข้ามเมตาดาต้า
           if (category === '$meta') return;
 
           const categoryData = backpackData[category];
           if (!categoryData || typeof categoryData !== 'object') return;
 
-          // 遍历该分类下的所有物品
+          // วนซ้ำไอเทมทั้งหมดในหมวดหมู่นี้
           Object.keys(categoryData).forEach(itemKey => {
-            // 跳过元数据
+            // ข้ามเมตาดาต้า
             if (itemKey === '$meta') return;
 
             const item = categoryData[itemKey];
             if (!item || typeof item !== 'object') return;
 
-            // 提取物品数据（变量格式：[值, 描述]）
+            // ดึงข้อมูลไอเทม（รูปแบบตัวแปร：[ค่า, คำอธิบาย]）
             const getName = field => (item[field] && Array.isArray(item[field]) ? item[field][0] : '');
             const getNumber = field => {
               const val = item[field] && Array.isArray(item[field]) ? item[field][0] : 0;
@@ -301,23 +301,24 @@ if (typeof window.BackpackApp === 'undefined') {
             const name = getName('名称') || itemKey;
             const quantity = getNumber('数量');
 
-            // 跳过无效物品（没有名称或数量为0）
+            // ข้ามไอเทมที่ไม่ถูกต้อง（ไม่มีชื่อหรือจำนวนเป็น 0）
             if (!name || quantity <= 0) return;
 
-            // 尝试多个可能的描述字段
-            const description = getName('效果') || getName('描述') || getName('作用') || getName('说明') || '暂无描述';
-            const quality = getName('品质') || '普通';
+            // ลองฟิลด์คำอธิบายหลายตัว
+            const description =
+              getName('效果') || getName('描述') || getName('作用') || getName('说明') || 'ยังไม่มีคำอธิบาย';
+            const quality = getName('品质') || 'ธรรมดา';
 
             const newItem = {
               id: `${category}_${itemKey}_${Date.now()}`,
               name: name,
-              type: category, // 使用分类作为类型
+              type: category, // ใช้หมวดหมู่เป็นประเภท
               description: description,
               quantity: quantity,
               image: this.getItemImage(category),
-              quality: quality, // 品质
-              category: category, // 原始分类
-              itemKey: itemKey, // 保存键名，用于后续更新
+              quality: quality, // คุณภาพ
+              category: category, // หมวดหมู่ดั้งเดิม
+              itemKey: itemKey, // บันทึกชื่อคีย์สำหรับอัปเดตภายหลัง
               timestamp: new Date().toLocaleString(),
             };
 
@@ -325,35 +326,35 @@ if (typeof window.BackpackApp === 'undefined') {
           });
         });
 
-        console.log('[Backpack App] 从道具解析完成，物品数:', items.length);
+        console.log('[Backpack App] แยกวิเคราะห์ไอเทมเสร็จ จำนวนไอเทม:', items.length);
         if (items.length > 0) {
-          console.log('[Backpack App] 物品分类:', [...new Set(items.map(i => i.type))]);
+          console.log('[Backpack App] หมวดหมู่ไอเทม:', [...new Set(items.map(i => i.type))]);
         }
       } catch (error) {
-        console.error('[Backpack App] 解析道具数据失败:', error);
+        console.error('[Backpack App] แยกวิเคราะห์ข้อมูลไอเทมล้มเหลว:', error);
       }
 
       return { items };
     }
 
     /**
-     * 从消息中实时解析背包内容（保留作为备用方法）
+     * แยกวิเคราะห์เนื้อหากระเป๋าจากข้อความแบบเรียลไทม์（เก็บไว้เป็นวิธีสำรอง）
      */
     parseBackpackContent(content) {
       const items = [];
 
-      // 解析背包格式: [背包|商品名|商品类型|商品描述|数量]（'背包'是固定标识符）
+      // แยกวิเคราะห์รูปแบบกระเป๋า: [背包|ชื่อสินค้า|ประเภทสินค้า|คำอธิบายสินค้า|จำนวน]（'背包' เป็นตัวระบุคงที่）
       const itemRegex = /\[背包\|([^\|]+)\|([^\|]+)\|([^\|]+)\|([^\]]+)\]/g;
 
       let itemMatch;
       while ((itemMatch = itemRegex.exec(content)) !== null) {
         const [fullMatch, name, type, description, quantity] = itemMatch;
 
-        // 检查是否已存在相同物品（根据名称和类型判断）
+        // ตรวจสอบว่ามีไอเทมเดียวกันอยู่แล้วหรือไม่（ตัดสินจากชื่อและประเภท）
         const existingItem = items.find(p => p.name.trim() === name.trim() && p.type.trim() === type.trim());
 
         if (existingItem) {
-          // 如果已存在，累加数量
+          // ถ้ามีอยู่แล้ว สะสมจำนวน
           existingItem.quantity += parseInt(quantity.trim()) || 1;
         } else {
           const newItem = {
@@ -369,11 +370,11 @@ if (typeof window.BackpackApp === 'undefined') {
         }
       }
 
-      console.log('[Backpack App] 解析完成，物品数:', items.length);
+      console.log('[Backpack App] แยกวิเคราะห์เสร็จ จำนวนไอเทม:', items.length);
       return { items };
     }
 
-    // 检查物品是否有变化（更高效的比较方法）
+    // ตรวจสอบว่าไอเทมมีการเปลี่ยนแปลงหรือไม่（วิธีเปรียบเทียบที่มีประสิทธิภาพมากขึ้น）
     hasItemsChanged(newItems) {
       if (newItems.length !== this.items.length) {
         return true;
@@ -397,22 +398,22 @@ if (typeof window.BackpackApp === 'undefined') {
       return false;
     }
 
-    // 获取物品图片（支持道具分类）
+    // ดึงรูปภาพไอเทม（รองรับหมวดหมู่ไอเทม）
     getItemImage(type) {
       const imageMap = {
-        // 手机系统分类
+        // หมวดหมู่ระบบมือถือ
         消耗品: '💊',
         装备: '⚔️',
         材料: '📦',
         道具: '✨',
-        // 玄鉴仙族分类
+        // หมวดหมู่ Xuanjian Xianzu
         灵资: '💎',
         法器: '⚔️',
         杂物: '📦',
         功法: '📜',
         法术: '✨',
         丹药: '💊',
-        // 其他常见分类
+        // หมวดหมู่ทั่วไปอื่นๆ
         食品: '🍎',
         食物: '🍎',
         饮料: '🥤',
@@ -435,10 +436,10 @@ if (typeof window.BackpackApp === 'undefined') {
       return imageMap[type] || imageMap['默认'];
     }
 
-    // 获取聊天数据
+    // ดึงข้อมูลแชท
     getChatData() {
       try {
-        // 优先使用mobileContextEditor获取数据
+        // ใช้ mobileContextEditor ดึงข้อมูลเป็นอันดับแรก
         const mobileContextEditor = window['mobileContextEditor'];
         if (mobileContextEditor) {
           const chatData = mobileContextEditor.getCurrentChatData();
@@ -447,13 +448,13 @@ if (typeof window.BackpackApp === 'undefined') {
           }
         }
 
-        // 尝试从全局变量获取
+        // พยายามดึงจากตัวแปรทั่วไป
         const chat = window['chat'];
         if (chat && Array.isArray(chat)) {
           return chat;
         }
 
-        // 尝试从其他可能的位置获取
+        // พยายามดึงจากตำแหน่งอื่นที่เป็นไปได้
         const SillyTavern = window['SillyTavern'];
         if (SillyTavern && SillyTavern.chat) {
           return SillyTavern.chat;
@@ -461,26 +462,26 @@ if (typeof window.BackpackApp === 'undefined') {
 
         return [];
       } catch (error) {
-        console.error('[Backpack App] 获取聊天数据失败:', error);
+        console.error('[Backpack App] ดึงข้อมูลแชทล้มเหลว:', error);
         return [];
       }
     }
 
-    // 获取应用内容
+    // ดึงเนื้อหาแอป
     getAppContent() {
-      // 每次打开应用时重新解析一次数据（确保显示最新内容）
+      // แยกวิเคราะห์ข้อมูลใหม่ทุกครั้งที่เปิดแอป（ให้แน่ใจว่าแสดงเนื้อหาล่าสุด）
       const backpackData = this.getCurrentBackpackData();
       if (backpackData.items.length !== this.items.length || this.hasItemsChanged(backpackData.items)) {
         this.items = backpackData.items;
-        console.log('[Backpack App] 📦 打开应用时更新背包数据，物品数:', this.items.length);
+        console.log('[Backpack App] 📦 อัปเดตข้อมูลกระเป๋าเมื่อเปิดแอป จำนวนไอเทม:', this.items.length);
       }
 
       return this.renderItemList();
     }
 
-    // 渲染物品列表
+    // เรนเดอร์รายการไอเทม
     renderItemList() {
-      console.log('[Backpack App] 渲染物品列表...');
+      console.log('[Backpack App] เรนเดอร์รายการไอเทม...');
 
       if (!this.items.length) {
         return `
@@ -491,18 +492,18 @@ if (typeof window.BackpackApp === 'undefined') {
             `;
       }
 
-      // 计算总物品数
+      // คำนวณจำนวนไอเทมทั้งหมด
       const totalItems = this.items.reduce((sum, item) => sum + item.quantity, 0);
 
-      // 获取所有物品类型
+      // ดึงประเภทไอเทมทั้งหมด
       const allTypes = ['all', ...new Set(this.items.map(item => item.type))];
 
-      // 过滤物品（根据分类和搜索）
+      // กรองไอเทม（ตามหมวดหมู่และการค้นหา）
       const filteredItems = this.getFilteredItems();
 
       const itemCards = filteredItems
         .map(item => {
-          // 判断是否是装备类物品（可以穿戴）
+          // ตรวจสอบว่าเป็นไอเทมประเภทอุปกรณ์หรือไม่（สวมใส่ได้）
           const isEquipment = item.type === '装备';
           const actionButton = isEquipment
             ? `<button class="equip-item-btn" data-item-id="${item.id}" data-item-name="${item.name}">สวมใส่</button>`
@@ -517,7 +518,7 @@ if (typeof window.BackpackApp === 'undefined') {
                     </div>
                     <div class="backpack-item-description">${item.description}</div>
                     <div class="backpack-item-footer">
-                        <div class="backpack-item-quantity">数量: ${item.quantity}</div>
+                        <div class="backpack-item-quantity">จำนวน: ${item.quantity}</div>
                         ${actionButton}
                     </div>
                 </div>
@@ -526,7 +527,7 @@ if (typeof window.BackpackApp === 'undefined') {
         })
         .join('');
 
-      // 渲染分类标签栏（可折叠）
+      // เรนเดอร์แถบหมวดหมู่（พับได้）
       const categoryTabsHtml = this.showCategories
         ? `
           <div class="backpack-type-tabs">
@@ -535,7 +536,7 @@ if (typeof window.BackpackApp === 'undefined') {
                   type => `
                   <button class="backpack-type-tab ${this.currentItemType === type ? 'active' : ''}"
                           data-type="${type}">
-                      ${type === 'all' ? '全部' : type}
+                      ${type === 'all' ? 'ทั้งหมด' : type}
                   </button>
               `,
                 )
@@ -544,7 +545,7 @@ if (typeof window.BackpackApp === 'undefined') {
       `
         : '';
 
-      // 渲染搜索栏（可折叠）
+      // เรนเดอร์แถบค้นหา（พับได้）
       const searchBarHtml = this.showSearchBar
         ? `
           <div class="backpack-search-bar">
@@ -573,16 +574,16 @@ if (typeof window.BackpackApp === 'undefined') {
         `;
     }
 
-    // 获取过滤后的物品列表
+    // ดึงรายการไอเทมที่กรองแล้ว
     getFilteredItems() {
       let filteredItems = this.items;
 
-      // 根据分类过滤
+      // กรองตามหมวดหมู่
       if (this.currentItemType !== 'all') {
         filteredItems = filteredItems.filter(item => item.type === this.currentItemType);
       }
 
-      // 根据搜索关键词过滤
+      // กรองตามคำค้นหา
       if (this.searchQuery.trim()) {
         const query = this.searchQuery.toLowerCase().trim();
         filteredItems = filteredItems.filter(
@@ -593,23 +594,23 @@ if (typeof window.BackpackApp === 'undefined') {
       return filteredItems;
     }
 
-    // 切换分类显示
+    // สลับการแสดงหมวดหมู่
     toggleCategories() {
-      console.log('[Backpack App] 切换分类显示:', !this.showCategories);
+      console.log('[Backpack App] สลับการแสดงหมวดหมู่:', !this.showCategories);
       this.showCategories = !this.showCategories;
       this.updateAppContent();
     }
 
-    // 切换搜索栏显示
+    // สลับการแสดงแถบค้นหา
     toggleSearchBar() {
-      console.log('[Backpack App] 切换搜索栏显示:', !this.showSearchBar);
+      console.log('[Backpack App] สลับการแสดงแถบค้นหา:', !this.showSearchBar);
       this.showSearchBar = !this.showSearchBar;
       if (!this.showSearchBar) {
-        this.searchQuery = ''; // 隐藏搜索栏时清空搜索
+        this.searchQuery = ''; // ล้างการค้นหาเมื่อซ่อนแถบค้นหา
       }
       this.updateAppContent();
 
-      // 如果显示搜索栏，聚焦到输入框
+      // ถ้าแสดงแถบค้นหา ให้โฟกัสที่ช่องป้อนข้อมูล
       if (this.showSearchBar) {
         setTimeout(() => {
           const searchInput = document.getElementById('backpackSearchInput');
@@ -620,49 +621,49 @@ if (typeof window.BackpackApp === 'undefined') {
       }
     }
 
-    // 切换物品类型
+    // สลับประเภทไอเทม
     switchItemType(type) {
-      console.log('[Backpack App] 切换物品类型:', type);
+      console.log('[Backpack App] สลับประเภทไอเทม:', type);
       this.currentItemType = type;
       this.updateAppContent();
     }
 
-    // 执行搜索（带防抖）
+    // ดำเนินการค้นหา（มี debounce）
     performSearch(query) {
-      console.log('[Backpack App] 执行搜索:', query);
+      console.log('[Backpack App] ดำเนินการค้นหา:', query);
 
-      // 清除之前的防抖定时器
+      // ล้าง debounce timer ก่อนหน้า
       if (this.searchDebounceTimer) {
         clearTimeout(this.searchDebounceTimer);
       }
 
-      // 设置新的防抖定时器
+      // ตั้ง debounce timer ใหม่
       this.searchDebounceTimer = setTimeout(() => {
         this.searchQuery = query;
-        this.updateItemListOnly(); // 只更新物品列表，避免重新渲染搜索栏
-      }, 300); // 300ms防抖延迟
+        this.updateItemListOnly(); // อัปเดตเฉพาะรายการไอเทม หลีกเลี่ยงการเรนเดอร์แถบค้นหาใหม่
+      }, 300); // หน่วง debounce 300ms
     }
 
-    // 立即执行搜索（不使用防抖）
+    // ดำเนินการค้นหาทันที（ไม่ใช้ debounce）
     performSearchImmediate(query) {
-      console.log('[Backpack App] 立即执行搜索:', query);
+      console.log('[Backpack App] ดำเนินการค้นหาทันที:', query);
       this.searchQuery = query;
-      this.updateItemListOnly(); // 只更新物品列表，不重新渲染整个页面
+      this.updateItemListOnly(); // อัปเดตเฉพาะรายการไอเทม ไม่เรนเดอร์ทั้งหน้าใหม่
     }
 
-    // 只更新物品列表（避免重新渲染搜索栏导致失去焦点）
+    // อัปเดตเฉพาะรายการไอเทม（หลีกเลี่ยงการเรนเดอร์แถบค้นหาใหม่ที่ทำให้เสียโฟกัส）
     updateItemListOnly() {
       const backpackGrid = document.querySelector('.backpack-grid');
       if (!backpackGrid) {
-        // 如果找不到网格容器，则进行完整更新
+        // ถ้าหาคอนเทนเนอร์กริดไม่พบ ให้อัปเดตทั้งหมด
         this.updateAppContent();
         return;
       }
 
-      // 获取过滤后的物品
+      // ดึงไอเทมที่กรองแล้ว
       const filteredItems = this.getFilteredItems();
 
-      // 生成新的物品卡片HTML
+      // สร้าง HTML การ์ดไอเทมใหม่
       const itemCards = filteredItems
         .map(
           item => `
@@ -683,14 +684,14 @@ if (typeof window.BackpackApp === 'undefined') {
         )
         .join('');
 
-      // 更新物品网格内容
+      // อัปเดตเนื้อหากริดไอเทม
       backpackGrid.innerHTML = itemCards;
 
-      // 重新绑定使用按钮事件
+      // ผูกอีเวนต์ปุ่มใช้ใหม่
       this.bindUseItemEvents();
     }
 
-    // 单独绑定使用物品按钮事件
+    // ผูกอีเวนต์ปุ่มใช้ไอเทมแยก
     bindUseItemEvents() {
       document.querySelectorAll('.use-item-btn').forEach(btn => {
         btn.addEventListener('click', e => {
@@ -701,11 +702,11 @@ if (typeof window.BackpackApp === 'undefined') {
       });
     }
 
-    // 清空搜索
+    // ล้างการค้นหา
     clearSearch() {
-      console.log('[Backpack App] 清空搜索');
+      console.log('[Backpack App] ล้างการค้นหา');
 
-      // 清除防抖定时器
+      // ล้าง debounce timer
       if (this.searchDebounceTimer) {
         clearTimeout(this.searchDebounceTimer);
       }
@@ -713,22 +714,22 @@ if (typeof window.BackpackApp === 'undefined') {
       this.searchQuery = '';
       this.updateAppContent();
 
-      // 聚焦到搜索输入框
+      // โฟกัสที่ช่องค้นหา
       setTimeout(() => {
         const searchInput = document.getElementById('backpackSearchInput');
         if (searchInput) {
-          searchInput.value = ''; // 确保输入框也被清空
+          searchInput.value = ''; // ให้แน่ใจว่าช่องป้อนข้อมูลถูกล้างด้วย
           searchInput.focus();
         }
       }, 100);
     }
 
-    // 更新物品列表显示
+    // อัปเดตการแสดงรายการไอเทม
     updateItemList() {
       this.updateAppContent();
     }
 
-    // 更新应用内容
+    // อัปเดตเนื้อหาแอป
     updateAppContent() {
       const appContent = document.getElementById('app-content');
       if (appContent) {
@@ -737,30 +738,30 @@ if (typeof window.BackpackApp === 'undefined') {
       }
     }
 
-    // 绑定事件
+    // ผูกอีเวนต์
     bindEvents() {
-      console.log('[Backpack App] 绑定事件...');
+      console.log('[Backpack App] ผูกอีเวนต์...');
 
-      // 使用物品按钮
+      // ปุ่มใช้ไอเทม
       document.querySelectorAll('.use-item-btn').forEach(btn => {
         btn.addEventListener('click', e => {
-          e.stopPropagation(); // 防止事件冒泡
+          e.stopPropagation(); // ป้องกัน event bubbling
           const itemId = e.target?.getAttribute('data-item-id');
           this.useItem(itemId);
         });
       });
 
-      // 装备物品按钮
+      // ปุ่มสวมใส่ไอเทม
       document.querySelectorAll('.equip-item-btn').forEach(btn => {
         btn.addEventListener('click', e => {
-          e.stopPropagation(); // 防止事件冒泡
+          e.stopPropagation(); // ป้องกัน event bubbling
           const itemId = e.target?.getAttribute('data-item-id');
           const itemName = e.target?.getAttribute('data-item-name');
           this.equipItem(itemId, itemName);
         });
       });
 
-      // 物品类型标签页切换
+      // สลับแท็บประเภทไอเทม
       document.querySelectorAll('.backpack-type-tab').forEach(btn => {
         btn.addEventListener('click', e => {
           e.preventDefault();
@@ -770,18 +771,18 @@ if (typeof window.BackpackApp === 'undefined') {
         });
       });
 
-      // 搜索输入框事件
+      // อีเวนต์ช่องค้นหา
       const searchInput = document.getElementById('backpackSearchInput');
       if (searchInput) {
-        // 实时搜索（使用防抖）
+        // ค้นหาแบบเรียลไทม์（ใช้ debounce）
         searchInput.addEventListener('input', e => {
           this.performSearch(e.target.value);
         });
 
-        // 回车搜索（立即执行）
+        // ค้นหาเมื่อกด Enter（ดำเนินการทันที）
         searchInput.addEventListener('keypress', e => {
           if (e.key === 'Enter') {
-            // 清除防抖定时器，立即执行搜索
+            // ล้าง debounce timer ดำเนินการค้นหาทันที
             if (this.searchDebounceTimer) {
               clearTimeout(this.searchDebounceTimer);
             }
@@ -789,9 +790,9 @@ if (typeof window.BackpackApp === 'undefined') {
           }
         });
 
-        // 防止输入框失去焦点时的问题
+        // ป้องกันปัญหาเมื่อช่องป้อนข้อมูลเสียโฟกัส
         searchInput.addEventListener('blur', e => {
-          // 延迟一点再执行，避免与其他事件冲突
+          // หน่วงเล็กน้อยก่อนดำเนินการ เพื่อหลีกเลี่ยงความขัดแย้งกับอีเวนต์อื่น
           setTimeout(() => {
             if (this.searchQuery !== e.target.value) {
               this.performSearchImmediate(e.target.value);
@@ -800,7 +801,7 @@ if (typeof window.BackpackApp === 'undefined') {
         });
       }
 
-      // 清空搜索按钮
+      // ปุ่มล้างการค้นหา
       const clearBtn = document.getElementById('backpackSearchClear');
       if (clearBtn) {
         clearBtn.addEventListener('click', e => {
@@ -811,7 +812,7 @@ if (typeof window.BackpackApp === 'undefined') {
       }
     }
 
-    // 使用物品
+    // ใช้ไอเทม
     useItem(itemId) {
       const item = this.items.find(p => p.id === itemId);
       if (!item) return;
@@ -819,21 +820,21 @@ if (typeof window.BackpackApp === 'undefined') {
       this.showUseItemModal(item);
     }
 
-    // 装备物品（穿到身上）
+    // สวมใส่ไอเทม（ใส่บนตัว）
     async equipItem(itemId, itemName) {
       try {
-        console.log('[Backpack App] 装备物品:', itemName);
+        console.log('[Backpack App] สวมใส่ไอเทม:', itemName);
 
-        // 弹出选择装备部位的对话框
+        // แสดงกล่องโต้ตอบเลือกตำแหน่งสวมใส่
         const slot = await this.showEquipSlotModal(itemName);
         if (!slot) {
-          console.log('[Backpack App] 用户取消装备');
+          console.log('[Backpack App] ผู้ใช้ยกเลิกการสวมใส่');
           return;
         }
 
-        console.log('[Backpack App] 选择装备到:', slot);
+        console.log('[Backpack App] เลือกสวมใส่ที่:', slot);
 
-        // 获取目标消息ID
+        // ดึง ID ข้อความเป้าหมาย
         let targetMessageId = 'latest';
         if (typeof window.getLastMessageId === 'function' && typeof window.getChatMessages === 'function') {
           let currentId = window.getLastMessageId();
@@ -847,24 +848,24 @@ if (typeof window.BackpackApp === 'undefined') {
           }
         }
 
-        // 获取Mvu数据
+        // ดึงข้อมูล Mvu
         const mvuData = window.Mvu.getMvuData({ type: 'message', message_id: targetMessageId });
         if (!mvuData || !mvuData.stat_data) {
-          throw new Error('无法获取Mvu变量数据');
+          throw new Error('ไม่สามารถดึงข้อมูลตัวแปร Mvu ได้');
         }
 
-        // 1. 检查该部位是否已有装备
+        // 1. ตรวจสอบว่าตำแหน่งนั้นมีอุปกรณ์อยู่แล้วหรือไม่
         const currentEquipment = mvuData.stat_data['用户']?.['当前着装']?.[slot]?.[0];
         if (currentEquipment && currentEquipment.trim() !== '') {
           const confirm = window.confirm(
             `ตำแหน่งนี้สวมใส่ "${currentEquipment}" อยู่แล้ว ต้องการแทนที่หรือไม่?\n(อุปกรณ์เก่าจะกลับเข้ากระเป๋า)`,
           );
           if (!confirm) {
-            console.log('[Backpack App] 用户取消替换');
+            console.log('[Backpack App] ผู้ใช้ยกเลิกการเปลี่ยน');
             return;
           }
 
-          // 旧装备返回背包
+          // อุปกรณ์เก่ากลับเข้ากระเป๋า
           const backpackCategory = '装备';
           const backpackPath = `道具.${backpackCategory}`;
           const backpackItems = mvuData.stat_data['道具']?.[backpackCategory] || {};
@@ -880,26 +881,26 @@ if (typeof window.BackpackApp === 'undefined') {
             newBackpackCategory[currentEquipment] = {
               名称: [currentEquipment, ''],
               数量: [1, ''],
-              效果: [`${slot}装备`, ''],
-              品质: ['普通', ''],
+              效果: [`${slot}อุปกรณ์`, ''],
+              品质: ['ธรรมดา', ''],
             };
           }
 
           await window.Mvu.setMvuVariable(mvuData, backpackPath, newBackpackCategory, {
-            reason: `${currentEquipment}返回背包`,
+            reason: `${currentEquipment}กลับเข้ากระเป๋า`,
             is_recursive: false,
           });
-          console.log('[Backpack App] 旧装备已返回背包:', currentEquipment);
+          console.log('[Backpack App] อุปกรณ์เก่ากลับเข้ากระเป๋าแล้ว:', currentEquipment);
         }
 
-        // 2. 穿上新装备
+        // 2. สวมใส่อุปกรณ์ใหม่
         await window.Mvu.setMvuVariable(mvuData, `用户.当前着装.${slot}[0]`, itemName, {
-          reason: `装备${itemName}`,
+          reason: `สวมใส่${itemName}`,
           is_recursive: false,
         });
-        console.log('[Backpack App] 已装备到', slot);
+        console.log('[Backpack App] สวมใส่ที่', slot, 'แล้ว');
 
-        // 3. 从背包移除（数量-1）
+        // 3. ลบออกจากกระเป๋า（จำนวน -1）
         const item = this.items.find(p => p.id === itemId);
         if (item) {
           const backpackCategory = item.type;
@@ -910,54 +911,54 @@ if (typeof window.BackpackApp === 'undefined') {
           if (newBackpackCategory[itemName]) {
             const currentCount = newBackpackCategory[itemName]['数量']?.[0] || 0;
             if (currentCount <= 1) {
-              // 数量为1，直接删除
+              // จำนวนเป็น 1 ลบโดยตรง
               delete newBackpackCategory[itemName];
-              console.log('[Backpack App] 物品已用完，从背包删除:', itemName);
+              console.log('[Backpack App] ไอเทมหมดแล้ว ลบออกจากกระเป๋า:', itemName);
             } else {
-              // 数量减1
+              // จำนวนลด 1
               newBackpackCategory[itemName] = {
                 ...newBackpackCategory[itemName],
                 数量: [currentCount - 1, newBackpackCategory[itemName]['数量']?.[1] || ''],
               };
-              console.log('[Backpack App] 物品数量-1:', itemName, '剩余:', currentCount - 1);
+              console.log('[Backpack App] จำนวนไอเทม -1:', itemName, 'เหลือ:', currentCount - 1);
             }
 
             await window.Mvu.setMvuVariable(mvuData, backpackPath, newBackpackCategory, {
-              reason: `装备${itemName}`,
+              reason: `สวมใส่${itemName}`,
               is_recursive: false,
             });
           }
         }
 
-        // 4. 不再记录历史（由AI生成摘要代替）
-        // 装备操作将在AI回复的摘要中体现
+        // 4. ไม่บันทึกประวัติอีกต่อไป（แทนที่ด้วยสรุปที่ AI สร้าง）
+        // การดำเนินการสวมใส่จะแสดงในสรุปของการตอบ AI
 
-        // 保存更新
+        // บันทึกการอัปเดต
         await window.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: targetMessageId });
 
-        console.log('[Backpack App] ✅ 装备成功');
+        console.log('[Backpack App] ✅ สวมใส่สำเร็จ');
         alert(`สวมใส่ "${itemName}" ที่ ${slot} แล้ว`);
 
-        // 刷新显示
+        // รีเฟรชการแสดงผล
         setTimeout(() => {
           this.refreshItemsData();
-          // 通知状态栏刷新
+          // แจ้งแถบสถานะให้รีเฟรช
           if (window.statusApp && typeof window.statusApp.refreshStatusData === 'function') {
             window.statusApp.refreshStatusData();
           }
         }, 300);
       } catch (error) {
-        console.error('[Backpack App] 装备失败:', error);
+        console.error('[Backpack App] สวมใส่ล้มเหลว:', error);
         alert('สวมใส่ล้มเหลว: ' + error.message);
       }
     }
 
-    // 显示选择装备部位的对话框
+    // แสดงกล่องโต้ตอบเลือกตำแหน่งสวมใส่
     showEquipSlotModal(itemName) {
       return new Promise(resolve => {
         const slots = ['头部', '耳朵', '上衣', '下装', '内衣', '内裤', '袜子', '鞋子'];
 
-        // 创建模态框HTML
+        // สร้าง HTML โมดอล
         const modalHtml = `
           <div class="backpack-equip-modal-overlay" id="equipModalOverlay">
             <div class="backpack-equip-modal">
@@ -966,7 +967,7 @@ if (typeof window.BackpackApp === 'undefined') {
                 <button class="backpack-equip-modal-close" id="equipModalClose">✕</button>
               </div>
               <div class="backpack-equip-modal-body">
-                <p>将"${itemName}"装备到：</p>
+                <p>สวมใส่ "${itemName}" ที่：</p>
                 <div class="backpack-equip-slot-list">
                   ${slots
                     .map(
@@ -981,16 +982,16 @@ if (typeof window.BackpackApp === 'undefined') {
           </div>
         `;
 
-        // 添加到页面
+        // เพิ่มลงในหน้า
         const modalContainer = document.createElement('div');
         modalContainer.innerHTML = modalHtml;
         document.body.appendChild(modalContainer);
 
-        // 绑定事件
+        // ผูกอีเวนต์
         const overlay = document.getElementById('equipModalOverlay');
         const closeBtn = document.getElementById('equipModalClose');
 
-        // 点击部位按钮
+        // คลิกปุ่มตำแหน่ง
         document.querySelectorAll('.backpack-equip-slot-btn').forEach(btn => {
           btn.addEventListener('click', e => {
             const slot = e.target.getAttribute('data-slot');
@@ -999,13 +1000,13 @@ if (typeof window.BackpackApp === 'undefined') {
           });
         });
 
-        // 关闭按钮
+        // ปุ่มปิด
         closeBtn.addEventListener('click', () => {
           modalContainer.remove();
           resolve(null);
         });
 
-        // 点击遮罩层关闭
+        // คลิกที่ overlay เพื่อปิด
         overlay.addEventListener('click', e => {
           if (e.target === overlay) {
             modalContainer.remove();
@@ -1015,14 +1016,14 @@ if (typeof window.BackpackApp === 'undefined') {
       });
     }
 
-    // 显示使用物品弹窗
+    // แสดงป๊อปอัพใช้ไอเทม
     showUseItemModal(item) {
       const modal = document.createElement('div');
       modal.className = 'custom-modal';
       modal.innerHTML = `
         <div class="modal-content">
           <div class="modal-header">
-            <h3 class="modal-title">使用物品：${item.name}</h3>
+            <h3 class="modal-title">ใช้ไอเทม：${item.name}</h3>
           </div>
           <div class="modal-body">
             <div class="form-group">
@@ -1034,7 +1035,7 @@ if (typeof window.BackpackApp === 'undefined') {
               <input type="text" class="form-input" id="useMethod" placeholder="เช่น: กินตรงๆ, ขว้าง, ทา ฯลฯ">
             </div>
             <div class="form-group">
-              <label class="form-label">使用数量：</label>
+              <label class="form-label">จำนวนที่ใช้：</label>
               <div class="quantity-control">
                 <button class="quantity-btn" id="decreaseBtn">-</button>
                 <div class="quantity-display" id="quantityDisplay">1</div>
@@ -1049,16 +1050,16 @@ if (typeof window.BackpackApp === 'undefined') {
         </div>
       `;
 
-      // 添加到app-content容器内，而不是document.body
+      // เพิ่มในคอนเทนเนอร์ app-content แทน document.body
       const appContent = document.getElementById('app-content');
       if (appContent) {
         appContent.appendChild(modal);
       } else {
-        console.warn('[Backpack App] 未找到app-content容器，添加到body');
+        console.warn('[Backpack App] ไม่พบคอนเทนเนอร์ app-content เพิ่มลงใน body');
         document.body.appendChild(modal);
       }
 
-      // 绑定事件
+      // ผูกอีเวนต์
       let currentQuantity = 1;
       const maxQuantity = item.quantity;
 
@@ -1068,14 +1069,14 @@ if (typeof window.BackpackApp === 'undefined') {
       const confirmBtn = modal.querySelector('#confirmUse');
       const cancelBtn = modal.querySelector('#cancelUse');
 
-      // 更新数量显示
+      // อัปเดตการแสดงจำนวน
       const updateQuantity = () => {
         quantityDisplay.textContent = currentQuantity;
         decreaseBtn.disabled = currentQuantity <= 1;
         increaseBtn.disabled = currentQuantity >= maxQuantity;
       };
 
-      // 减少数量
+      // ลดจำนวน
       decreaseBtn.addEventListener('click', () => {
         if (currentQuantity > 1) {
           currentQuantity--;
@@ -1083,7 +1084,7 @@ if (typeof window.BackpackApp === 'undefined') {
         }
       });
 
-      // 增加数量
+      // เพิ่มจำนวน
       increaseBtn.addEventListener('click', () => {
         if (currentQuantity < maxQuantity) {
           currentQuantity++;
@@ -1091,117 +1092,117 @@ if (typeof window.BackpackApp === 'undefined') {
         }
       });
 
-      // 确认使用
+      // ยืนยันการใช้
       confirmBtn.addEventListener('click', async () => {
         const target = modal.querySelector('#useTarget').value.trim();
         const method = modal.querySelector('#useMethod').value.trim();
 
         try {
-          // 生成消息
+          // สร้างข้อความ
           const message = await this.generateUseMessageWithContext(item, target, method, currentQuantity);
           this.sendToSillyTavern(message);
 
           this.showToast(`ใช้ ${currentQuantity} ${item.name} แล้ว`, 'success');
 
-          // 关闭弹窗
+          // ปิดป๊อปอัพ
           modal.remove();
 
-          // 刷新物品列表以反映数量变化
+          // รีเฟรชรายการไอเทมเพื่อสะท้อนการเปลี่ยนแปลงจำนวน
           setTimeout(() => {
             this.parseItemsFromContext();
           }, 500);
         } catch (error) {
-          console.error('[Backpack App] 使用物品失败:', error);
+          console.error('[Backpack App] ใช้ไอเทมล้มเหลว:', error);
           this.showToast('ใช้ไอเทมล้มเหลว: ' + error.message, 'error');
         }
       });
 
-      // 取消使用
+      // ยกเลิกการใช้
       cancelBtn.addEventListener('click', () => {
         modal.remove();
       });
 
-      // 点击背景关闭弹窗
+      // คลิกพื้นหลังเพื่อปิดป๊อปอัพ
       modal.addEventListener('click', e => {
         if (e.target === modal) {
           modal.remove();
         }
       });
 
-      // 初始化数量显示
+      // เริ่มต้นการแสดงจำนวน
       updateQuantity();
     }
 
-    // 生成使用消息（带上下文编辑）
+    // สร้างข้อความใช้ไอเทม（พร้อมแก้ไขบริบท）
     async generateUseMessageWithContext(item, target, method, quantity) {
       try {
-        // 先更新上下文中的背包格式（将原有物品标记为已使用）
+        // อัปเดตรูปแบบกระเป๋าในบริบทก่อน（ทำเครื่องหมายไอเทมเดิมว่าใช้แล้ว）
         await this.updateBackpackItemInContext(item, quantity);
 
-        // 生成基础消息
+        // สร้างข้อความพื้นฐาน
         let message = this.generateUseMessage(item, target, method, quantity);
 
-        // 如果使用后还有剩余，添加剩余数量信息和新的背包格式
+        // ถ้าใช้แล้วยังเหลือ เพิ่มข้อมูลจำนวนที่เหลือและรูปแบบกระเป๋าใหม่
         const remainingQuantity = item.quantity - quantity;
         if (remainingQuantity > 0) {
-          message += `。该物品在背包内的剩余数量为：${remainingQuantity}，[背包|${item.name}|${item.type}|${item.description}|${remainingQuantity}]`;
+          message += `。ไอเทมนี้เหลือในกระเป๋า：${remainingQuantity}，[背包|${item.name}|${item.type}|${item.description}|${remainingQuantity}]`;
         }
 
         return message;
       } catch (error) {
-        console.error('[Backpack App] 生成使用消息失败:', error);
-        // 降级到原始消息生成
+        console.error('[Backpack App] สร้างข้อความใช้ไอเทมล้มเหลว:', error);
+        // ลดระดับไปใช้การสร้างข้อความแบบเดิม
         return this.generateUseMessage(item, target, method, quantity);
       }
     }
 
-    // 生成使用消息（原始方法）
+    // สร้างข้อความใช้ไอเทม（วิธีดั้งเดิม）
     generateUseMessage(item, target, method, quantity) {
       let message = '';
 
-      // 处理对谁使用
+      // จัดการว่าใช้กับใคร
       if (target) {
-        message += `用户选择对${target}使用了${item.name}`;
+        message += `ผู้ใช้เลือกใช้${item.name}กับ${target}`;
         if (quantity > 1) {
-          message += `，使用数量为${quantity}`;
+          message += `，จำนวนที่ใช้${quantity}`;
         }
       }
 
-      // 处理如何使用
+      // จัดการวิธีใช้
       if (method) {
         if (message) {
           message += '。';
         }
-        message += `用户使用物品${item.name}，用法为${method}`;
+        message += `ผู้ใช้ใช้ไอเทม${item.name}，วิธีใช้คือ${method}`;
         if (quantity > 1 && !target) {
-          message += `。使用数量为${quantity}`;
+          message += `。จำนวนที่ใช้${quantity}`;
         }
       }
 
-      // 如果都没有填写，使用默认消息
+      // ถ้าไม่ได้กรอกทั้งสองอย่าง ใช้ข้อความเริ่มต้น
       if (!target && !method) {
-        message = `用户使用了${item.name}`;
+        message = `ผู้ใช้ใช้${item.name}`;
         if (quantity > 1) {
-          message += `，使用数量为${quantity}`;
+          message += `，จำนวนที่ใช้${quantity}`;
         }
       }
 
       return message;
     }
 
-    // 更新上下文中的背包物品格式
+    // อัปเดตรูปแบบไอเทมกระเป๋าในบริบท
     async updateBackpackItemInContext(item, usedQuantity) {
       try {
-        console.log('[Backpack App] 开始更新上下文中的背包物品格式');
+        console.log('[Backpack App] เริ่มอัปเดตรูปแบบไอเทมกระเป๋าในบริบท');
 
-        // 获取当前聊天数据
+        // ดึงข้อมูลแชทปัจจุบัน
         const contextData = this.getChatData();
         if (!contextData || contextData.length === 0) {
-          console.log('[Backpack App] 没有找到聊天数据');
+          console.log('[Backpack App] ไม่พบข้อมูลแชท');
           return;
         }
 
-        // 查找包含该物品的消息
+        // ค้นหาข้อความที่มีไอเทมนี้
         let hasUpdated = false;
         const targetPattern = new RegExp(
           `\\[背包\\|${this.escapeRegex(item.name)}\\|([^\\|]+)\\|([^\\|]+)\\|(\\d+)\\]`,
@@ -1213,37 +1214,37 @@ if (typeof window.BackpackApp === 'undefined') {
           const content = message.mes || message.content || '';
 
           if (content.includes(`[背包|${item.name}|`)) {
-            // 转换格式
+            // แปลงรูปแบบ
             const convertedContent = this.convertBackpackFormat(content, item, usedQuantity);
 
             if (convertedContent !== content) {
-              // 更新消息内容
+              // อัปเดตเนื้อหาข้อความ
               const success = await this.updateMessageContent(i, convertedContent);
               if (success) {
                 hasUpdated = true;
-                console.log(`[Backpack App] 已更新消息 ${i}，物品: ${item.name}`);
-                break; // 只更新第一个找到的消息
+                console.log(`[Backpack App] อัปเดตข้อความ ${i} แล้ว ไอเทม: ${item.name}`);
+                break; // อัปเดตเฉพาะข้อความแรกที่พบ
               }
             }
           }
         }
 
         if (hasUpdated) {
-          // 保存聊天数据
+          // บันทึกข้อมูลแชท
           await this.saveChatData();
-          console.log('[Backpack App] 背包物品格式更新完成并已保存');
+          console.log('[Backpack App] อัปเดตรูปแบบไอเทมกระเป๋าเสร็จและบันทึกแล้ว');
         } else {
-          console.log('[Backpack App] 没有找到需要更新的背包物品');
+          console.log('[Backpack App] ไม่พบไอเทมกระเป๋าที่ต้องอัปเดต');
         }
       } catch (error) {
-        console.error('[Backpack App] 更新背包物品格式失败:', error);
+        console.error('[Backpack App] อัปเดตรูปแบบไอเทมกระเป๋าล้มเหลว:', error);
         throw error;
       }
     }
 
-    // 转换背包格式
+    // แปลงรูปแบบกระเป๋า
     convertBackpackFormat(content, item, usedQuantity) {
-      // 创建正则表达式来匹配特定物品
+      // สร้าง regex เพื่อจับคู่ไอเทมเฉพาะ
       const itemPattern = new RegExp(
         `\\[背包\\|${this.escapeRegex(item.name)}\\|([^\\|]+)\\|([^\\|]+)\\|(\\d+)\\]`,
         'g',
@@ -1251,7 +1252,7 @@ if (typeof window.BackpackApp === 'undefined') {
 
       let convertedContent = content;
 
-      // 不管有无剩余，都将上下文中的物品标记为已使用，避免重复抓取
+      // ไม่ว่าจะเหลือหรือไม่ ทำเครื่องหมายไอเทมในบริบทว่าใช้แล้ว เพื่อหลีกเลี่ยงการดึงซ้ำ
       convertedContent = convertedContent.replace(itemPattern, (match, type, description, quantity) => {
         return `[已使用|${item.name}|${type}|${description}|${usedQuantity}]`;
       });
@@ -1259,153 +1260,153 @@ if (typeof window.BackpackApp === 'undefined') {
       return convertedContent;
     }
 
-    // 转义正则表达式特殊字符
+    // escape อักขระพิเศษของ regex
     escapeRegex(string) {
       return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     }
 
-    // 更新消息内容
+    // อัปเดตเนื้อหาข้อความ
     async updateMessageContent(messageIndex, newContent) {
       try {
-        console.log(`[Backpack App] 正在更新消息 ${messageIndex}:`, newContent.substring(0, 100) + '...');
+        console.log(`[Backpack App] กำลังอัปเดตข้อความ ${messageIndex}:`, newContent.substring(0, 100) + '...');
 
-        // 方法1: 使用全局chat数组直接更新
+        // วิธีที่ 1: ใช้อาร์เรย์ chat ทั่วไปอัปเดตโดยตรง
         const chat = window['chat'];
         if (chat && Array.isArray(chat) && chat[messageIndex]) {
           const originalContent = chat[messageIndex].mes;
           chat[messageIndex].mes = newContent;
 
-          // 如果消息有swipes，也需要更新
+          // ถ้าข้อความมี swipes ต้องอัปเดตด้วย
           if (chat[messageIndex].swipes && chat[messageIndex].swipe_id !== undefined) {
             chat[messageIndex].swipes[chat[messageIndex].swipe_id] = newContent;
           }
 
-          // 标记聊天数据已被修改
+          // ทำเครื่องหมายว่าข้อมูลแชทถูกแก้ไข
           if (window.chat_metadata) {
             window.chat_metadata.tainted = true;
           }
 
           console.log(
-            `[Backpack App] 已更新消息 ${messageIndex}，原内容长度:${originalContent.length}，新内容长度:${newContent.length}`,
+            `[Backpack App] อัปเดตข้อความ ${messageIndex} แล้ว ความยาวเดิม:${originalContent.length} ความยาวใหม่:${newContent.length}`,
           );
           return true;
         }
 
-        // 方法2: 尝试通过编辑器功能更新
+        // วิธีที่ 2: พยายามอัปเดตผ่านฟังก์ชันตัวแก้ไข
         if (window.mobileContextEditor && window.mobileContextEditor.modifyMessage) {
           await window.mobileContextEditor.modifyMessage(messageIndex, newContent);
           return true;
         }
 
-        // 方法3: 尝试通过context-editor更新
+        // วิธีที่ 3: พยายามอัปเดตผ่าน context-editor
         if (window.contextEditor && window.contextEditor.modifyMessage) {
           await window.contextEditor.modifyMessage(messageIndex, newContent);
           return true;
         }
 
-        console.warn('[Backpack App] 没有找到有效的消息更新方法');
+        console.warn('[Backpack App] ไม่พบวิธีอัปเดตข้อความที่ใช้ได้');
         return false;
       } catch (error) {
-        console.error('[Backpack App] 更新消息内容失败:', error);
+        console.error('[Backpack App] อัปเดตเนื้อหาข้อความล้มเหลว:', error);
         return false;
       }
     }
 
-    // 保存聊天数据
+    // บันทึกข้อมูลแชท
     async saveChatData() {
       try {
-        console.log('[Backpack App] 开始保存聊天数据...');
+        console.log('[Backpack App] เริ่มบันทึกข้อมูลแชท...');
 
-        // 方法1: 使用SillyTavern的保存函数
+        // วิธีที่ 1: ใช้ฟังก์ชันบันทึกของ SillyTavern
         if (typeof window.saveChatConditional === 'function') {
           await window.saveChatConditional();
-          console.log('[Backpack App] 已通过saveChatConditional保存聊天数据');
+          console.log('[Backpack App] บันทึกข้อมูลแชทผ่าน saveChatConditional แล้ว');
           return true;
         }
 
-        // 方法2: 使用延迟保存
+        // วิธีที่ 2: ใช้การบันทึกแบบหน่วง
         if (typeof window.saveChatDebounced === 'function') {
           window.saveChatDebounced();
-          console.log('[Backpack App] 已通过saveChatDebounced保存聊天数据');
-          // 等待一下确保保存完成
+          console.log('[Backpack App] บันทึกข้อมูลแชทผ่าน saveChatDebounced แล้ว');
+          // รอสักครู่ให้แน่ใจว่าบันทึกเสร็จ
           await new Promise(resolve => setTimeout(resolve, 1000));
           return true;
         }
 
-        // 方法3: 使用编辑器的保存功能
+        // วิธีที่ 3: ใช้ฟังก์ชันบันทึกของตัวแก้ไข
         if (window.mobileContextEditor && typeof window.mobileContextEditor.saveChatData === 'function') {
           await window.mobileContextEditor.saveChatData();
-          console.log('[Backpack App] 已通过mobileContextEditor保存聊天数据');
+          console.log('[Backpack App] บันทึกข้อมูลแชทผ่าน mobileContextEditor แล้ว');
           return true;
         }
 
-        // 方法4: 使用context-editor的保存功能
+        // วิธีที่ 4: ใช้ฟังก์ชันบันทึกของ context-editor
         if (window.contextEditor && typeof window.contextEditor.saveChatData === 'function') {
           await window.contextEditor.saveChatData();
-          console.log('[Backpack App] 已通过contextEditor保存聊天数据');
+          console.log('[Backpack App] บันทึกข้อมูลแชทผ่าน contextEditor แล้ว');
           return true;
         }
 
-        console.warn('[Backpack App] 没有找到有效的保存方法');
+        console.warn('[Backpack App] ไม่พบวิธีบันทึกที่ใช้ได้');
         return false;
       } catch (error) {
-        console.error('[Backpack App] 保存聊天数据失败:', error);
+        console.error('[Backpack App] บันทึกข้อมูลแชทล้มเหลว:', error);
         return false;
       }
     }
 
-    // 统一的发送消息方法（参考shop-app的发送方式）
+    // เมธอดส่งข้อความแบบรวม（อ้างอิงวิธีส่งของ shop-app）
     async sendToSillyTavern(message) {
       try {
-        console.log('[Backpack App] 🔄 发送消息到SillyTavern:', message);
+        console.log('[Backpack App] 🔄 ส่งข้อความไปยัง SillyTavern:', message);
 
-        // 方法1: 直接使用DOM元素（与消息app相同的方式）
+        // วิธีที่ 1: ใช้อิลิเมนต์ DOM โดยตรง（เหมือนกับแอปข้อความ）
         const originalInput = document.getElementById('send_textarea');
         const sendButton = document.getElementById('send_but');
 
         if (!originalInput || !sendButton) {
-          console.error('[Backpack App] 找不到输入框或发送按钮元素');
+          console.error('[Backpack App] ไม่พบอิลิเมนต์ช่องป้อนข้อมูลหรือปุ่มส่ง');
           return this.sendToSillyTavernBackup(message);
         }
 
-        // 检查输入框是否可用
+        // ตรวจสอบว่าช่องป้อนข้อมูลใช้ได้หรือไม่
         if (originalInput.disabled) {
-          console.warn('[Backpack App] 输入框被禁用');
+          console.warn('[Backpack App] ช่องป้อนข้อมูลถูกปิดใช้งาน');
           return false;
         }
 
-        // 检查发送按钮是否可用
+        // ตรวจสอบว่าปุ่มส่งใช้ได้หรือไม่
         if (sendButton.classList.contains('disabled')) {
-          console.warn('[Backpack App] 发送按钮被禁用');
+          console.warn('[Backpack App] ปุ่มส่งถูกปิดใช้งาน');
           return false;
         }
 
-        // 设置值
+        // ตั้งค่า
         originalInput.value = message;
-        console.log('[Backpack App] 已设置输入框值:', originalInput.value);
+        console.log('[Backpack App] ตั้งค่าช่องป้อนข้อมูลแล้ว:', originalInput.value);
 
-        // 触发输入事件
+        // ทริกเกอร์อีเวนต์ input
         originalInput.dispatchEvent(new Event('input', { bubbles: true }));
         originalInput.dispatchEvent(new Event('change', { bubbles: true }));
 
-        // 延迟点击发送按钮
+        // คลิกปุ่มส่งแบบหน่วง
         await new Promise(resolve => setTimeout(resolve, 300));
         sendButton.click();
-        console.log('[Backpack App] 已点击发送按钮');
+        console.log('[Backpack App] คลิกปุ่มส่งแล้ว');
 
         return true;
       } catch (error) {
-        console.error('[Backpack App] 发送消息时出错:', error);
+        console.error('[Backpack App] ส่งข้อความผิดพลาด:', error);
         return this.sendToSillyTavernBackup(message);
       }
     }
 
-    // 备用发送方法
+    // วิธีส่งสำรอง
     async sendToSillyTavernBackup(message) {
       try {
-        console.log('[Backpack App] 尝试备用发送方法:', message);
+        console.log('[Backpack App] พยายามวิธีส่งสำรอง:', message);
 
-        // 尝试查找其他可能的输入框
+        // พยายามค้นหาช่องป้อนข้อมูลอื่นที่เป็นไปได้
         const textareas = document.querySelectorAll('textarea');
 
         if (textareas.length > 0) {
@@ -1413,7 +1414,7 @@ if (typeof window.BackpackApp === 'undefined') {
           textarea.value = message;
           textarea.focus();
 
-          // 模拟键盘事件
+          // จำลองอีเวนต์คีย์บอร์ด
           textarea.dispatchEvent(new Event('input', { bubbles: true }));
           textarea.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
           return true;
@@ -1421,59 +1422,59 @@ if (typeof window.BackpackApp === 'undefined') {
 
         return false;
       } catch (error) {
-        console.error('[Backpack App] 备用发送方法失败:', error);
+        console.error('[Backpack App] วิธีส่งสำรองล้มเหลว:', error);
         return false;
       }
     }
 
-    // 手动刷新物品列表
+    // รีเฟรชรายการไอเทมด้วยตนเอง
     refreshItemList() {
-      console.log('[Backpack App] 手动刷新物品列表');
+      console.log('[Backpack App] รีเฟรชรายการไอเทมด้วยตนเอง');
       this.parseItemsFromContext();
       this.updateAppContent();
     }
 
-    // 销毁应用，清理资源
+    // ทำลายแอป ทำความสะอาดทรัพยากร
     destroy() {
-      console.log('[Backpack App] 销毁应用，清理资源');
+      console.log('[Backpack App] ทำลายแอป ทำความสะอาดทรัพยากร');
 
-      // 清理事件监听
+      // ทำความสะอาด event listener
       if (this.eventListenersSetup && this.messageReceivedHandler) {
         const eventSource = window['eventSource'];
         if (eventSource && eventSource.removeListener) {
           eventSource.removeListener('MESSAGE_RECEIVED', this.messageReceivedHandler);
-          console.log('[Backpack App] 🗑️ 已移除 MESSAGE_RECEIVED 事件监听');
+          console.log('[Backpack App] 🗑️ ลบ event listener MESSAGE_RECEIVED แล้ว');
         }
       }
 
-      // 清理搜索防抖定时器
+      // ทำความสะอาด debounce timer การค้นหา
       if (this.searchDebounceTimer) {
         clearTimeout(this.searchDebounceTimer);
         this.searchDebounceTimer = null;
       }
 
-      // 重置状态
+      // รีเซ็ตสถานะ
       this.eventListenersSetup = false;
       this.isAutoRenderEnabled = false;
 
-      // 清空数据
+      // ล้างข้อมูล
       this.items = [];
     }
 
-    // 更新header
+    // อัปเดต header
     updateHeader() {
-      // 通知mobile-phone更新header
+      // แจ้ง mobile-phone ให้อัปเดต header
       if (window.mobilePhone && window.mobilePhone.updateAppHeader) {
         const state = {
           app: 'backpack',
-          title: '我的背包',
+          title: 'กระเป๋าของฉัน',
           view: 'itemList',
         };
         window.mobilePhone.updateAppHeader(state);
       }
     }
 
-    // 显示提示消息
+    // แสดงข้อความแจ้งเตือน
     showToast(message, type = 'info') {
       const toast = document.createElement('div');
       toast.className = `backpack-toast ${type}`;
@@ -1494,44 +1495,44 @@ if (typeof window.BackpackApp === 'undefined') {
     }
   }
 
-  // 创建全局实例
+  // สร้างอินสแตนซ์ทั่วไป
   window.BackpackApp = BackpackApp;
   window.backpackApp = new BackpackApp();
-} // 结束类定义检查
+} // สิ้นสุดการตรวจสอบนิยามคลาส
 
-// 全局函数供mobile-phone.js调用
+// ฟังก์ชันทั่วไปสำหรับ mobile-phone.js เรียกใช้
 window.getBackpackAppContent = function () {
-  console.log('[Backpack App] 获取背包应用内容');
+  console.log('[Backpack App] ดึงเนื้อหาแอปกระเป๋า');
 
   if (!window.backpackApp) {
-    console.error('[Backpack App] backpackApp实例不存在');
+    console.error('[Backpack App] อินสแตนซ์ backpackApp ไม่มีอยู่');
     return '<div class="error-message">โหลดแอปกระเป๋าล้มเหลว</div>';
   }
 
   try {
     return window.backpackApp.getAppContent();
   } catch (error) {
-    console.error('[Backpack App] 获取应用内容失败:', error);
+    console.error('[Backpack App] ดึงเนื้อหาแอปล้มเหลว:', error);
     return '<div class="error-message">ดึงข้อมูลล้มเหลว</div>';
   }
 };
 
 window.bindBackpackAppEvents = function () {
-  console.log('[Backpack App] 绑定背包应用事件');
+  console.log('[Backpack App] ผูกอีเวนต์แอปกระเป๋า');
 
   if (!window.backpackApp) {
-    console.error('[Backpack App] backpackApp实例不存在');
+    console.error('[Backpack App] อินสแตนซ์ backpackApp ไม่มีอยู่');
     return;
   }
 
   try {
     window.backpackApp.bindEvents();
   } catch (error) {
-    console.error('[Backpack App] 绑定事件失败:', error);
+    console.error('[Backpack App] ผูกอีเวนต์ล้มเหลว:', error);
   }
 };
 
-// 调试和测试功能
+// ฟังก์ชันดีบักและทดสอบ
 window.backpackAppRefresh = function () {
   if (window.backpackApp) {
     window.backpackApp.refreshItemList();
@@ -1552,34 +1553,34 @@ window.backpackAppToggleSearch = function () {
 
 window.backpackAppDebugInfo = function () {
   if (window.backpackApp) {
-    console.log('[Backpack App Debug] 当前物品数量:', window.backpackApp.items.length);
-    console.log('[Backpack App Debug] 物品列表:', window.backpackApp.items);
-    console.log('[Backpack App Debug] 事件监听器设置:', window.backpackApp.eventListenersSetup);
-    console.log('[Backpack App Debug] 自动渲染启用:', window.backpackApp.isAutoRenderEnabled);
+    console.log('[Backpack App Debug] จำนวนไอเทมปัจจุบัน:', window.backpackApp.items.length);
+    console.log('[Backpack App Debug] รายการไอเทม:', window.backpackApp.items);
+    console.log('[Backpack App Debug] ตั้งค่า event listener:', window.backpackApp.eventListenersSetup);
+    console.log('[Backpack App Debug] เปิดใช้งานการเรนเดอร์อัตโนมัติ:', window.backpackApp.isAutoRenderEnabled);
   }
 };
 
-// 性能优化：销毁应用实例
+// การเพิ่มประสิทธิภาพ: ทำลายอินสแตนซ์แอป
 window.backpackAppDestroy = function () {
   if (window.backpackApp) {
     window.backpackApp.destroy();
-    console.log('[Backpack App] 应用已销毁');
+    console.log('[Backpack App] ทำลายแอปแล้ว');
   }
 };
 
-// 强制重新加载应用（清除缓存）
+// บังคับโหลดแอปใหม่（ล้างแคช）
 window.backpackAppForceReload = function () {
-  console.log('[Backpack App] 🔄 强制重新加载应用...');
+  console.log('[Backpack App] 🔄 บังคับโหลดแอปใหม่...');
 
-  // 销毁现有实例
+  // ทำลายอินสแตนซ์ที่มีอยู่
   if (window.backpackApp) {
     window.backpackApp.destroy();
   }
 
-  // 重新创建实例
+  // สร้างอินสแตนซ์ใหม่
   window.backpackApp = new BackpackApp();
-  console.log('[Backpack App] ✅ 应用已重新加载 - 版本 2.1');
+  console.log('[Backpack App] ✅ โหลดแอปใหม่แล้ว - เวอร์ชัน 2.1');
 };
 
-// 初始化
-console.log('[Backpack App] 背包应用模块加载完成 - 版本 2.1 (事件驱动刷新 + 变量管理器读取)');
+// เริ่มต้น
+console.log('[Backpack App] โหลดโมดูลแอปกระเป๋าเสร็จ - เวอร์ชัน 2.1 (รีเฟรชแบบ event-driven + อ่านจากตัวจัดการตัวแปร)');

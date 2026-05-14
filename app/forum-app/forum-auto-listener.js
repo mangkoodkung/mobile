@@ -1,133 +1,133 @@
 // ==SillyTavern Forum Auto Listener==
 // @name         Forum Auto Listener for Mobile Extension
 // @version      1.0.1
-// @description  论坛自动监听器，监听聊天变化并自动触发论坛生成
+// @description  ตัวฟังอัตโนมัติฟอรัม ฟังการเปลี่ยนแปลงแชทและทริกเกอร์การสร้างฟอรัมอัตโนมัติ
 // @author       Assistant
 
 /**
- * 论坛自动监听器类
- * 监听聊天变化，在满足条件时自动生成论坛内容
+ * คลาสตัวฟังอัตโนมัติฟอรัม
+ * ฟังการเปลี่ยนแปลงแชท เมื่อตรงตามเงื่อนไขจะสร้างเนื้อหาฟอรัมอัตโนมัติ
  *
- * 配置说明：
- * - checkIntervalMs: 检查间隔时间（毫秒，默认5000）
- * - debounceMs: 防抖延迟时间（毫秒，默认500）
- * - immediateOnThreshold: 达到阈值时是否立即执行（默认true）
- * - enabled: 是否启用监听（默认true）
- * - maxRetries: 最大重试次数（默认3）
- * - autoStartWithUI: 是否随界面自动启停（默认true）
+ * คำอธิบายการตั้งค่า：
+ * - checkIntervalMs: ช่วงเวลาตรวจสอบ（มิลลิวินาที ค่าเริ่มต้น 5000）
+ * - debounceMs: เวลาหน่วง debounce（มิลลิวินาที ค่าเริ่มต้น 500）
+ * - immediateOnThreshold: เมื่อถึงเกณฑ์จะดำเนินการทันทีหรือไม่（ค่าเริ่มต้น true）
+ * - enabled: เปิดใช้งานการฟังหรือไม่（ค่าเริ่มต้น true）
+ * - maxRetries: จำนวนครั้งสูงสุดในการลองใหม่（ค่าเริ่มต้น 3）
+ * - autoStartWithUI: เริ่ม/หยุดอัตโนมัติตาม UI หรือไม่（ค่าเริ่มต้น true）
  */
 class ForumAutoListener {
   constructor() {
     this.isListening = false;
     this.lastMessageCount = 0;
     this.lastCheckTime = Date.now();
-    this.checkInterval = null; // 初始化为null，不自动创建定时器
+    this.checkInterval = null; // เริ่มต้นเป็น null ไม่สร้าง timer อัตโนมัติ
     this.debounceTimer = null;
-    this.isProcessingRequest = false; // 新增：请求处理锁
-    this.lastProcessedMessageCount = 0; // 新增：最后处理的消息数量
-    this.currentStatus = '待机中'; // 新增：当前状态
-    this.statusElement = null; // 新增：状态显示元素
-    this.lastGenerationTime = null; // 新增：最后生成时间
-    this.generationCount = 0; // 新增：生成次数统计
-    this.uiObserver = null; // 新增：界面观察器
+    this.isProcessingRequest = false; // เพิ่มใหม่: ล็อคการประมวลผลคำขอ
+    this.lastProcessedMessageCount = 0; // เพิ่มใหม่: จำนวนข้อความที่ประมวลผลล่าสุด
+    this.currentStatus = 'สแตนด์บาย'; // เพิ่มใหม่: สถานะปัจจุบัน
+    this.statusElement = null; // เพิ่มใหม่: อิลิเมนต์แสดงสถานะ
+    this.lastGenerationTime = null; // เพิ่มใหม่: เวลาสร้างล่าสุด
+    this.generationCount = 0; // เพิ่มใหม่: สถิติจำนวนครั้งที่สร้าง
+    this.uiObserver = null; // เพิ่มใหม่: ตัวสังเกตการณ์ UI
     this.settings = {
       enabled: true,
-      checkIntervalMs: 5000, // 5秒检查一次
-      debounceMs: 500, // 防抖0.5秒（从2秒减少到0.5秒）
-      immediateOnThreshold: true, // 新增：达到阈值时立即执行
+      checkIntervalMs: 5000, // ตรวจสอบทุก 5 วินาที
+      debounceMs: 500, // debounce 0.5 วินาที（ลดจาก 2 วินาทีเป็น 0.5 วินาที）
+      immediateOnThreshold: true, // เพิ่มใหม่: ดำเนินการทันทีเมื่อถึงเกณฑ์
       maxRetries: 3,
-      autoStartWithUI: true, // 新增：是否随界面自动启停
+      autoStartWithUI: true, // เพิ่มใหม่: เริ่ม/หยุดอัตโนมัติตาม UI หรือไม่
     };
 
-    // 绑定方法
+    // ผูกเมธอด
     this.start = this.start.bind(this);
     this.stop = this.stop.bind(this);
     this.checkForChanges = this.checkForChanges.bind(this);
     this.safeDebounceAutoGenerate = this.safeDebounceAutoGenerate.bind(this);
     this.updateStatus = this.updateStatus.bind(this);
     this.initStatusDisplay = this.initStatusDisplay.bind(this);
-    this.setupUIObserver = this.setupUIObserver.bind(this); // 新增：设置界面观察器
-    this.checkForumAppState = this.checkForumAppState.bind(this); // 新增：检查论坛应用状态
+    this.setupUIObserver = this.setupUIObserver.bind(this); // เพิ่มใหม่: ตั้งค่าตัวสังเกตการณ์ UI
+    this.checkForumAppState = this.checkForumAppState.bind(this); // เพิ่มใหม่: ตรวจสอบสถานะแอปฟอรัม
   }
 
   /**
-   * 开始监听
+   * เริ่มฟัง
    */
   start() {
     if (this.isListening) {
-      console.log('[Forum Auto Listener] 已在监听中');
+      console.log('[Forum Auto Listener] กำลังฟังอยู่แล้ว');
       return;
     }
 
     try {
-      console.log('[Forum Auto Listener] 开始监听聊天变化...');
+      console.log('[Forum Auto Listener] เริ่มฟังการเปลี่ยนแปลงแชท...');
 
-      // 初始化状态显示
+      // เริ่มต้นการแสดงสถานะ
       this.initStatusDisplay();
 
-      // 更新状态
-      this.updateStatus('启动中', 'info');
+      // อัปเดตสถานะ
+      this.updateStatus('กำลังเริ่มต้น', 'info');
 
-      // 初始化当前消息数量
+      // เริ่มต้นจำนวนข้อความปัจจุบัน
       this.initializeMessageCount();
 
-      // 设置定时检查
+      // ตั้งค่าการตรวจสอบตามเวลา
       this.checkInterval = setInterval(this.checkForChanges, this.settings.checkIntervalMs);
 
-      // 监听SillyTavern事件（如果可用）
+      // ฟังอีเวนต์ SillyTavern（ถ้ามี）
       this.setupEventListeners();
 
       this.isListening = true;
-      this.updateStatus('监听中', 'success');
-      console.log('[Forum Auto Listener] ✅ 监听已启动');
+      this.updateStatus('กำลังฟัง', 'success');
+      console.log('[Forum Auto Listener] ✅ เริ่มฟังแล้ว');
     } catch (error) {
-      console.error('[Forum Auto Listener] 启动监听失败:', error);
-      this.updateStatus('启动失败', 'error');
+      console.error('[Forum Auto Listener] เริ่มฟังล้มเหลว:', error);
+      this.updateStatus('เริ่มต้นล้มเหลว', 'error');
     }
   }
 
   /**
-   * 停止监听
+   * หยุดฟัง
    */
   stop() {
     if (!this.isListening) {
-      console.log('[Forum Auto Listener] 未在监听中');
+      console.log('[Forum Auto Listener] ไม่ได้อยู่ในโหมดฟัง');
       return;
     }
 
     try {
-      console.log('[Forum Auto Listener] 停止监听...');
-      this.updateStatus('停止中', 'warning');
+      console.log('[Forum Auto Listener] หยุดฟัง...');
+      this.updateStatus('กำลังหยุด', 'warning');
 
-      // 清除定时器
+      // ล้าง timer
       if (this.checkInterval) {
         clearInterval(this.checkInterval);
         this.checkInterval = null;
       }
 
-      // 清除防抖定时器
+      // ล้าง debounce timer
       if (this.debounceTimer) {
         clearTimeout(this.debounceTimer);
         this.debounceTimer = null;
       }
 
-      // 移除事件监听器
+      // ลบ event listener
       this.removeEventListeners();
 
-      // 重置状态
+      // รีเซ็ตสถานะ
       this.isProcessingRequest = false;
 
       this.isListening = false;
-      this.updateStatus('已停止', 'offline');
-      console.log('[Forum Auto Listener] ✅ 监听已停止');
+      this.updateStatus('หยุดแล้ว', 'offline');
+      console.log('[Forum Auto Listener] ✅ หยุดฟังแล้ว');
     } catch (error) {
-      console.error('[Forum Auto Listener] 停止监听失败:', error);
-      this.updateStatus('停止失败', 'error');
+      console.error('[Forum Auto Listener] หยุดฟังล้มเหลว:', error);
+      this.updateStatus('หยุดล้มเหลว', 'error');
     }
   }
 
   /**
-   * 初始化当前消息数量
+   * เริ่มต้นจำนวนข้อความปัจจุบัน
    */
   async initializeMessageCount() {
     try {
@@ -135,51 +135,51 @@ class ForumAutoListener {
         const chatData = await window.forumManager.getCurrentChatData();
         if (chatData && chatData.messages) {
           this.lastMessageCount = chatData.messages.length;
-          // 修复：移除lastProcessedMessageCount的初始化，避免干扰消息检测
+          // แก้ไข: ลบการเริ่มต้น lastProcessedMessageCount เพื่อหลีกเลี่ยงการรบกวนการตรวจจับข้อความ
           // this.lastProcessedMessageCount = chatData.messages.length;
-          console.log(`[Forum Auto Listener] 初始消息数量: ${this.lastMessageCount}`);
+          console.log(`[Forum Auto Listener] จำนวนข้อความเริ่มต้น: ${this.lastMessageCount}`);
         }
       } else {
-        // 备用方案：直接从SillyTavern获取
+        // แผนสำรอง: ดึงจาก SillyTavern โดยตรง
         const chatData = this.getCurrentChatDataDirect();
         if (chatData && chatData.messages) {
           this.lastMessageCount = chatData.messages.length;
-          console.log(`[Forum Auto Listener] 初始消息数量(备用): ${this.lastMessageCount}`);
+          console.log(`[Forum Auto Listener] จำนวนข้อความเริ่มต้น(สำรอง): ${this.lastMessageCount}`);
         }
       }
     } catch (error) {
-      console.warn('[Forum Auto Listener] 初始化消息数量失败:', error);
+      console.warn('[Forum Auto Listener] เริ่มต้นจำนวนข้อความล้มเหลว:', error);
     }
   }
 
   /**
-   * 检查聊天变化 - 仅通过定时器触发
+   * ตรวจสอบการเปลี่ยนแปลงแชท - ทริกเกอร์ผ่าน timer เท่านั้น
    */
   async checkForChanges() {
-    // 如果未启动监听，直接返回
+    // ถ้ายังไม่ได้เริ่มฟัง ให้ return ทันที
     if (!this.isListening || !this.settings.enabled) {
       return;
     }
 
-    // 检查SillyTavern是否正在生成消息，如果是则等待
+    // ตรวจสอบว่า SillyTavern กำลังสร้างข้อความอยู่หรือไม่ ถ้าใช่ให้รอ
     if (this.isSillyTavernBusy()) {
-      console.log('[Forum Auto Listener] SillyTavern正在生成消息，等待完成...');
+      console.log('[Forum Auto Listener] SillyTavern กำลังสร้างข้อความ รอให้เสร็จ...');
       return;
     }
 
-    // 如果我们正在处理请求，也跳过这次检查
+    // ถ้ากำลังประมวลผลคำขออยู่ ให้ข้ามการตรวจสอบครั้งนี้
     if (this.isProcessingRequest) {
-      console.log('[Forum Auto Listener] 正在处理请求中，跳过本次检查');
+      console.log('[Forum Auto Listener] กำลังประมวลผลคำขอ ข้ามการตรวจสอบครั้งนี้');
       return;
     }
 
     try {
-      // 获取当前聊天数据 - 使用备用方案
+      // ดึงข้อมูลแชทปัจจุบัน - ใช้แผนสำรอง
       let chatData = null;
       if (window.forumManager && window.forumManager.getCurrentChatData) {
         chatData = await window.forumManager.getCurrentChatData();
       } else {
-        // 备用方案：直接从SillyTavern获取
+        // แผนสำรอง: ดึงจาก SillyTavern โดยตรง
         chatData = this.getCurrentChatDataDirect();
       }
 
@@ -189,192 +189,192 @@ class ForumAutoListener {
 
       const currentMessageCount = chatData.messages.length;
 
-      // 检查消息数量是否发生变化（修复：使用lastMessageCount而不是lastProcessedMessageCount）
+      // ตรวจสอบว่าจำนวนข้อความเปลี่ยนแปลงหรือไม่（แก้ไข: ใช้ lastMessageCount แทน lastProcessedMessageCount）
       const messageIncrement = currentMessageCount - this.lastMessageCount;
 
       if (messageIncrement > 0) {
         console.log(
-          `[Forum Auto Listener] 检测到新消息: +${messageIncrement} (${this.lastMessageCount} -> ${currentMessageCount})`,
+          `[Forum Auto Listener] ตรวจพบข้อความใหม่: +${messageIncrement} (${this.lastMessageCount} -> ${currentMessageCount})`,
         );
 
-        // 获取阈值（优先从论坛管理器，否则使用默认值）
+        // ดึงค่าเกณฑ์（ใช้จากตัวจัดการฟอรัมก่อน ไม่งั้นใช้ค่าเริ่มต้น）
         const threshold =
           window.forumManager && window.forumManager.currentSettings
             ? window.forumManager.currentSettings.threshold
-            : 1; // 默认阈值为1
+            : 1; // ค่าเกณฑ์เริ่มต้นคือ 1
 
-        console.log(`[Forum Auto Listener] 当前阈值: ${threshold}`);
+        console.log(`[Forum Auto Listener] เกณฑ์ปัจจุบัน: ${threshold}`);
 
-        // 更新计数（修复：立即更新lastMessageCount）
+        // อัปเดตตัวนับ（แก้ไข: อัปเดต lastMessageCount ทันที）
         this.lastMessageCount = currentMessageCount;
         this.lastCheckTime = Date.now();
 
-        // 检查是否达到阈值
+        // ตรวจสอบว่าถึงเกณฑ์หรือไม่
         if (messageIncrement >= threshold) {
-          console.log(`[Forum Auto Listener] 达到阈值，触发立即自动生成`);
-          this.updateStatus(`生成中 (阈值:${threshold})`, 'processing');
+          console.log(`[Forum Auto Listener] ถึงเกณฑ์แล้ว ทริกเกอร์การสร้างอัตโนมัติทันที`);
+          this.updateStatus(`กำลังสร้าง (เกณฑ์:${threshold})`, 'processing');
 
-          // 调试：检查forumManager状态
-          console.log(`[Forum Auto Listener] 调试 - forumManager存在: ${!!window.forumManager}`);
+          // ดีบัก: ตรวจสอบสถานะ forumManager
+          console.log(`[Forum Auto Listener] ดีบัก - forumManager มีอยู่: ${!!window.forumManager}`);
           console.log(
-            `[Forum Auto Listener] 调试 - checkAutoGenerate存在: ${!!(
+            `[Forum Auto Listener] ดีบัก - checkAutoGenerate มีอยู่: ${!!(
               window.forumManager && window.forumManager.checkAutoGenerate
             )}`,
           );
-          console.log(`[Forum Auto Listener] 调试 - isProcessingRequest: ${this.isProcessingRequest}`);
+          console.log(`[Forum Auto Listener] ดีบัก - isProcessingRequest: ${this.isProcessingRequest}`);
 
-          // 通知论坛管理器检查是否需要自动生成
+          // แจ้งตัวจัดการฟอรัมให้ตรวจสอบว่าต้องสร้างอัตโนมัติหรือไม่
           if (window.forumManager && window.forumManager.checkAutoGenerate) {
-            console.log(`[Forum Auto Listener] 开始调用safeDebounceAutoGenerate(true)`);
+            console.log(`[Forum Auto Listener] เริ่มเรียก safeDebounceAutoGenerate(true)`);
             try {
-              // 达到阈值时立即执行，不使用防抖
+              // เมื่อถึงเกณฑ์ให้ดำเนินการทันที ไม่ใช้ debounce
               this.safeDebounceAutoGenerate(true);
-              console.log(`[Forum Auto Listener] safeDebounceAutoGenerate调用完成`);
+              console.log(`[Forum Auto Listener] เรียก safeDebounceAutoGenerate เสร็จแล้ว`);
             } catch (error) {
-              console.error(`[Forum Auto Listener] safeDebounceAutoGenerate调用失败:`, error);
-              this.updateStatus('生成失败', 'error');
+              console.error(`[Forum Auto Listener] เรียก safeDebounceAutoGenerate ล้มเหลว:`, error);
+              this.updateStatus('สร้างล้มเหลว', 'error');
             }
           } else {
             console.warn(
-              `[Forum Auto Listener] 无法调用自动生成 - forumManager: ${!!window.forumManager}, checkAutoGenerate: ${!!(
+              `[Forum Auto Listener] ไม่สามารถเรียกการสร้างอัตโนมัติ - forumManager: ${!!window.forumManager}, checkAutoGenerate: ${!!(
                 window.forumManager && window.forumManager.checkAutoGenerate
               )}`,
             );
-            this.updateStatus('论坛管理器不可用', 'warning');
+            this.updateStatus('ตัวจัดการฟอรัมไม่พร้อมใช้งาน', 'warning');
           }
         } else {
-          console.log(`[Forum Auto Listener] 增量 ${messageIncrement} 未达到阈值 ${threshold}`);
-          this.updateStatus(`监听中 (${messageIncrement}/${threshold})`, 'info');
+          console.log(`[Forum Auto Listener] ส่วนเพิ่ม ${messageIncrement} ยังไม่ถึงเกณฑ์ ${threshold}`);
+          this.updateStatus(`กำลังฟัง (${messageIncrement}/${threshold})`, 'info');
         }
       } else if (messageIncrement === 0) {
-        // 没有新消息
+        // ไม่มีข้อความใหม่
         if (window.DEBUG_FORUM_AUTO_LISTENER) {
-          console.log(`[Forum Auto Listener] 无新消息 (当前: ${currentMessageCount})`);
+          console.log(`[Forum Auto Listener] ไม่มีข้อความใหม่ (ปัจจุบัน: ${currentMessageCount})`);
         }
       }
     } catch (error) {
-      console.error('[Forum Auto Listener] 检查变化失败:', error);
+      console.error('[Forum Auto Listener] ตรวจสอบการเปลี่ยนแปลงล้มเหลว:', error);
     }
   }
 
   /**
-   * 安全的防抖自动生成 - 带请求锁
-   * @param {boolean} immediate - 是否立即执行，不使用防抖
+   * การสร้างอัตโนมัติแบบ debounce ที่ปลอดภัย - มีล็อคคำขอ
+   * @param {boolean} immediate - ดำเนินการทันทีหรือไม่ ไม่ใช้ debounce
    */
   safeDebounceAutoGenerate(immediate = false) {
-    // 如果正在处理请求，跳过
+    // ถ้ากำลังประมวลผลคำขอ ให้ข้าม
     if (this.isProcessingRequest) {
-      console.log('[Forum Auto Listener] 正在处理请求中，跳过新的触发');
+      console.log('[Forum Auto Listener] กำลังประมวลผลคำขอ ข้ามทริกเกอร์ใหม่');
       return;
     }
 
-    // 如果设置了立即执行，直接执行
+    // ถ้าตั้งค่าให้ดำเนินการทันที ให้ดำเนินการเลย
     if (immediate || this.settings.immediateOnThreshold) {
-      console.log('[Forum Auto Listener] 立即执行自动生成检查...');
+      console.log('[Forum Auto Listener] ดำเนินการตรวจสอบการสร้างอัตโนมัติทันที...');
       this.executeAutoGenerate();
       return;
     }
 
-    // 清除之前的定时器
+    // ล้าง timer ก่อนหน้า
     if (this.debounceTimer) {
       clearTimeout(this.debounceTimer);
     }
 
-    // 设置新的定时器
+    // ตั้ง timer ใหม่
     this.debounceTimer = setTimeout(async () => {
       this.executeAutoGenerate();
     }, this.settings.debounceMs);
   }
 
   /**
-   * 执行自动生成的核心逻辑
+   * ลอจิกหลักของการดำเนินการสร้างอัตโนมัติ
    */
   async executeAutoGenerate() {
     if (this.isProcessingRequest) {
-      console.log('[Forum Auto Listener] 请求已在处理中，跳过');
+      console.log('[Forum Auto Listener] คำขอกำลังประมวลผลอยู่ ข้าม');
       return;
     }
 
-    console.log('[Forum Auto Listener] 触发自动生成检查...');
+    console.log('[Forum Auto Listener] ทริกเกอร์การตรวจสอบการสร้างอัตโนมัติ...');
 
     try {
-      // 尝试初始化论坛管理器（如果不存在）
+      // พยายามเริ่มต้นตัวจัดการฟอรัม（ถ้าไม่มี）
       if (!window.forumManager) {
-        console.log('[Forum Auto Listener] 论坛管理器不存在，尝试初始化...');
-        this.updateStatus('初始化论坛管理器', 'processing');
+        console.log('[Forum Auto Listener] ตัวจัดการฟอรัมไม่มีอยู่ พยายามเริ่มต้น...');
+        this.updateStatus('กำลังเริ่มต้นตัวจัดการฟอรัม', 'processing');
         await this.initializeForumManager();
       }
 
-      // 检查论坛管理器状态
+      // ตรวจสอบสถานะตัวจัดการฟอรัม
       if (window.forumManager && window.forumManager.isProcessing) {
-        console.log('[Forum Auto Listener] 论坛管理器正在处理中，跳过');
-        this.updateStatus('等待论坛管理器', 'waiting');
+        console.log('[Forum Auto Listener] ตัวจัดการฟอรัมกำลังประมวลผล ข้าม');
+        this.updateStatus('รอตัวจัดการฟอรัม', 'waiting');
         return;
       }
 
-      // 设置处理状态 - 在调用论坛管理器之前设置
+      // ตั้งค่าสถานะการประมวลผล - ตั้งก่อนเรียกตัวจัดการฟอรัม
       this.isProcessingRequest = true;
 
-      // 执行自动生成 - 完全清除处理状态避免冲突
+      // ดำเนินการสร้างอัตโนมัติ - ล้างสถานะการประมวลผลทั้งหมดเพื่อหลีกเลี่ยงความขัดแย้ง
       if (window.forumManager && window.forumManager.checkAutoGenerate) {
-        console.log('[Forum Auto Listener] 调用论坛管理器的checkAutoGenerate...');
-        this.updateStatus('调用论坛管理器', 'processing');
+        console.log('[Forum Auto Listener] เรียก checkAutoGenerate ของตัวจัดการฟอรัม...');
+        this.updateStatus('กำลังเรียกตัวจัดการฟอรัม', 'processing');
 
-        // 临时清除所有可能导致冲突的状态
+        // ล้างสถานะทั้งหมดที่อาจทำให้เกิดความขัดแย้งชั่วคราว
         const originalProcessingState = this.isProcessingRequest;
         this.isProcessingRequest = false;
 
-        // 设置标志告诉论坛管理器这是合法调用
+        // ตั้งค่าแฟล็กบอกตัวจัดการฟอรัมว่านี่คือการเรียกที่ถูกต้อง
         window.forumAutoListener._allowForumManagerCall = true;
 
         try {
           await window.forumManager.checkAutoGenerate();
-          console.log('[Forum Auto Listener] 论坛管理器调用完成');
+          console.log('[Forum Auto Listener] เรียกตัวจัดการฟอรัมเสร็จแล้ว');
           this.generationCount++;
           this.lastGenerationTime = new Date();
-          this.updateStatus(`生成完成 (#${this.generationCount})`, 'success');
+          this.updateStatus(`สร้างเสร็จ (#${this.generationCount})`, 'success');
         } finally {
-          // 恢复状态
+          // กู้คืนสถานะ
           this.isProcessingRequest = originalProcessingState;
           delete window.forumAutoListener._allowForumManagerCall;
         }
       } else {
-        // 如果论坛管理器仍然不可用，尝试直接生成
-        console.log('[Forum Auto Listener] 论坛管理器不可用，尝试直接生成论坛内容...');
-        this.updateStatus('直接生成论坛内容', 'processing');
+        // ถ้าตัวจัดการฟอรัมยังไม่พร้อมใช้งาน พยายามสร้างโดยตรง
+        console.log('[Forum Auto Listener] ตัวจัดการฟอรัมไม่พร้อมใช้งาน พยายามสร้างเนื้อหาฟอรัมโดยตรง...');
+        this.updateStatus('สร้างเนื้อหาฟอรัมโดยตรง', 'processing');
         await this.directForumGenerate();
         this.generationCount++;
         this.lastGenerationTime = new Date();
-        this.updateStatus(`直接生成完成 (#${this.generationCount})`, 'success');
+        this.updateStatus(`สร้างโดยตรงเสร็จ (#${this.generationCount})`, 'success');
       }
 
-      // 更新已处理的消息数量
-      // 修复：移除这行代码，因为它会导致监听器只生效一次
+      // อัปเดตจำนวนข้อความที่ประมวลผลแล้ว
+      // แก้ไข: ลบบรรทัดนี้เพราะจะทำให้ตัวฟังทำงานได้แค่ครั้งเดียว
       // this.lastProcessedMessageCount = this.lastMessageCount;
-      console.log(`[Forum Auto Listener] 生成完成，继续监听新消息`);
+      console.log(`[Forum Auto Listener] สร้างเสร็จ ฟังข้อความใหม่ต่อ`);
 
-      // 恢复监听状态
+      // กู้คืนสถานะการฟัง
       setTimeout(() => {
         if (this.isListening) {
-          this.updateStatus('监听中', 'success');
+          this.updateStatus('กำลังฟัง', 'success');
         }
       }, 2000);
     } catch (error) {
-      console.error('[Forum Auto Listener] 自动生成检查失败:', error);
-      this.updateStatus('生成检查失败', 'error');
+      console.error('[Forum Auto Listener] ตรวจสอบการสร้างอัตโนมัติล้มเหลว:', error);
+      this.updateStatus('ตรวจสอบการสร้างล้มเหลว', 'error');
     } finally {
       this.isProcessingRequest = false;
     }
   }
 
   /**
-   * 初始化论坛管理器
+   * เริ่มต้นตัวจัดการฟอรัม
    */
   async initializeForumManager() {
     try {
-      console.log('[Forum Auto Listener] 尝试加载论坛管理器...');
+      console.log('[Forum Auto Listener] พยายามโหลดตัวจัดการฟอรัม...');
 
-      // 尝试加载论坛相关脚本
+      // พยายามโหลดสคริปต์ที่เกี่ยวข้องกับฟอรัม
       const forumScripts = [
         '/scripts/extensions/third-party/mobile/app/forum-app/forum-manager.js',
         '/scripts/extensions/third-party/mobile/app/forum-app/forum-app.js',
@@ -382,17 +382,17 @@ class ForumAutoListener {
 
       for (const scriptPath of forumScripts) {
         if (!document.querySelector(`script[src*="${scriptPath}"]`)) {
-          console.log(`[Forum Auto Listener] 加载脚本: ${scriptPath}`);
+          console.log(`[Forum Auto Listener] โหลดสคริปต์: ${scriptPath}`);
           await this.loadScript(scriptPath);
         }
       }
 
-      // 等待一下让脚本初始化
+      // รอสักครู่ให้สคริปต์เริ่มต้น
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // 尝试创建论坛管理器实例
+      // พยายามสร้างอินสแตนซ์ตัวจัดการฟอรัม
       if (window.ForumManager && !window.forumManager) {
-        console.log('[Forum Auto Listener] 创建论坛管理器实例...');
+        console.log('[Forum Auto Listener] สร้างอินสแตนซ์ตัวจัดการฟอรัม...');
         window.forumManager = new window.ForumManager();
         if (window.forumManager.initialize) {
           await window.forumManager.initialize();
@@ -400,17 +400,17 @@ class ForumAutoListener {
       }
 
       if (window.forumManager) {
-        console.log('[Forum Auto Listener] ✅ 论坛管理器初始化成功');
+        console.log('[Forum Auto Listener] ✅ เริ่มต้นตัวจัดการฟอรัมสำเร็จ');
       } else {
-        console.warn('[Forum Auto Listener] ⚠️ 论坛管理器初始化失败');
+        console.warn('[Forum Auto Listener] ⚠️ เริ่มต้นตัวจัดการฟอรัมล้มเหลว');
       }
     } catch (error) {
-      console.error('[Forum Auto Listener] 初始化论坛管理器失败:', error);
+      console.error('[Forum Auto Listener] เริ่มต้นตัวจัดการฟอรัมล้มเหลว:', error);
     }
   }
 
   /**
-   * 加载脚本文件
+   * โหลดไฟล์สคริปต์
    */
   async loadScript(src) {
     return new Promise((resolve, reject) => {
@@ -423,263 +423,263 @@ class ForumAutoListener {
   }
 
   /**
-   * 直接生成论坛内容（当论坛管理器不可用时）
+   * สร้างเนื้อหาฟอรัมโดยตรง（เมื่อตัวจัดการฟอรัมไม่พร้อมใช้งาน）
    */
   async directForumGenerate() {
     try {
-      console.log('[Forum Auto Listener] 直接生成论坛内容...');
+      console.log('[Forum Auto Listener] สร้างเนื้อหาฟอรัมโดยตรง...');
 
-      // 获取当前聊天数据
+      // ดึงข้อมูลแชทปัจจุบัน
       const context = window.getContext ? window.getContext() : null;
       if (!context || !context.chat) {
-        console.warn('[Forum Auto Listener] 无法获取聊天上下文');
+        console.warn('[Forum Auto Listener] ไม่สามารถดึงบริบทแชทได้');
         return;
       }
 
-      // 构建论坛生成提示
+      // สร้าง prompt สำหรับการสร้างฟอรัม
       const forumPrompt = this.buildForumPrompt(context.chat);
 
-      // 使用静默生成
+      // ใช้การสร้างแบบเงียบ
       if (window.generateQuietPrompt) {
-        console.log('[Forum Auto Listener] 使用generateQuietPrompt生成论坛内容...');
+        console.log('[Forum Auto Listener] ใช้ generateQuietPrompt สร้างเนื้อหาฟอรัม...');
         const forumContent = await window.generateQuietPrompt(forumPrompt, false, false);
 
         if (forumContent) {
-          console.log('[Forum Auto Listener] ✅ 论坛内容生成成功');
-          // 可以在这里添加保存或显示论坛内容的逻辑
+          console.log('[Forum Auto Listener] ✅ สร้างเนื้อหาฟอรัมสำเร็จ');
+          // สามารถเพิ่มลอจิกบันทึกหรือแสดงเนื้อหาฟอรัมที่นี่
           this.displayForumContent(forumContent);
         } else {
-          console.warn('[Forum Auto Listener] 论坛内容生成为空');
+          console.warn('[Forum Auto Listener] เนื้อหาฟอรัมที่สร้างว่างเปล่า');
         }
       } else {
-        console.warn('[Forum Auto Listener] generateQuietPrompt不可用');
+        console.warn('[Forum Auto Listener] generateQuietPrompt ไม่พร้อมใช้งาน');
       }
     } catch (error) {
-      console.error('[Forum Auto Listener] 直接生成论坛内容失败:', error);
+      console.error('[Forum Auto Listener] สร้างเนื้อหาฟอรัมโดยตรงล้มเหลว:', error);
     }
   }
 
   /**
-   * 构建论坛生成提示
+   * สร้าง prompt สำหรับการสร้างฟอรัม
    */
   buildForumPrompt(chatMessages) {
-    const recentMessages = chatMessages.slice(-10); // 取最近10条消息
+    const recentMessages = chatMessages.slice(-10); // ดึง 10 ข้อความล่าสุด
 
-    let prompt = '基于以下聊天内容，生成一个论坛讨论帖子。请包含主要观点和讨论重点：\n\n';
+    let prompt = 'จากเนื้อหาแชทต่อไปนี้ สร้างโพสต์สนทนาในฟอรัม กรุณาระบุประเด็นหลักและจุดสนทนาสำคัญ：\n\n';
 
     recentMessages.forEach((msg, index) => {
       if (!msg.is_system) {
-        prompt += `${msg.name || '用户'}: ${msg.mes}\n`;
+        prompt += `${msg.name || 'ผู้ใช้'}: ${msg.mes}\n`;
       }
     });
 
-    prompt += '\n请生成论坛讨论内容：';
+    prompt += '\nกรุณาสร้างเนื้อหาสนทนาฟอรัม：';
 
     return prompt;
   }
 
   /**
-   * 显示论坛内容
+   * แสดงเนื้อหาฟอรัม
    */
   displayForumContent(content) {
     try {
-      // 尝试将内容显示在聊天中或通知用户
-      console.log('[Forum Auto Listener] 论坛内容已生成:', content);
+      // พยายามแสดงเนื้อหาในแชทหรือแจ้งผู้ใช้
+      console.log('[Forum Auto Listener] สร้างเนื้อหาฟอรัมแล้ว:', content);
 
-      // 可以添加到聊天中作为系统消息
+      // สามารถเพิ่มในแชทเป็นข้อความระบบ
       if (window.sendSystemMessage) {
-        window.sendSystemMessage('GENERIC', `🏛️ 论坛内容已生成：\n\n${content}`);
+        window.sendSystemMessage('GENERIC', `🏛️ สร้างเนื้อหาฟอรัมแล้ว：\n\n${content}`);
       } else {
-        // 或者显示通知
+        // หรือแสดงการแจ้งเตือน
         if (window.toastr) {
-          window.toastr.success('论坛内容已自动生成', '论坛监听器');
+          window.toastr.success('สร้างเนื้อหาฟอรัมอัตโนมัติแล้ว', 'ตัวฟังฟอรัม');
         }
       }
     } catch (error) {
-      console.error('[Forum Auto Listener] 显示论坛内容失败:', error);
+      console.error('[Forum Auto Listener] แสดงเนื้อหาฟอรัมล้มเหลว:', error);
     }
   }
 
   /**
-   * 检查SillyTavern是否正忙（生成消息中）
+   * ตรวจสอบว่า SillyTavern กำลังยุ่งหรือไม่（กำลังสร้างข้อความ）
    */
   isSillyTavernBusy() {
     try {
-      // 检查是否正在发送消息
+      // ตรวจสอบว่ากำลังส่งข้อความหรือไม่
       if (typeof window.is_send_press !== 'undefined' && window.is_send_press) {
         return true;
       }
 
-      // 检查是否正在生成消息
+      // ตรวจสอบว่ากำลังสร้างข้อความหรือไม่
       if (typeof window.is_generating !== 'undefined' && window.is_generating) {
         return true;
       }
 
-      // 检查流式处理器状态
+      // ตรวจสอบสถานะ streaming processor
       if (window.streamingProcessor && !window.streamingProcessor.isFinished) {
         return true;
       }
 
-      // 检查群组生成状态
+      // ตรวจสอบสถานะการสร้างกลุ่ม
       if (typeof window.is_group_generating !== 'undefined' && window.is_group_generating) {
         return true;
       }
 
       return false;
     } catch (error) {
-      console.warn('[Forum Auto Listener] 检查SillyTavern状态失败:', error);
-      return false; // 如果检查失败，假设不忙
+      console.warn('[Forum Auto Listener] ตรวจสอบสถานะ SillyTavern ล้มเหลว:', error);
+      return false; // ถ้าตรวจสอบล้มเหลว สมมติว่าไม่ยุ่ง
     }
   }
 
   /**
-   * 直接从SillyTavern获取聊天数据
+   * ดึงข้อมูลแชทจาก SillyTavern โดยตรง
    */
   getCurrentChatDataDirect() {
     try {
-      // 尝试从全局chat变量获取
+      // พยายามดึงจากตัวแปร chat ทั่วไป
       if (typeof window.chat !== 'undefined' && Array.isArray(window.chat)) {
         return {
           messages: window.chat,
-          characterName: window.name2 || '角色',
+          characterName: window.name2 || 'ตัวละคร',
           chatId: window.getCurrentChatId ? window.getCurrentChatId() : 'unknown',
         };
       }
 
-      // 尝试从context获取
+      // พยายามดึงจาก context
       if (window.getContext) {
         const context = window.getContext();
         if (context && context.chat) {
           return {
             messages: context.chat,
-            characterName: context.name2 || '角色',
+            characterName: context.name2 || 'ตัวละคร',
             chatId: context.chatId || 'unknown',
           };
         }
       }
 
-      console.warn('[Forum Auto Listener] 无法直接获取聊天数据');
+      console.warn('[Forum Auto Listener] ไม่สามารถดึงข้อมูลแชทโดยตรงได้');
       return null;
     } catch (error) {
-      console.error('[Forum Auto Listener] 直接获取聊天数据失败:', error);
+      console.error('[Forum Auto Listener] ดึงข้อมูลแชทโดยตรงล้มเหลว:', error);
       return null;
     }
   }
 
   /**
-   * 防抖自动生成 - 保持向后兼容
+   * การสร้างอัตโนมัติแบบ debounce - รักษาความเข้ากันได้ย้อนหลัง
    */
   debounceAutoGenerate() {
     this.safeDebounceAutoGenerate();
   }
 
   /**
-   * 手动触发论坛生成（无状态冲突）
+   * ทริกเกอร์การสร้างฟอรัมด้วยตนเอง（ไม่มีความขัดแย้งของสถานะ）
    */
   async manualTrigger() {
-    console.log('[Forum Auto Listener] 手动触发论坛生成...');
-    this.updateStatus('手动触发生成', 'processing');
+    console.log('[Forum Auto Listener] ทริกเกอร์การสร้างฟอรัมด้วยตนเอง...');
+    this.updateStatus('ทริกเกอร์การสร้างด้วยตนเอง', 'processing');
 
     try {
-      // 尝试初始化论坛管理器（如果不存在）
+      // พยายามเริ่มต้นตัวจัดการฟอรัม（ถ้าไม่มี）
       if (!window.forumManager) {
-        console.log('[Forum Auto Listener] 论坛管理器不存在，尝试初始化...');
-        this.updateStatus('初始化论坛管理器', 'processing');
+        console.log('[Forum Auto Listener] ตัวจัดการฟอรัมไม่มีอยู่ พยายามเริ่มต้น...');
+        this.updateStatus('กำลังเริ่มต้นตัวจัดการฟอรัม', 'processing');
         await this.initializeForumManager();
       }
 
-      // 直接调用论坛管理器，清除状态避免冲突
+      // เรียกตัวจัดการฟอรัมโดยตรง ล้างสถานะเพื่อหลีกเลี่ยงความขัดแย้ง
       if (window.forumManager && window.forumManager.checkAutoGenerate) {
-        console.log('[Forum Auto Listener] 直接调用论坛管理器...');
-        this.updateStatus('调用论坛管理器', 'processing');
+        console.log('[Forum Auto Listener] เรียกตัวจัดการฟอรัมโดยตรง...');
+        this.updateStatus('กำลังเรียกตัวจัดการฟอรัม', 'processing');
 
-        // 设置标志告诉论坛管理器这是合法的手动调用
+        // ตั้งค่าแฟล็กบอกตัวจัดการฟอรัมว่านี่คือการเรียกด้วยตนเองที่ถูกต้อง
         window.forumAutoListener._allowForumManagerCall = true;
 
         try {
           await window.forumManager.checkAutoGenerate();
-          console.log('[Forum Auto Listener] ✅ 论坛管理器调用完成');
+          console.log('[Forum Auto Listener] ✅ เรียกตัวจัดการฟอรัมเสร็จแล้ว');
           this.generationCount++;
           this.lastGenerationTime = new Date();
-          this.updateStatus(`手动生成完成 (#${this.generationCount})`, 'success');
+          this.updateStatus(`สร้างด้วยตนเองเสร็จ (#${this.generationCount})`, 'success');
         } finally {
           delete window.forumAutoListener._allowForumManagerCall;
         }
       } else if (window.forumManager && window.forumManager.manualGenerate) {
-        console.log('[Forum Auto Listener] 调用手动生成方法...');
-        this.updateStatus('调用手动生成', 'processing');
+        console.log('[Forum Auto Listener] เรียกเมธอดสร้างด้วยตนเอง...');
+        this.updateStatus('เรียกการสร้างด้วยตนเอง', 'processing');
 
-        // 设置标志
+        // ตั้งค่าแฟล็ก
         window.forumAutoListener._allowForumManagerCall = true;
 
         try {
           await window.forumManager.manualGenerate();
-          console.log('[Forum Auto Listener] ✅ 手动生成完成');
+          console.log('[Forum Auto Listener] ✅ สร้างด้วยตนเองเสร็จ');
           this.generationCount++;
           this.lastGenerationTime = new Date();
-          this.updateStatus(`手动生成完成 (#${this.generationCount})`, 'success');
+          this.updateStatus(`สร้างด้วยตนเองเสร็จ (#${this.generationCount})`, 'success');
         } finally {
           delete window.forumAutoListener._allowForumManagerCall;
         }
       } else {
-        // 如果论坛管理器不可用，尝试直接生成
-        console.log('[Forum Auto Listener] 论坛管理器不可用，尝试直接生成论坛内容...');
-        this.updateStatus('直接生成论坛内容', 'processing');
+        // ถ้าตัวจัดการฟอรัมไม่พร้อมใช้งาน พยายามสร้างโดยตรง
+        console.log('[Forum Auto Listener] ตัวจัดการฟอรัมไม่พร้อมใช้งาน พยายามสร้างเนื้อหาฟอรัมโดยตรง...');
+        this.updateStatus('สร้างเนื้อหาฟอรัมโดยตรง', 'processing');
         await this.directForumGenerate();
         this.generationCount++;
         this.lastGenerationTime = new Date();
-        this.updateStatus(`直接生成完成 (#${this.generationCount})`, 'success');
+        this.updateStatus(`สร้างโดยตรงเสร็จ (#${this.generationCount})`, 'success');
       }
 
-      // 恢复监听状态
+      // กู้คืนสถานะการฟัง
       setTimeout(() => {
         if (this.isListening) {
-          this.updateStatus('监听中', 'success');
+          this.updateStatus('กำลังฟัง', 'success');
         }
       }, 2000);
     } catch (error) {
-      console.error('[Forum Auto Listener] 手动触发失败:', error);
-      this.updateStatus('手动触发失败', 'error');
+      console.error('[Forum Auto Listener] ทริกเกอร์ด้วยตนเองล้มเหลว:', error);
+      this.updateStatus('ทริกเกอร์ด้วยตนเองล้มเหลว', 'error');
     }
   }
 
   /**
-   * 设置事件监听器
+   * ตั้งค่า event listener
    */
   setupEventListeners() {
     try {
-      // 监听SillyTavern的消息事件（如果可用）
+      // ฟังอีเวนต์ข้อความของ SillyTavern（ถ้ามี）
       if (window.eventSource && window.event_types) {
-        // 监听消息接收事件
+        // ฟังอีเวนต์รับข้อความ
         if (window.event_types.MESSAGE_RECEIVED) {
           this.messageReceivedHandler = this.onMessageReceived.bind(this);
           window.eventSource.on(window.event_types.MESSAGE_RECEIVED, this.messageReceivedHandler);
         }
 
-        // 监听消息发送事件
+        // ฟังอีเวนต์ส่งข้อความ
         if (window.event_types.MESSAGE_SENT) {
           this.messageSentHandler = this.onMessageSent.bind(this);
           window.eventSource.on(window.event_types.MESSAGE_SENT, this.messageSentHandler);
         }
 
-        console.log('[Forum Auto Listener] SillyTavern事件监听器已设置');
+        console.log('[Forum Auto Listener] ตั้งค่า event listener ของ SillyTavern แล้ว');
       } else {
-        console.log('[Forum Auto Listener] SillyTavern事件系统不可用，仅使用定时器检查');
+        console.log('[Forum Auto Listener] ระบบอีเวนต์ SillyTavern ไม่พร้อมใช้งาน ใช้เฉพาะ timer ตรวจสอบ');
       }
 
-      // 不再设置DOM观察器，避免重复触发
+      // ไม่ตั้งค่า DOM observer อีกต่อไป เพื่อหลีกเลี่ยงการทริกเกอร์ซ้ำ
       // this.setupDOMObserver();
     } catch (error) {
-      console.warn('[Forum Auto Listener] 设置事件监听器失败:', error);
+      console.warn('[Forum Auto Listener] ตั้งค่า event listener ล้มเหลว:', error);
     }
   }
 
   /**
-   * 移除事件监听器
+   * ลบ event listener
    */
   removeEventListeners() {
     try {
-      // 移除SillyTavern事件监听器
+      // ลบ event listener ของ SillyTavern
       if (window.eventSource) {
         if (this.messageReceivedHandler) {
           window.eventSource.off(window.event_types.MESSAGE_RECEIVED, this.messageReceivedHandler);
@@ -689,50 +689,50 @@ class ForumAutoListener {
         }
       }
 
-      // 移除DOM观察器
+      // ลบ DOM observer
       if (this.domObserver) {
         this.domObserver.disconnect();
         this.domObserver = null;
       }
 
-      console.log('[Forum Auto Listener] 事件监听器已移除');
+      console.log('[Forum Auto Listener] ลบ event listener แล้ว');
     } catch (error) {
-      console.warn('[Forum Auto Listener] 移除事件监听器失败:', error);
+      console.warn('[Forum Auto Listener] ลบ event listener ล้มเหลว:', error);
     }
   }
 
   /**
-   * 消息接收事件处理 - 修复：不再直接增加计数
+   * การจัดการอีเวนต์รับข้อความ - แก้ไข: ไม่เพิ่มตัวนับโดยตรงอีกต่อไป
    */
   onMessageReceived(data) {
-    console.log('[Forum Auto Listener] 收到消息事件:', data);
-    // 不再直接增加计数，让定时器检查处理
+    console.log('[Forum Auto Listener] ได้รับอีเวนต์ข้อความ:', data);
+    // ไม่เพิ่มตัวนับโดยตรงอีกต่อไป ให้ timer ตรวจสอบจัดการ
     // this.lastMessageCount++;
-    // 触发检查，但不立即增加计数
+    // ทริกเกอร์การตรวจสอบ แต่ไม่เพิ่มตัวนับทันที
     this.safeDebounceAutoGenerate();
   }
 
   /**
-   * 消息发送事件处理 - 修复：不再直接增加计数
+   * การจัดการอีเวนต์ส่งข้อความ - แก้ไข: ไม่เพิ่มตัวนับโดยตรงอีกต่อไป
    */
   onMessageSent(data) {
-    console.log('[Forum Auto Listener] 发送消息事件:', data);
-    // 不再直接增加计数，让定时器检查处理
+    console.log('[Forum Auto Listener] อีเวนต์ส่งข้อความ:', data);
+    // ไม่เพิ่มตัวนับโดยตรงอีกต่อไป ให้ timer ตรวจสอบจัดการ
     // this.lastMessageCount++;
-    // 触发检查，但不立即增加计数
+    // ทริกเกอร์การตรวจสอบ แต่ไม่เพิ่มตัวนับทันที
     this.safeDebounceAutoGenerate();
   }
 
   /**
-   * 设置DOM观察器（暂时禁用，避免重复触发）
+   * ตั้งค่า DOM observer（ปิดใช้งานชั่วคราว เพื่อหลีกเลี่ยงการทริกเกอร์ซ้ำ）
    */
   setupDOMObserver() {
-    // 暂时禁用DOM观察器以避免重复触发
-    console.log('[Forum Auto Listener] DOM观察器已禁用，避免重复触发');
+    // ปิดใช้งาน DOM observer ชั่วคราวเพื่อหลีกเลี่ยงการทริกเกอร์ซ้ำ
+    console.log('[Forum Auto Listener] ปิดใช้งาน DOM observer เพื่อหลีกเลี่ยงการทริกเกอร์ซ้ำ');
     return;
 
     try {
-      // 观察聊天容器的变化
+      // สังเกตการเปลี่ยนแปลงของคอนเทนเนอร์แชท
       const chatContainer =
         document.querySelector('#chat') ||
         document.querySelector('.chat-container') ||
@@ -744,7 +744,7 @@ class ForumAutoListener {
 
           mutations.forEach(mutation => {
             if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
-              // 检查是否有新的消息节点
+              // ตรวจสอบว่ามีโหนดข้อความใหม่หรือไม่
               mutation.addedNodes.forEach(node => {
                 if (
                   node.nodeType === Node.ELEMENT_NODE &&
@@ -759,7 +759,7 @@ class ForumAutoListener {
           });
 
           if (hasNewMessage) {
-            console.log('[Forum Auto Listener] DOM检测到新消息');
+            console.log('[Forum Auto Listener] DOM ตรวจพบข้อความใหม่');
             this.safeDebounceAutoGenerate();
           }
         });
@@ -769,113 +769,113 @@ class ForumAutoListener {
           subtree: true,
         });
 
-        console.log('[Forum Auto Listener] DOM观察器已设置');
+        console.log('[Forum Auto Listener] ตั้งค่า DOM observer แล้ว');
       } else {
-        console.warn('[Forum Auto Listener] 未找到聊天容器，无法设置DOM观察器');
+        console.warn('[Forum Auto Listener] ไม่พบคอนเทนเนอร์แชท ไม่สามารถตั้งค่า DOM observer');
       }
     } catch (error) {
-      console.warn('[Forum Auto Listener] 设置DOM观察器失败:', error);
+      console.warn('[Forum Auto Listener] ตั้งค่า DOM observer ล้มเหลว:', error);
     }
   }
 
   /**
-   * 设置界面观察器 - 监听论坛界面的显示和隐藏
+   * ตั้งค่าตัวสังเกตการณ์ UI - ฟังการแสดงและซ่อนของ UI ฟอรัม
    */
   setupUIObserver() {
     if (!this.settings.autoStartWithUI) {
-      console.log('[Forum Auto Listener] 界面自动启停已禁用');
+      console.log('[Forum Auto Listener] การเริ่ม/หยุดอัตโนมัติตาม UI ถูกปิดใช้งาน');
       return;
     }
 
     try {
-      console.log('[Forum Auto Listener] 设置界面观察器...');
+      console.log('[Forum Auto Listener] ตั้งค่าตัวสังเกตการณ์ UI...');
 
-      // 不再初始检查当前状态，只在点击按钮时启动
+      // ไม่ตรวจสอบสถานะปัจจุบันเริ่มต้นอีกต่อไป เริ่มเฉพาะเมื่อคลิกปุ่ม
 
-      // 移除旧的事件监听器
+      // ลบ event listener เก่า
       document.removeEventListener('click', this._clickHandler);
 
-      // 创建新的点击事件处理函数
+      // สร้างฟังก์ชันจัดการอีเวนต์คลิกใหม่
       this._clickHandler = event => {
-        // 检查是否点击了论坛应用按钮
+        // ตรวจสอบว่าคลิกปุ่มแอปฟอรัมหรือไม่
         const forumAppButton = event.target.closest('[data-app="forum"]');
         if (forumAppButton) {
-          console.log('[Forum Auto Listener] 检测到论坛应用按钮点击');
-          // 给DOM一点时间加载后启动监听
+          console.log('[Forum Auto Listener] ตรวจพบการคลิกปุ่มแอปฟอรัม');
+          // ให้ DOM เวลาโหลดก่อนเริ่มฟัง
           setTimeout(() => {
             if (!this.isListening) {
-              console.log('[Forum Auto Listener] 启动监听');
+              console.log('[Forum Auto Listener] เริ่มฟัง');
               this.start();
             }
           }, 300);
         }
 
-        // 检查是否点击了返回按钮或关闭手机界面
+        // ตรวจสอบว่าคลิกปุ่มย้อนกลับหรือปิด UI มือถือหรือไม่
         const backButton = event.target.closest('.back-button');
         const closeButton = event.target.closest(
           '.mobile-phone-overlay, .close-button, .drawer-close, [data-action="close"]',
         );
         if (backButton || closeButton) {
-          console.log('[Forum Auto Listener] 检测到返回按钮或关闭按钮点击');
-          // 停止监听
+          console.log('[Forum Auto Listener] ตรวจพบการคลิกปุ่มย้อนกลับหรือปุ่มปิด');
+          // หยุดฟัง
           if (this.isListening) {
-            console.log('[Forum Auto Listener] 停止监听');
+            console.log('[Forum Auto Listener] หยุดฟัง');
             this.stop();
           }
         }
       };
 
-      // 添加点击事件监听
+      // เพิ่ม event listener คลิก
       document.addEventListener('click', this._clickHandler);
 
-      console.log('[Forum Auto Listener] 界面观察器已设置 - 仅在点击论坛按钮时启动');
+      console.log('[Forum Auto Listener] ตั้งค่าตัวสังเกตการณ์ UI แล้ว - เริ่มเฉพาะเมื่อคลิกปุ่มฟอรัม');
 
-      // 不再使用MutationObserver持续检查状态
+      // ไม่ใช้ MutationObserver ตรวจสอบสถานะต่อเนื่องอีกต่อไป
       if (this.uiObserver) {
         this.uiObserver.disconnect();
         this.uiObserver = null;
       }
     } catch (error) {
-      console.error('[Forum Auto Listener] 设置界面观察器失败:', error);
+      console.error('[Forum Auto Listener] ตั้งค่าตัวสังเกตการณ์ UI ล้มเหลว:', error);
     }
   }
 
   /**
-   * 检查论坛应用状态 - 判断是否显示论坛界面
+   * ตรวจสอบสถานะแอปฟอรัม - ตรวจสอบว่า UI ฟอรัมแสดงอยู่หรือไม่
    */
   checkForumAppState() {
-    // 不再主动检查状态，改为只响应点击事件
-    console.log('[Forum Auto Listener] 状态检查已改为仅响应点击事件');
+    // ไม่ตรวจสอบสถานะเชิงรุกอีกต่อไป เปลี่ยนเป็นตอบสนองเฉพาะอีเวนต์คลิก
+    console.log('[Forum Auto Listener] การตรวจสอบสถานะเปลี่ยนเป็นตอบสนองเฉพาะอีเวนต์คลิก');
   }
 
   /**
-   * 设置是否随界面自动启停
-   * @param {boolean} enabled - 是否启用
+   * ตั้งค่าว่าจะเริ่ม/หยุดอัตโนมัติตาม UI หรือไม่
+   * @param {boolean} enabled - เปิดใช้งานหรือไม่
    */
   setAutoStartWithUI(enabled) {
     this.settings.autoStartWithUI = enabled;
-    console.log(`[Forum Auto Listener] 界面自动启停设置已更新: ${enabled}`);
+    console.log(`[Forum Auto Listener] อัปเดตการตั้งค่าเริ่ม/หยุดอัตโนมัติตาม UI: ${enabled}`);
 
     if (enabled) {
       this.setupUIObserver();
-      // 立即检查当前状态
+      // ตรวจสอบสถานะปัจจุบันทันที
       this.checkForumAppState();
     } else if (this.uiObserver) {
-      // 如果禁用，断开观察器
+      // ถ้าปิดใช้งาน ให้ตัดการเชื่อมต่อ observer
       this.uiObserver.disconnect();
       this.uiObserver = null;
     }
   }
 
   /**
-   * 更新设置
+   * อัปเดตการตั้งค่า
    */
   updateSettings(newSettings) {
     const oldAutoStartWithUI = this.settings.autoStartWithUI;
 
     this.settings = { ...this.settings, ...newSettings };
 
-    // 如果更新了检查间隔，重新启动定时器
+    // ถ้าอัปเดตช่วงเวลาตรวจสอบ ให้รีสตาร์ท timer
     if (newSettings.checkIntervalMs && this.isListening) {
       if (this.checkInterval) {
         clearInterval(this.checkInterval);
@@ -883,32 +883,32 @@ class ForumAutoListener {
       this.checkInterval = setInterval(this.checkForChanges, this.settings.checkIntervalMs);
     }
 
-    // 如果更新了自动启停设置
+    // ถ้าอัปเดตการตั้งค่าเริ่ม/หยุดอัตโนมัติ
     if (newSettings.autoStartWithUI !== undefined && newSettings.autoStartWithUI !== oldAutoStartWithUI) {
       this.setAutoStartWithUI(newSettings.autoStartWithUI);
     }
   }
 
   /**
-   * 设置是否立即执行（达到阈值时）
-   * @param {boolean} immediate - 是否立即执行
+   * ตั้งค่าว่าจะดำเนินการทันทีหรือไม่（เมื่อถึงเกณฑ์）
+   * @param {boolean} immediate - ดำเนินการทันทีหรือไม่
    */
   setImmediateOnThreshold(immediate) {
     this.settings.immediateOnThreshold = immediate;
-    console.log(`[Forum Auto Listener] 立即执行设置已更新: ${immediate}`);
+    console.log(`[Forum Auto Listener] อัปเดตการตั้งค่าดำเนินการทันที: ${immediate}`);
   }
 
   /**
-   * 设置防抖延迟时间
-   * @param {number} delayMs - 延迟时间（毫秒）
+   * ตั้งค่าเวลาหน่วง debounce
+   * @param {number} delayMs - เวลาหน่วง（มิลลิวินาที）
    */
   setDebounceDelay(delayMs) {
     this.settings.debounceMs = delayMs;
-    console.log(`[Forum Auto Listener] 防抖延迟时间已更新: ${delayMs}ms`);
+    console.log(`[Forum Auto Listener] อัปเดตเวลาหน่วง debounce: ${delayMs}ms`);
   }
 
   /**
-   * 获取状态
+   * ดึงสถานะ
    */
   getStatus() {
     return {
@@ -922,7 +922,7 @@ class ForumAutoListener {
   }
 
   /**
-   * 获取调试信息
+   * ดึงข้อมูลดีบัก
    */
   getDebugInfo() {
     return {
@@ -937,15 +937,15 @@ class ForumAutoListener {
   }
 
   /**
-   * 强制检查
+   * บังคับตรวจสอบ
    */
   async forceCheck() {
-    console.log('[Forum Auto Listener] 强制检查...');
+    console.log('[Forum Auto Listener] บังคับตรวจสอบ...');
     await this.checkForChanges();
   }
 
   /**
-   * 重置状态
+   * รีเซ็ตสถานะ
    */
   reset() {
     this.lastMessageCount = 0;
@@ -958,91 +958,91 @@ class ForumAutoListener {
       this.debounceTimer = null;
     }
 
-    console.log('[Forum Auto Listener] 状态已重置');
+    console.log('[Forum Auto Listener] รีเซ็ตสถานะแล้ว');
   }
 
   /**
-   * 确保监听器持续运行 - 状态恢复机制
+   * ตรวจสอบให้แน่ใจว่าตัวฟังทำงานต่อเนื่อง - กลไกกู้คืนสถานะ
    */
   ensureContinuousListening() {
-    // 不再自动启动监听器，只修复可能的状态问题
+    // ไม่เริ่มตัวฟังอัตโนมัติอีกต่อไป แก้ไขเฉพาะปัญหาสถานะที่อาจเกิดขึ้น
 
-    // 如果处理状态卡住了，重置它
+    // ถ้าสถานะการประมวลผลค้าง ให้รีเซ็ต
     if (this.isProcessingRequest) {
       const now = Date.now();
       const timeSinceLastCheck = now - this.lastCheckTime;
 
-      // 如果超过30秒还在处理状态，认为卡住了
+      // ถ้าเกิน 30 วินาทียังอยู่ในสถานะประมวลผล ถือว่าค้าง
       if (timeSinceLastCheck > 30000) {
-        console.warn('[Forum Auto Listener] 检测到处理状态卡住，重置状态...');
+        console.warn('[Forum Auto Listener] ตรวจพบสถานะการประมวลผลค้าง รีเซ็ตสถานะ...');
         this.isProcessingRequest = false;
         this.lastCheckTime = now;
       }
     }
 
-    // 检查定时器是否还在运行（如果监听器已启动）
+    // ตรวจสอบว่า timer ยังทำงานอยู่หรือไม่（ถ้าตัวฟังเริ่มแล้ว）
     if (this.isListening && !this.checkInterval) {
-      console.warn('[Forum Auto Listener] 检测到定时器丢失，重新设置...');
+      console.warn('[Forum Auto Listener] ตรวจพบ timer หายไป ตั้งค่าใหม่...');
       this.checkInterval = setInterval(this.checkForChanges, this.settings.checkIntervalMs);
     }
   }
 
   /**
-   * 检查是否允许论坛管理器调用 - 供论坛管理器使用
-   * @returns {boolean} 是否允许调用
+   * ตรวจสอบว่าอนุญาตให้เรียกตัวจัดการฟอรัมหรือไม่ - สำหรับตัวจัดการฟอรัมใช้
+   * @returns {boolean} อนุญาตให้เรียกหรือไม่
    */
   isForumManagerCallAllowed() {
-    // 检查是否有合法的调用标志
+    // ตรวจสอบว่ามีแฟล็กการเรียกที่ถูกต้องหรือไม่
     if (window.forumAutoListener && window.forumAutoListener._allowForumManagerCall) {
       return true;
     }
 
-    // 如果监听器未在处理中，也允许调用
+    // ถ้าตัวฟังไม่ได้อยู่ในการประมวลผล ก็อนุญาตให้เรียก
     return !this.isProcessingRequest;
   }
 
   /**
-   * 为论坛管理器提供的安全调用包装器
+   * wrapper การเรียกที่ปลอดภัยสำหรับตัวจัดการฟอรัม
    */
   async safeForumManagerCall(callback) {
     if (!callback || typeof callback !== 'function') {
-      throw new Error('回调函数是必需的');
+      throw new Error('ต้องมีฟังก์ชัน callback');
     }
 
-    // 设置合法调用标志
+    // ตั้งค่าแฟล็กการเรียกที่ถูกต้อง
     window.forumAutoListener._allowForumManagerCall = true;
 
-    // 临时清除处理状态
+    // ล้างสถานะการประมวลผลชั่วคราว
     const originalState = this.isProcessingRequest;
     this.isProcessingRequest = false;
 
     try {
-      console.log('[Forum Auto Listener] 执行安全论坛管理器调用...');
+      console.log('[Forum Auto Listener] ดำเนินการเรียกตัวจัดการฟอรัมอย่างปลอดภัย...');
       const result = await callback();
-      console.log('[Forum Auto Listener] 安全调用完成');
+      console.log('[Forum Auto Listener] การเรียกอย่างปลอดภัยเสร็จแล้ว');
       return result;
     } finally {
-      // 恢复状态
+      // กู้คืนสถานะ
       this.isProcessingRequest = originalState;
       delete window.forumAutoListener._allowForumManagerCall;
     }
   }
 
   /**
-   * 初始化状态显示
+   * เริ่มต้นการแสดงสถานะ
    */
   initStatusDisplay() {
     try {
-      // 尝试查找现有的状态容器
+      // พยายามค้นหาคอนเทนเนอร์สถานะที่มีอยู่
       let statusContainer = document.getElementById('forum-auto-listener-status');
 
       if (!statusContainer) {
-        // 创建状态显示容器
+        // สร้างคอนเทนเนอร์แสดงสถานะ
         statusContainer = document.createElement('div');
         statusContainer.id = 'forum-auto-listener-status';
         statusContainer.className = 'forum-status-container';
 
-        // 创建状态内容
+        // สร้างเนื้อหาสถานะ
         statusContainer.innerHTML = `
                     <div class="forum-status-header">
                         <span class="forum-status-icon">🤖</span>
@@ -1055,7 +1055,7 @@ class ForumAutoListener {
                             <span class="forum-status-indicator" id="forum-listener-indicator"></span>
                         </div>
                         <div class="forum-status-line">
-                            <span class="forum-status-label">生成次数:</span>
+                            <span class="forum-status-label">จำนวนครั้งที่สร้าง:</span>
                             <span class="forum-status-value" id="forum-listener-count">0</span>
                         </div>
                         <div class="forum-status-line">
@@ -1065,7 +1065,7 @@ class ForumAutoListener {
                     </div>
                 `;
 
-        // 添加样式
+        // เพิ่มสไตล์
         const style = document.createElement('style');
         style.textContent = `
                     .forum-status-container {
@@ -1132,7 +1132,7 @@ class ForumAutoListener {
           document.head.appendChild(style);
         }
 
-        // 尝试添加到合适的位置
+        // พยายามเพิ่มในตำแหน่งที่เหมาะสม
         const targetContainer =
           document.getElementById('extensions_settings') ||
           document.getElementById('floatingPrompt') ||
@@ -1140,25 +1140,25 @@ class ForumAutoListener {
           document.body;
 
         targetContainer.appendChild(statusContainer);
-        console.log('[Forum Auto Listener] 状态显示已初始化');
+        console.log('[Forum Auto Listener] เริ่มต้นการแสดงสถานะแล้ว');
       }
 
       this.statusElement = statusContainer;
     } catch (error) {
-      console.warn('[Forum Auto Listener] 初始化状态显示失败:', error);
+      console.warn('[Forum Auto Listener] เริ่มต้นการแสดงสถานะล้มเหลว:', error);
     }
   }
 
   /**
-   * 更新状态显示
-   * @param {string} status - 状态文本
-   * @param {string} type - 状态类型 (success, error, warning, info, processing, waiting, offline)
+   * อัปเดตการแสดงสถานะ
+   * @param {string} status - ข้อความสถานะ
+   * @param {string} type - ประเภทสถานะ (success, error, warning, info, processing, waiting, offline)
    */
   updateStatus(status, type = 'info') {
     try {
       this.currentStatus = status;
 
-      // 更新页面显示
+      // อัปเดตการแสดงผลหน้า
       const statusValueElement = document.getElementById('forum-listener-status');
       const statusIndicatorElement = document.getElementById('forum-listener-indicator');
       const countElement = document.getElementById('forum-listener-count');
@@ -1169,9 +1169,9 @@ class ForumAutoListener {
       }
 
       if (statusIndicatorElement) {
-        // 清除所有状态类
+        // ล้างคลาสสถานะทั้งหมด
         statusIndicatorElement.className = 'forum-status-indicator';
-        // 添加新状态类
+        // เพิ่มคลาสสถานะใหม่
         statusIndicatorElement.classList.add(`status-${type}`);
       }
 
@@ -1183,18 +1183,18 @@ class ForumAutoListener {
         timeElement.textContent = this.lastGenerationTime.toLocaleTimeString();
       }
 
-      // 控制台日志
+      // บันทึกคอนโซล
       const statusIcon = this.getStatusIcon(type);
       console.log(`[Forum Auto Listener] ${statusIcon} ${status}`);
     } catch (error) {
-      console.warn('[Forum Auto Listener] 更新状态显示失败:', error);
+      console.warn('[Forum Auto Listener] อัปเดตการแสดงสถานะล้มเหลว:', error);
     }
   }
 
   /**
-   * 获取状态图标
-   * @param {string} type - 状态类型
-   * @returns {string} 状态图标
+   * ดึงไอคอนสถานะ
+   * @param {string} type - ประเภทสถานะ
+   * @returns {string} ไอคอนสถานะ
    */
   getStatusIcon(type) {
     const icons = {
@@ -1210,7 +1210,7 @@ class ForumAutoListener {
   }
 
   /**
-   * 获取详细状态信息
+   * ดึงข้อมูลสถานะโดยละเอียด
    */
   getDetailedStatus() {
     return {
@@ -1223,61 +1223,63 @@ class ForumAutoListener {
   }
 }
 
-// 创建全局实例
+// สร้างอินสแตนซ์ทั่วไป
 window.ForumAutoListener = ForumAutoListener;
 window.forumAutoListener = new ForumAutoListener();
 
-// 添加快捷查看状态的全局方法
+// เพิ่มเมธอดทั่วไปสำหรับดูสถานะอย่างรวดเร็ว
 window.showForumAutoListenerStatus = () => {
   const status = window.forumAutoListener.getDetailedStatus();
   console.table(status);
   return status;
 };
 
-// 导出类
+// ส่งออกคลาส
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = ForumAutoListener;
 }
 
-// 设置界面观察器
+// ตั้งค่าตัวสังเกตการณ์ UI
 setTimeout(() => {
   try {
-    console.log('[Forum Auto Listener] 设置界面观察器...');
+    console.log('[Forum Auto Listener] ตั้งค่าตัวสังเกตการณ์ UI...');
     if (window.forumAutoListener) {
-      // 确保不会自动启动定时器
+      // ตรวจสอบให้แน่ใจว่าจะไม่เริ่ม timer อัตโนมัติ
       if (window.forumAutoListener.checkInterval) {
         clearInterval(window.forumAutoListener.checkInterval);
         window.forumAutoListener.checkInterval = null;
-        console.log('[Forum Auto Listener] 已清除可能存在的定时器');
+        console.log('[Forum Auto Listener] ล้าง timer ที่อาจมีอยู่แล้ว');
       }
 
       window.forumAutoListener.setupUIObserver();
 
-      // 自动启动监听器
-      console.log('[Forum Auto Listener] 自动启动监听器...');
+      // เริ่มตัวฟังอัตโนมัติ
+      console.log('[Forum Auto Listener] เริ่มตัวฟังอัตโนมัติ...');
       if (!window.forumAutoListener.isListening) {
         window.forumAutoListener.start();
-        console.log('[Forum Auto Listener] ✅ 自动启动成功');
+        console.log('[Forum Auto Listener] ✅ เริ่มอัตโนมัติสำเร็จ');
       }
     }
   } catch (error) {
-    console.error('[Forum Auto Listener] 设置界面观察器失败:', error);
+    console.error('[Forum Auto Listener] ตั้งค่าตัวสังเกตการณ์ UI ล้มเหลว:', error);
   }
-}, 2000); // 等待2秒让DOM加载完成
+}, 2000); // รอ 2 วินาทีให้ DOM โหลดเสร็จ
 
-// 移除健康检查定时器，因为它可能会导致监听器自动重启
-// 不再需要自动恢复监听功能，因为我们只想在用户明确点击时启动
+// ลบ timer ตรวจสุขภาพ เพราะอาจทำให้ตัวฟังรีสตาร์ทอัตโนมัติ
+// ไม่ต้องการฟังก์ชันกู้คืนการฟังอัตโนมัติอีกต่อไป เพราะต้องการเริ่มเฉพาะเมื่อผู้ใช้คลิกอย่างชัดเจน
 
-console.log('[Forum Auto Listener] 论坛自动监听器模块加载完成');
-console.log('[Forum Auto Listener] 🔧 关键改进:');
-console.log('[Forum Auto Listener]   ✅ 自动启动：页面加载后自动开始监听');
-console.log('[Forum Auto Listener]   ✅ 自动停止：点击返回或关闭按钮时自动停止');
-console.log('[Forum Auto Listener]   ✅ 排队机制：等待SillyTavern空闲时再生成');
-console.log('[Forum Auto Listener]   ✅ 立即执行：达到阈值时无延迟触发');
-console.log('[Forum Auto Listener]   ✅ 状态冲突解决：避免"Auto-listener正在处理"问题');
-console.log('[Forum Auto Listener]   ✅ 状态显示：实时显示监听器运行状态');
-console.log('[Forum Auto Listener] 💡 测试命令: window.forumAutoListener.manualTrigger()');
-console.log('[Forum Auto Listener] 📊 状态查看: window.showForumAutoListenerStatus()');
-console.log('[Forum Auto Listener] 🔧 状态检查: window.forumAutoListener.isForumManagerCallAllowed()');
-console.log('[Forum Auto Listener] 📊 状态面板：界面中将显示"论坛自动监听器"状态卡片');
-console.log('[Forum Auto Listener] 🚀 监听器将自动启动，论坛内容会自动生成！状态可在界面中实时查看！');
+console.log('[Forum Auto Listener] โหลดโมดูลตัวฟังอัตโนมัติฟอรัมเสร็จแล้ว');
+console.log('[Forum Auto Listener] 🔧 การปรับปรุงสำคัญ:');
+console.log('[Forum Auto Listener]   ✅ เริ่มอัตโนมัติ: เริ่มฟังอัตโนมัติหลังโหลดหน้า');
+console.log('[Forum Auto Listener]   ✅ หยุดอัตโนมัติ: หยุดอัตโนมัติเมื่อคลิกปุ่มย้อนกลับหรือปิด');
+console.log('[Forum Auto Listener]   ✅ กลไกคิว: รอให้ SillyTavern ว่างก่อนสร้าง');
+console.log('[Forum Auto Listener]   ✅ ดำเนินการทันที: ทริกเกอร์ทันทีเมื่อถึงเกณฑ์');
+console.log('[Forum Auto Listener]   ✅ แก้ไขความขัดแย้งของสถานะ: หลีกเลี่ยงปัญหา "Auto-listener กำลังประมวลผล"');
+console.log('[Forum Auto Listener]   ✅ แสดงสถานะ: แสดงสถานะการทำงานของตัวฟังแบบเรียลไทม์');
+console.log('[Forum Auto Listener] 💡 คำสั่งทดสอบ: window.forumAutoListener.manualTrigger()');
+console.log('[Forum Auto Listener] 📊 ดูสถานะ: window.showForumAutoListenerStatus()');
+console.log('[Forum Auto Listener] 🔧 ตรวจสอบสถานะ: window.forumAutoListener.isForumManagerCallAllowed()');
+console.log('[Forum Auto Listener] 📊 แผงสถานะ: จะแสดงการ์ดสถานะ "ตัวฟังอัตโนมัติฟอรัม" ใน UI');
+console.log(
+  '[Forum Auto Listener] 🚀 ตัวฟังจะเริ่มอัตโนมัติ เนื้อหาฟอรัมจะถูกสร้างอัตโนมัติ! ดูสถานะแบบเรียลไทม์ได้ใน UI!',
+);
