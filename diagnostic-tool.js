@@ -1,319 +1,327 @@
 /**
- * Mobile插件诊断工具
- * 用于检查所有优化模块是否正确加载和运行
+ * เครื่องมือวินิจฉัยปลั๊กอิน Mobile
+ * ใช้สำหรับตรวจสอบว่าโมดูลเพิ่มประสิทธิภาพทั้งหมดโหลดและทำงานอย่างถูกต้อง
  */
 
 class MobileDiagnosticTool {
-    constructor() {
-        this.modules = [
-            {
-                name: '性能配置',
-                check: () => !!window.MOBILE_PERFORMANCE_CONFIG,
-                details: () => window.MOBILE_PERFORMANCE_CONFIG ? '已加载' : '未加载'
-            },
-            {
-                name: '性能监控器',
-                check: () => !!window.mobilePerformanceMonitor,
-                details: () => window.mobilePerformanceMonitor ?
-                    `运行时间: ${window.mobilePerformanceMonitor.getMetrics().loadTime || 0}ms` : '未加载'
-            },
-            {
-                name: '优化加载器',
-                check: () => !!window.optimizedLoader,
-                details: () => window.optimizedLoader ?
-                    `已加载模块: ${window.optimizedLoader.getLoadingStatus().loaded}个` : '未加载'
-            },
-            {
-                name: '上下文监控器',
-                check: () => !!window.contextMonitor,
-                details: () => window.contextMonitor ?
-                    `状态: ${window.contextMonitor.isRunning ? '运行中' : '已停止'}` : '未加载'
-            },
-            {
-                name: '性能测试器',
-                check: () => !!window.mobilePerformanceTester,
-                details: () => window.mobilePerformanceTester ?
-                    `测试用例: ${window.mobilePerformanceTester.tests.length}个` : '未加载'
-            },
-            {
-                name: '手机界面',
-                check: () => !!window.MobilePhone || !!document.getElementById('mobile-phone-trigger'),
-                details: () => {
-                    const button = document.getElementById('mobile-phone-trigger');
-                    return button ? '界面按钮已创建' : '界面未初始化';
-                }
-            }
-        ];
+  constructor() {
+    this.modules = [
+      {
+        name: 'การตั้งค่าประสิทธิภาพ',
+        check: () => !!window.MOBILE_PERFORMANCE_CONFIG,
+        details: () => (window.MOBILE_PERFORMANCE_CONFIG ? 'โหลดแล้ว' : 'ยังไม่ได้โหลด'),
+      },
+      {
+        name: 'ตัวตรวจสอบประสิทธิภาพ',
+        check: () => !!window.mobilePerformanceMonitor,
+        details: () =>
+          window.mobilePerformanceMonitor
+            ? `เวลาทำงาน: ${window.mobilePerformanceMonitor.getMetrics().loadTime || 0}ms`
+            : 'ยังไม่ได้โหลด',
+      },
+      {
+        name: 'ตัวโหลดที่ปรับปรุงแล้ว',
+        check: () => !!window.optimizedLoader,
+        details: () =>
+          window.optimizedLoader
+            ? `โมดูลที่โหลดแล้ว: ${window.optimizedLoader.getLoadingStatus().loaded} รายการ`
+            : 'ยังไม่ได้โหลด',
+      },
+      {
+        name: 'ตัวตรวจสอบบริบท',
+        check: () => !!window.contextMonitor,
+        details: () =>
+          window.contextMonitor
+            ? `สถานะ: ${window.contextMonitor.isRunning ? 'กำลังทำงาน' : 'หยุดแล้ว'}`
+            : 'ยังไม่ได้โหลด',
+      },
+      {
+        name: 'ตัวทดสอบประสิทธิภาพ',
+        check: () => !!window.mobilePerformanceTester,
+        details: () =>
+          window.mobilePerformanceTester
+            ? `กรณีทดสอบ: ${window.mobilePerformanceTester.tests.length} รายการ`
+            : 'ยังไม่ได้โหลด',
+      },
+      {
+        name: 'อินเทอร์เฟซมือถือ',
+        check: () => !!window.MobilePhone || !!document.getElementById('mobile-phone-trigger'),
+        details: () => {
+          const button = document.getElementById('mobile-phone-trigger');
+          return button ? 'สร้างปุ่มอินเทอร์เฟซแล้ว' : 'อินเทอร์เฟซยังไม่ได้เริ่มต้น';
+        },
+      },
+    ];
 
-        console.log('[Diagnostic Tool] 诊断工具已初始化');
+    console.log('[Diagnostic Tool] เครื่องมือวินิจฉัยเริ่มต้นแล้ว');
+  }
+
+  /**
+   * รันการวินิจฉัยแบบเต็ม
+   */
+  runDiagnosis() {
+    console.log('\n' + '='.repeat(50));
+    console.log('🔍 รายงานการวินิจฉัยปลั๊กอิน Mobile');
+    console.log('='.repeat(50));
+
+    const results = [];
+    let passedCount = 0;
+
+    this.modules.forEach((module, index) => {
+      const passed = module.check();
+      const details = module.details();
+
+      results.push({
+        name: module.name,
+        passed,
+        details,
+      });
+
+      if (passed) passedCount++;
+
+      const status = passed ? '✅' : '❌';
+      console.log(`${index + 1}. ${status} ${module.name}: ${details}`);
+    });
+
+    const successRate = Math.round((passedCount / this.modules.length) * 100);
+
+    console.log('\n📊 สรุปการวินิจฉัย:');
+    console.log(`  ผ่าน: ${passedCount}/${this.modules.length} (${successRate}%)`);
+
+    if (successRate === 100) {
+      console.log('🎉 โมดูลทั้งหมดทำงานปกติ!');
+    } else if (successRate >= 80) {
+      console.log('⚠️  โมดูลส่วนใหญ่ปกติ มีปัญหาเล็กน้อย');
+    } else {
+      console.log('🚨 มีปัญหาร้ายแรง กรุณาตรวจสอบการติดตั้งปลั๊กอิน');
     }
 
-    /**
-     * 运行完整诊断
-     */
-    runDiagnosis() {
-        console.log('\n' + '='.repeat(50));
-        console.log('🔍 Mobile插件诊断报告');
-        console.log('='.repeat(50));
+    // ให้คำแนะนำการแก้ไข
+    this.provideTroubleshootingTips(results);
 
-        const results = [];
-        let passedCount = 0;
+    console.log('='.repeat(50));
 
-        this.modules.forEach((module, index) => {
-            const passed = module.check();
-            const details = module.details();
+    return {
+      results,
+      passedCount,
+      totalCount: this.modules.length,
+      successRate,
+    };
+  }
 
-            results.push({
-                name: module.name,
-                passed,
-                details
-            });
+  /**
+   * ให้คำแนะนำการแก้ไขปัญหา
+   */
+  provideTroubleshootingTips(results) {
+    const failedModules = results.filter(r => !r.passed);
 
-            if (passed) passedCount++;
+    if (failedModules.length === 0) return;
 
-            const status = passed ? '✅' : '❌';
-            console.log(`${index + 1}. ${status} ${module.name}: ${details}`);
-        });
+    console.log('\n🔧 คำแนะนำการแก้ไขปัญหา:');
 
-        const successRate = Math.round((passedCount / this.modules.length) * 100);
+    failedModules.forEach(module => {
+      switch (module.name) {
+        case 'การตั้งค่าประสิทธิภาพ':
+          console.log('  - ตรวจสอบว่า performance-config.js โหลดอย่างถูกต้อง');
+          break;
+        case 'ตัวตรวจสอบประสิทธิภาพ':
+          console.log('  - ลองสร้างด้วยตนเอง: window.mobilePerformanceMonitor = new PerformanceMonitor()');
+          break;
+        case 'ตัวโหลดที่ปรับปรุงแล้ว':
+          console.log('  - ตรวจสอบว่า optimized-loader.js โหลดแล้ว หรือสร้าง instance ด้วยตนเอง');
+          break;
+        case 'ตัวตรวจสอบบริบท':
+          console.log('  - ลองเริ่มต้นใหม่: window.contextMonitor = new ContextMonitor()');
+          break;
+        case 'ตัวทดสอบประสิทธิภาพ':
+          console.log('  - ตรวจสอบว่า performance-test.js โหลดเสร็จแล้ว');
+          break;
+        case 'อินเทอร์เฟซมือถือ':
+          console.log('  - รอให้หน้าเว็บโหลดเสร็จสมบูรณ์แล้วลองอีกครั้ง หรือตรวจสอบ mobile-phone.js');
+          break;
+      }
+    });
+  }
 
-        console.log('\n📊 诊断总结:');
-        console.log(`  通过: ${passedCount}/${this.modules.length} (${successRate}%)`);
+  /**
+   * ตรวจสอบฟังก์ชันหลักอย่างรวดเร็ว
+   */
+  quickCheck() {
+    const coreModules = ['การตั้งค่าประสิทธิภาพ', 'ตัวโหลดที่ปรับปรุงแล้ว', 'ตัวตรวจสอบบริบท'];
+    const coreResults = this.modules
+      .filter(m => coreModules.includes(m.name))
+      .map(m => ({ name: m.name, passed: m.check() }));
 
-        if (successRate === 100) {
-            console.log('🎉 所有模块运行正常！');
-        } else if (successRate >= 80) {
-            console.log('⚠️  大部分模块正常，存在少量问题');
-        } else {
-            console.log('🚨 存在严重问题，请检查插件安装');
-        }
+    const corePassed = coreResults.filter(r => r.passed).length;
+    const coreTotal = coreResults.length;
 
-        // 提供修复建议
-        this.provideTroubleshootingTips(results);
+    console.log(`🔍 ตรวจสอบโมดูลหลัก: ${corePassed}/${coreTotal} ปกติ`);
 
-        console.log('='.repeat(50));
+    if (corePassed === coreTotal) {
+      console.log('✅ ฟังก์ชันหลักปกติ สามารถใช้การทดสอบประสิทธิภาพได้');
+      this.showAvailableCommands();
+    } else {
+      console.log('⚠️  ฟังก์ชันหลักผิดปกติ กรุณาแก้ไขโมดูลพื้นฐานก่อน');
+    }
 
-        return {
-            results,
-            passedCount,
-            totalCount: this.modules.length,
-            successRate
+    return corePassed === coreTotal;
+  }
+
+  /**
+   * แสดงคำสั่งที่ใช้ได้
+   */
+  showAvailableCommands() {
+    console.log('\n💡 คำสั่งที่ใช้ได้:');
+    console.log('  - checkMobileOptimization()      // ตรวจสอบอย่างรวดเร็ว');
+    console.log('  - diagnoseMobilePlugin()         // วินิจฉัยแบบเต็ม');
+    console.log('  - runMobilePerformanceTest()     // ทดสอบประสิทธิภาพ (ถ้ามี)');
+    console.log('  - window.optimizedLoader.getLoadingStatus()');
+    console.log('  - window.contextMonitor.getPerformanceStats()');
+  }
+
+  /**
+   * ลองแก้ไขปัญหาทั่วไปอัตโนมัติ
+   */
+  attemptAutoFix() {
+    console.log('🔧 กำลังลองแก้ไขอัตโนมัติ...');
+
+    let fixCount = 0;
+
+    // แก้ไขตัวตรวจสอบประสิทธิภาพ
+    if (!window.mobilePerformanceMonitor && window.PerformanceMonitor) {
+      try {
+        window.mobilePerformanceMonitor = new window.PerformanceMonitor();
+        console.log('✅ แก้ไขตัวตรวจสอบประสิทธิภาพแล้ว');
+        fixCount++;
+      } catch (error) {
+        console.log('❌ แก้ไขตัวตรวจสอบประสิทธิภาพล้มเหลว:', error.message);
+      }
+    }
+
+    // แก้ไขตัวโหลดที่ปรับปรุงแล้ว
+    if (!window.optimizedLoader && window.OptimizedLoader) {
+      try {
+        window.optimizedLoader = new window.OptimizedLoader();
+        console.log('✅ แก้ไขตัวโหลดที่ปรับปรุงแล้ว');
+        fixCount++;
+      } catch (error) {
+        console.log('❌ แก้ไขตัวโหลดที่ปรับปรุงล้มเหลว:', error.message);
+      }
+    }
+
+    // แก้ไขตัวตรวจสอบบริบท
+    if (!window.contextMonitor && window.ContextMonitor) {
+      try {
+        window.contextMonitor = new window.ContextMonitor();
+        window.contextMonitor.init();
+        console.log('✅ แก้ไขตัวตรวจสอบบริบทแล้ว');
+        fixCount++;
+      } catch (error) {
+        console.log('❌ แก้ไขตัวตรวจสอบบริบทล้มเหลว:', error.message);
+      }
+    }
+
+    // แก้ไขตัวทดสอบประสิทธิภาพ
+    if (!window.mobilePerformanceTester && window.MobilePerformanceTester) {
+      try {
+        window.mobilePerformanceTester = new window.MobilePerformanceTester();
+        window.mobilePerformanceTester.registerTests();
+
+        // กำหนดฟังก์ชัน global ใหม่
+        window.runMobilePerformanceTest = () => {
+          return window.mobilePerformanceTester.runAllTests();
         };
+
+        window.exportMobilePerformanceResults = () => {
+          return window.mobilePerformanceTester.exportResults();
+        };
+
+        console.log('✅ แก้ไขตัวทดสอบประสิทธิภาพแล้ว');
+        fixCount++;
+      } catch (error) {
+        console.log('❌ แก้ไขตัวทดสอบประสิทธิภาพล้มเหลว:', error.message);
+      }
     }
 
-    /**
-     * 提供故障排除建议
-     */
-    provideTroubleshootingTips(results) {
-        const failedModules = results.filter(r => !r.passed);
+    console.log(`🔧 การแก้ไขอัตโนมัติเสร็จสิ้น แก้ไขแล้ว ${fixCount} ปัญหา`);
 
-        if (failedModules.length === 0) return;
-
-        console.log('\n🔧 故障排除建议:');
-
-        failedModules.forEach(module => {
-            switch (module.name) {
-                case '性能配置':
-                    console.log('  - 检查 performance-config.js 是否正确加载');
-                    break;
-                case '性能监控器':
-                    console.log('  - 尝试手动创建: window.mobilePerformanceMonitor = new PerformanceMonitor()');
-                    break;
-                case '优化加载器':
-                    console.log('  - 检查 optimized-loader.js 是否加载，或手动创建实例');
-                    break;
-                case '上下文监控器':
-                    console.log('  - 尝试重新初始化: window.contextMonitor = new ContextMonitor()');
-                    break;
-                case '性能测试器':
-                    console.log('  - 检查 performance-test.js 是否加载完成');
-                    break;
-                case '手机界面':
-                    console.log('  - 等待页面完全加载后再试，或检查 mobile-phone.js');
-                    break;
-            }
-        });
+    if (fixCount > 0) {
+      console.log('💡 แนะนำให้รันการวินิจฉัยอีกครั้ง: diagnoseMobilePlugin()');
     }
 
-    /**
-     * 快速检查核心功能
-     */
-    quickCheck() {
-        const coreModules = ['性能配置', '优化加载器', '上下文监控器'];
-        const coreResults = this.modules
-            .filter(m => coreModules.includes(m.name))
-            .map(m => ({ name: m.name, passed: m.check() }));
+    return fixCount;
+  }
 
-        const corePassed = coreResults.filter(r => r.passed).length;
-        const coreTotal = coreResults.length;
+  /**
+   * โหลดโมดูลที่ขาดหายใหม่
+   */
+  async reloadMissingModules() {
+    console.log('🔄 กำลังโหลดโมดูลที่ขาดหายใหม่...');
 
-        console.log(`🔍 核心模块检查: ${corePassed}/${coreTotal} 正常`);
+    const basePath = './scripts/extensions/third-party/mobile/';
+    const modules = [
+      { file: 'performance-config.js', check: () => !!window.MOBILE_PERFORMANCE_CONFIG },
+      { file: 'optimized-loader.js', check: () => !!window.OptimizedLoader },
+      { file: 'performance-test.js', check: () => !!window.MobilePerformanceTester },
+    ];
 
-        if (corePassed === coreTotal) {
-            console.log('✅ 核心功能正常，可以使用性能测试');
-            this.showAvailableCommands();
-        } else {
-            console.log('⚠️  核心功能异常，请先修复基础模块');
+    for (const module of modules) {
+      if (!module.check()) {
+        try {
+          await this.loadScript(basePath + module.file);
+          console.log(`✅ โหลด ${module.file} ใหม่แล้ว`);
+        } catch (error) {
+          console.log(`❌ โหลด ${module.file} ใหม่ล้มเหลว:`, error.message);
         }
-
-        return corePassed === coreTotal;
+      }
     }
 
-    /**
-     * 显示可用命令
-     */
-    showAvailableCommands() {
-        console.log('\n💡 可用的命令:');
-        console.log('  - checkMobileOptimization()      // 快速检查');
-        console.log('  - diagnoseMobilePlugin()         // 完整诊断');
-        console.log('  - runMobilePerformanceTest()     // 性能测试（如果可用）');
-        console.log('  - window.optimizedLoader.getLoadingStatus()');
-        console.log('  - window.contextMonitor.getPerformanceStats()');
-    }
+    // รอสักครู่ให้โมดูลเริ่มต้น
+    setTimeout(() => {
+      this.attemptAutoFix();
+    }, 1000);
+  }
 
-    /**
-     * 尝试修复常见问题
-     */
-    attemptAutoFix() {
-        console.log('🔧 尝试自动修复...');
-
-        let fixCount = 0;
-
-        // 修复性能监控器
-        if (!window.mobilePerformanceMonitor && window.PerformanceMonitor) {
-            try {
-                window.mobilePerformanceMonitor = new window.PerformanceMonitor();
-                console.log('✅ 已修复性能监控器');
-                fixCount++;
-            } catch (error) {
-                console.log('❌ 性能监控器修复失败:', error.message);
-            }
-        }
-
-        // 修复优化加载器
-        if (!window.optimizedLoader && window.OptimizedLoader) {
-            try {
-                window.optimizedLoader = new window.OptimizedLoader();
-                console.log('✅ 已修复优化加载器');
-                fixCount++;
-            } catch (error) {
-                console.log('❌ 优化加载器修复失败:', error.message);
-            }
-        }
-
-        // 修复上下文监控器
-        if (!window.contextMonitor && window.ContextMonitor) {
-            try {
-                window.contextMonitor = new window.ContextMonitor();
-                window.contextMonitor.init();
-                console.log('✅ 已修复上下文监控器');
-                fixCount++;
-            } catch (error) {
-                console.log('❌ 上下文监控器修复失败:', error.message);
-            }
-        }
-
-        // 修复性能测试器
-        if (!window.mobilePerformanceTester && window.MobilePerformanceTester) {
-            try {
-                window.mobilePerformanceTester = new window.MobilePerformanceTester();
-                window.mobilePerformanceTester.registerTests();
-
-                // 重新定义全局函数
-                window.runMobilePerformanceTest = () => {
-                    return window.mobilePerformanceTester.runAllTests();
-                };
-
-                window.exportMobilePerformanceResults = () => {
-                    return window.mobilePerformanceTester.exportResults();
-                };
-
-                console.log('✅ 已修复性能测试器');
-                fixCount++;
-            } catch (error) {
-                console.log('❌ 性能测试器修复失败:', error.message);
-            }
-        }
-
-        console.log(`🔧 自动修复完成，修复了 ${fixCount} 个问题`);
-
-        if (fixCount > 0) {
-            console.log('💡 建议重新运行诊断: diagnoseMobilePlugin()');
-        }
-
-        return fixCount;
-    }
-
-    /**
-     * 重新加载缺失的模块
-     */
-    async reloadMissingModules() {
-        console.log('🔄 重新加载缺失的模块...');
-
-        const basePath = './scripts/extensions/third-party/mobile/';
-        const modules = [
-            { file: 'performance-config.js', check: () => !!window.MOBILE_PERFORMANCE_CONFIG },
-            { file: 'optimized-loader.js', check: () => !!window.OptimizedLoader },
-            { file: 'performance-test.js', check: () => !!window.MobilePerformanceTester }
-        ];
-
-        for (const module of modules) {
-            if (!module.check()) {
-                try {
-                    await this.loadScript(basePath + module.file);
-                    console.log(`✅ 已重新加载 ${module.file}`);
-                } catch (error) {
-                    console.log(`❌ 重新加载 ${module.file} 失败:`, error.message);
-                }
-            }
-        }
-
-        // 等待一下让模块初始化
-        setTimeout(() => {
-            this.attemptAutoFix();
-        }, 1000);
-    }
-
-    /**
-     * 加载脚本的辅助方法
-     */
-    loadScript(src) {
-        return new Promise((resolve, reject) => {
-            const script = document.createElement('script');
-            script.src = src;
-            script.onload = resolve;
-            script.onerror = reject;
-            document.head.appendChild(script);
-        });
-    }
+  /**
+   * เมธอดช่วยโหลดสคริปต์
+   */
+  loadScript(src) {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = src;
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  }
 }
 
-// 创建全局诊断工具实例
+// สร้าง instance เครื่องมือวินิจฉัยแบบ global
 window.mobileDiagnosticTool = new MobileDiagnosticTool();
 
-// 提供简便的全局函数
+// ให้ฟังก์ชัน global ที่สะดวก
 window.diagnoseMobilePlugin = () => {
-    return window.mobileDiagnosticTool.runDiagnosis();
+  return window.mobileDiagnosticTool.runDiagnosis();
 };
 
 window.checkMobileOptimization = () => {
-    return window.mobileDiagnosticTool.quickCheck();
+  return window.mobileDiagnosticTool.quickCheck();
 };
 
 window.fixMobilePlugin = () => {
-    return window.mobileDiagnosticTool.attemptAutoFix();
+  return window.mobileDiagnosticTool.attemptAutoFix();
 };
 
 window.reloadMobileModules = () => {
-    return window.mobileDiagnosticTool.reloadMissingModules();
+  return window.mobileDiagnosticTool.reloadMissingModules();
 };
 
-// 立即进行快速检查
+// ตรวจสอบอย่างรวดเร็วทันที
 setTimeout(() => {
-    console.log('[Mobile Diagnostic] 诊断工具已就绪');
-    console.log('💡 使用 checkMobileOptimization() 进行快速检查');
-    console.log('💡 使用 diagnoseMobilePlugin() 进行完整诊断');
-    console.log('💡 使用 fixMobilePlugin() 尝试自动修复');
+  console.log('[Mobile Diagnostic] เครื่องมือวินิจฉัยพร้อมใช้งาน');
+  console.log('💡 ใช้ checkMobileOptimization() สำหรับตรวจสอบอย่างรวดเร็ว');
+  console.log('💡 ใช้ diagnoseMobilePlugin() สำหรับวินิจฉัยแบบเต็ม');
+  console.log('💡 ใช้ fixMobilePlugin() สำหรับลองแก้ไขอัตโนมัติ');
 }, 1000);
 
-console.log('[Mobile Diagnostic] 诊断工具已加载');
+console.log('[Mobile Diagnostic] โหลดเครื่องมือวินิจฉัยแล้ว');
