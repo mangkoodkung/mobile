@@ -1,19 +1,19 @@
 /**
- * Image Config Modal - 图片配置弹窗
- * 用于配置用户头像和消息背景图片
+ * Image Config Modal - กล่องโต้ตอบตั้งค่ารูปภาพ
+ * ใช้สำหรับตั้งค่าอวตารผู้ใช้และพื้นหลังข้อความ
  */
 
-// 避免重复定义
+// ป้องกันการประกาศซ้ำ
 if (typeof window.ImageConfigModal === 'undefined') {
   class ImageConfigModal {
     constructor() {
       this.isVisible = false;
-      this.currentTab = 'avatar'; // 'avatar' 或 'background'
+      this.currentTab = 'avatar'; // 'avatar' หรือ 'background'
       this.modalElement = null;
       this.currentConfig = {
         avatar: {
           image: '',
-          position: { x: 50, y: 50 }, // 百分比位置
+          position: { x: 50, y: 50 }, // ตำแหน่งเป็นเปอร์เซ็นต์
           rotation: 0,
           scale: 1,
         },
@@ -29,45 +29,45 @@ if (typeof window.ImageConfigModal === 'undefined') {
       this.dragStartPos = { x: 0, y: 0 };
       this.dragStartImagePos = { x: 0, y: 0 };
 
-      console.log('[Image Config Modal] 图片配置弹窗初始化完成');
+      console.log('[Image Config Modal] เริ่มต้นกล่องโต้ตอบตั้งค่ารูปภาพเสร็จสมบูรณ์');
     }
 
-    // 显示弹窗
+    // แสดงกล่องโต้ตอบ
     show() {
-      console.log('[Image Config Modal] 显示弹窗');
+      console.log('[Image Config Modal] แสดงกล่องโต้ตอบ');
 
-      // 加载当前配置
+      // โหลดการตั้งค่าปัจจุบัน
       this.loadCurrentConfig();
 
-      // 创建弹窗HTML
+      // สร้าง HTML กล่องโต้ตอบ
       this.createModal();
 
-      // 绑定事件
+      // ผูกอีเวนต์
       this.bindEvents();
 
-      // 显示弹窗
+      // แสดงกล่องโต้ตอบ
       this.isVisible = true;
       this.modalElement.style.display = 'flex';
 
-      // 添加显示动画
+      // เพิ่มแอนิเมชันแสดง
       setTimeout(() => {
         this.modalElement.classList.add('show');
       }, 10);
 
-      // 更新预览
+      // อัปเดตตัวอย่าง
       this.updatePreview();
     }
 
-    // 隐藏弹窗
+    // ซ่อนกล่องโต้ตอบ
     hide() {
-      console.log('[Image Config Modal] 隐藏弹窗');
+      console.log('[Image Config Modal] ซ่อนกล่องโต้ตอบ');
 
       if (!this.modalElement) return;
 
-      // 清理拖拽事件监听器
+      // ล้างตัวรับฟังอีเวนต์การลาก
       this.cleanupDragEvents();
 
-      // 添加隐藏动画
+      // เพิ่มแอนิเมชันซ่อน
       this.modalElement.classList.remove('show');
 
       setTimeout(() => {
@@ -79,20 +79,20 @@ if (typeof window.ImageConfigModal === 'undefined') {
       }, 300);
     }
 
-    // 创建弹窗HTML
+    // สร้าง HTML กล่องโต้ตอบ
     createModal() {
-      // 移除已存在的弹窗
+      // ลบกล่องโต้ตอบที่มีอยู่ออก
       const existingModal = document.querySelector('.image-config-modal');
       if (existingModal) {
         existingModal.remove();
       }
 
-      // 创建弹窗元素
+      // สร้างเอเลเมนต์กล่องโต้ตอบ
       this.modalElement = document.createElement('div');
       this.modalElement.className = 'image-config-modal';
       this.modalElement.innerHTML = this.getModalHTML();
 
-      // 添加到手机容器中，确保相对定位
+      // เพิ่มลงในคอนเทนเนอร์โทรศัพท์ ตรวจสอบให้มีตำแหน่งสัมพัทธ์
       const phoneContainer =
         document.querySelector('#mobile-phone-container .mobile-phone-frame') ||
         document.querySelector('.mobile-phone-frame') ||
@@ -100,22 +100,25 @@ if (typeof window.ImageConfigModal === 'undefined') {
         document.querySelector('.mobile-phone-container');
 
       if (phoneContainer) {
-        // 确保手机容器有相对定位
+        // ตรวจสอบให้คอนเทนเนอร์โทรศัพท์มีตำแหน่งสัมพัทธ์
         const computedStyle = getComputedStyle(phoneContainer);
         if (computedStyle.position === 'static') {
           phoneContainer.style.position = 'relative';
         }
         phoneContainer.appendChild(this.modalElement);
-        console.log('[Image Config Modal] 弹窗已添加到手机容器:', phoneContainer.className || phoneContainer.id);
+        console.log(
+          '[Image Config Modal] เพิ่มกล่องโต้ตอบในคอนเทนเนอร์โทรศัพท์แล้ว:',
+          phoneContainer.className || phoneContainer.id,
+        );
       } else {
-        // 如果找不到手机容器，添加到body但使用fixed定位
-        console.warn('[Image Config Modal] 未找到手机容器，使用body定位');
+        // หากไม่พบคอนเทนเนอร์โทรศัพท์ ให้เพิ่มที่ body แต่ใช้ตำแหน่งแบบ fixed
+        console.warn('[Image Config Modal] ไม่พบคอนเทนเนอร์โทรศัพท์ ใช้การจัดวางที่ body');
         this.modalElement.style.position = 'fixed';
         document.body.appendChild(this.modalElement);
       }
     }
 
-    // 获取弹窗HTML模板
+    // ดึงเทมเพลต HTML ของกล่องโต้ตอบ
     getModalHTML() {
       return `
         <div class="modal-backdrop"></div>
@@ -154,7 +157,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
       `;
     }
 
-    // 获取头像标签页HTML
+    // ดึง HTML แท็บอวตาร
     getAvatarTabHTML() {
       return `
         <div class="config-section">
@@ -189,7 +192,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
       `;
     }
 
-    // 获取背景标签页HTML
+    // ดึง HTML แท็บพื้นหลัง
     getBackgroundTabHTML() {
       return `
         <div class="config-section">
@@ -224,12 +227,12 @@ if (typeof window.ImageConfigModal === 'undefined') {
       `;
     }
 
-    // 加载当前配置
+    // โหลดการตั้งค่าปัจจุบัน
     loadCurrentConfig() {
       if (window.styleConfigManager && window.styleConfigManager.isReady) {
         const config = window.styleConfigManager.getConfig();
 
-        // 加载用户头像配置
+        // โหลดการตั้งค่าอวตารผู้ใช้
         if (config.messageSentAvatar) {
           this.currentConfig.avatar = {
             image: config.messageSentAvatar.backgroundImage || config.messageSentAvatar.backgroundImageUrl || '',
@@ -239,7 +242,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
           };
         }
 
-        // 加载消息背景配置
+        // โหลดการตั้งค่าพื้นหลังข้อความ
         if (config.messagesApp) {
           this.currentConfig.background = {
             image: config.messagesApp.backgroundImage || config.messagesApp.backgroundImageUrl || '',
@@ -249,18 +252,18 @@ if (typeof window.ImageConfigModal === 'undefined') {
           };
         }
 
-        console.log('[Image Config Modal] 已加载当前配置:', this.currentConfig);
+        console.log('[Image Config Modal] โหลดการตั้งค่าปัจจุบันแล้ว:', this.currentConfig);
       }
     }
 
-    // 解析CSS background-position为坐标
+    // แปลง CSS background-position เป็นพิกัด
     parseBackgroundPosition(positionStr) {
       const parts = positionStr.split(' ');
       let x = 50,
         y = 50;
 
       if (parts.length >= 2) {
-        // 处理百分比值
+        // จัดการค่าเปอร์เซ็นต์
         if (parts[0].includes('%')) {
           x = parseFloat(parts[0]);
         } else if (parts[0] === 'left') {
@@ -285,34 +288,34 @@ if (typeof window.ImageConfigModal === 'undefined') {
       return { x, y };
     }
 
-    // 将坐标转换为CSS background-position
+    // แปลงพิกัดเป็น CSS background-position
     formatBackgroundPosition(position) {
       return `${position.x}% ${position.y}%`;
     }
 
-    // 切换标签页
+    // สลับแท็บ
     switchTab(tabName) {
-      console.log(`[Image Config Modal] 切换到标签页: ${tabName}`);
+      console.log(`[Image Config Modal] สลับไปยังแท็บ: ${tabName}`);
 
       this.currentTab = tabName;
 
-      // 更新标签按钮状态
+      // อัปเดตสถานะปุ่มแท็บ
       const tabBtns = this.modalElement.querySelectorAll('.tab-btn');
       tabBtns.forEach(btn => {
         btn.classList.toggle('active', btn.dataset.tab === tabName);
       });
 
-      // 更新标签内容显示
+      // อัปเดตการแสดงเนื้อหาแท็บ
       const tabContents = this.modalElement.querySelectorAll('.tab-content');
       tabContents.forEach(content => {
         content.style.display = content.dataset.tab === tabName ? 'block' : 'none';
       });
 
-      // 更新预览
+      // อัปเดตตัวอย่าง
       this.updatePreview();
     }
 
-    // 更新预览效果
+    // อัปเดตตัวอย่าง
     updatePreview() {
       const config = this.currentConfig[this.currentTab];
       const previewElement = this.modalElement.querySelector(`#${this.currentTab}-preview`);
@@ -325,31 +328,31 @@ if (typeof window.ImageConfigModal === 'undefined') {
       previewElement.style.backgroundPosition = backgroundPosition;
       previewElement.style.backgroundRepeat = 'no-repeat';
 
-      // 与CSS生成逻辑保持一致
+      // สอดคล้องกับ logic การสร้าง CSS
       if (this.currentTab === 'avatar') {
-        // 头像：使用background-size控制缩放，transform只控制旋转
+        // อวตาร: ใช้ background-size ควบคุมการซูม transform ควบคุมเฉพาะการหมุน
         previewElement.style.backgroundSize = `${config.scale * 100}%`;
         previewElement.style.transform = `rotate(${config.rotation}deg)`;
       } else {
-        // 背景：使用transform同时控制旋转和缩放
+        // พื้นหลัง: ใช้ transform ควบคุมทั้งการหมุนและการซูม
         previewElement.style.backgroundSize = 'cover';
         previewElement.style.transform = `rotate(${config.rotation}deg) scale(${config.scale})`;
       }
 
-      // 更新控制器的值
+      // อัปเดตค่าตัวควบคุม
       this.updateControlValues();
 
-      // 更新URL输入框的值
+      // อัปเดตค่าช่องป้อน URL
       this.updateUrlInput();
 
-      console.log(`[Image Config Modal] 更新${this.currentTab}预览:`, {
+      console.log(`[Image Config Modal] อัปเดตตัวอย่าง ${this.currentTab}:`, {
         image: config.image.substring(0, 50) + '...',
         position: backgroundPosition,
         transform,
       });
     }
 
-    // 更新URL输入框的值
+    // อัปเดตค่าช่องป้อน URL
     updateUrlInput() {
       if (!this.modalElement) return;
 
@@ -361,17 +364,17 @@ if (typeof window.ImageConfigModal === 'undefined') {
       }
     }
 
-    // 更新控制器显示值
+    // อัปเดตค่าที่แสดงของตัวควบคุม
     updateControlValues() {
       if (!this.modalElement) return;
 
       const config = this.currentConfig[this.currentTab];
 
-      // 更新旋转滑块
+      // อัปเดตสไลเดอร์การหมุน
       const rotationSlider = this.modalElement.querySelector(
         `[data-type="${this.currentTab}"][data-property="rotation"]`,
       );
-      // 查找旋转滑块对应的值显示元素
+      // ค้นหาเอเลเมนต์แสดงค่าของสไลเดอร์การหมุน
       const rotationRow = rotationSlider?.closest('.control-row');
       const rotationValue = rotationRow?.querySelector('.control-value');
       if (rotationSlider && rotationValue) {
@@ -379,9 +382,9 @@ if (typeof window.ImageConfigModal === 'undefined') {
         rotationValue.textContent = `${config.rotation}°`;
       }
 
-      // 更新缩放滑块
+      // อัปเดตสไลเดอร์การซูม
       const scaleSlider = this.modalElement.querySelector(`[data-type="${this.currentTab}"][data-property="scale"]`);
-      // 查找缩放滑块对应的值显示元素
+      // ค้นหาเอเลเมนต์แสดงค่าของสไลเดอร์การซูม
       const scaleRow = scaleSlider?.closest('.control-row');
       const scaleValue = scaleRow?.querySelector('.control-value');
       if (scaleSlider && scaleValue) {
@@ -390,42 +393,42 @@ if (typeof window.ImageConfigModal === 'undefined') {
       }
     }
 
-    // 绑定事件
+    // ผูกอีเวนต์
     bindEvents() {
       if (!this.modalElement) return;
 
-      // 关闭按钮
+      // ปุ่มปิด
       const closeBtn = this.modalElement.querySelector('.modal-close-btn');
       closeBtn?.addEventListener('click', () => this.hide());
 
-      // 背景点击关闭
+      // คลิกที่พื้นหลังเพื่อปิด
       const backdrop = this.modalElement.querySelector('.modal-backdrop');
       backdrop?.addEventListener('click', () => this.hide());
 
-      // 标签页切换
+      // สลับแท็บ
       const tabBtns = this.modalElement.querySelectorAll('.tab-btn');
       tabBtns.forEach(btn => {
         btn.addEventListener('click', () => this.switchTab(btn.dataset.tab));
       });
 
-      // 文件上传
+      // อัปโหลดไฟล์
       this.bindFileUploadEvents();
 
-      // URL输入
+      // ป้อน URL
       this.bindUrlInputEvents();
 
-      // 拖拽事件
+      // อีเวนต์ลาก
       this.bindDragEvents();
 
-      // 控制滑块
+      // สไลเดอร์ควบคุม
       this.bindControlEvents();
 
-      // 保存按钮
+      // ปุ่มบันทึก
       const saveBtn = this.modalElement.querySelector('.save-btn');
       saveBtn?.addEventListener('click', () => this.saveConfig());
     }
 
-    // 绑定文件上传事件
+    // ผูกอีเวนต์อัปโหลดไฟล์
     bindFileUploadEvents() {
       const fileInputs = this.modalElement.querySelectorAll('input[type="file"]');
       const uploadBtns = this.modalElement.querySelectorAll('.upload-btn');
@@ -443,7 +446,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
       });
     }
 
-    // 绑定URL输入事件
+    // ผูกอีเวนต์ป้อน URL
     bindUrlInputEvents() {
       const urlInputs = this.modalElement.querySelectorAll('.url-input');
       urlInputs.forEach(input => {
@@ -454,53 +457,53 @@ if (typeof window.ImageConfigModal === 'undefined') {
       });
     }
 
-    // 处理文件上传
+    // ประมวลผลการอัปโหลดไฟล์
     async handleFileUpload(event) {
       const file = event.target.files[0];
       if (!file) return;
 
-      console.log(`[Image Config Modal] 处理文件上传:`, file.name);
+      console.log(`[Image Config Modal] กำลังประมวลผลการอัปโหลดไฟล์:`, file.name);
 
       try {
-        // 尝试上传到Data Bank
+        // ลองอัปโหลดไปยัง Data Bank
         let imageUrl = '';
         if (window.styleConfigManager && typeof window.styleConfigManager.uploadImageToDataBank === 'function') {
           imageUrl = await window.styleConfigManager.uploadImageToDataBank(file);
         }
 
-        // 如果上传失败，转换为Base64
+        // หากอัปโหลดล้มเหลว ให้แปลงเป็น Base64
         if (!imageUrl) {
           imageUrl = await this.fileToBase64(file);
         }
 
-        // 更新配置
+        // อัปเดตการตั้งค่า
         this.currentConfig[this.currentTab].image = imageUrl;
 
-        // 更新预览
+        // อัปเดตตัวอย่าง
         this.updatePreview();
 
-        console.log(`[Image Config Modal] 文件上传成功`);
+        console.log(`[Image Config Modal] อัปโหลดไฟล์สำเร็จ`);
       } catch (error) {
-        console.error('[Image Config Modal] 文件上传失败:', error);
+        console.error('[Image Config Modal] อัปโหลดไฟล์ล้มเหลว:', error);
         if (window.MobilePhone && window.MobilePhone.showToast) {
           window.MobilePhone.showToast('อัปโหลดรูปภาพล้มเหลว', 'error');
         }
       }
     }
 
-    // 处理URL输入
+    // ประมวลผลการป้อน URL
     handleUrlInput(event) {
       const url = event.target.value.trim();
       const type = event.target.dataset.type;
 
       if (url && this.isValidImageUrl(url)) {
-        console.log(`[Image Config Modal] 设置${type}图片URL:`, url);
+        console.log(`[Image Config Modal] ตั้งค่า URL รูปภาพ ${type}:`, url);
         this.currentConfig[type].image = url;
         this.updatePreview();
       }
     }
 
-    // 验证图片URL
+    // ตรวจสอบความถูกต้องของ URL รูปภาพ
     isValidImageUrl(url) {
       try {
         new URL(url);
@@ -510,7 +513,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
       }
     }
 
-    // 文件转Base64
+    // แปลงไฟล์เป็น Base64
     fileToBase64(file) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -520,22 +523,22 @@ if (typeof window.ImageConfigModal === 'undefined') {
       });
     }
 
-    // 绑定拖拽事件
+    // ผูกอีเวนต์การลาก
     bindDragEvents() {
       const previewContainers = this.modalElement.querySelectorAll('.preview-container');
 
       previewContainers.forEach(container => {
-        // 鼠标事件
+        // อีเวนต์เมาส์
         container.addEventListener('mousedown', e => this.startDrag(e, container));
 
-        // 触摸事件
+        // อีเวนต์สัมผัส
         container.addEventListener('touchstart', e => this.startDrag(e, container), { passive: false });
 
-        // 防止默认的拖拽行为
+        // ป้องกันพฤติกรรมการลากเริ่มต้น
         container.addEventListener('dragstart', e => e.preventDefault());
       });
 
-      // 全局拖拽移动和结束事件（绑定到document确保在容器外也能响应）
+      // อีเวนต์การลากและสิ้นสุดแบบ global (ผูกกับ document เพื่อให้ตอบสนองได้แม้อยู่นอกคอนเทนเนอร์)
       this.dragMoveHandler = e => this.handleDrag(e);
       this.dragEndHandler = () => this.endDrag();
 
@@ -545,7 +548,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
       document.addEventListener('touchend', this.dragEndHandler);
     }
 
-    // 清理拖拽事件监听器
+    // ล้างตัวรับฟังอีเวนต์การลาก
     cleanupDragEvents() {
       if (this.dragMoveHandler) {
         document.removeEventListener('mousemove', this.dragMoveHandler);
@@ -557,7 +560,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
       }
     }
 
-    // 开始拖拽
+    // เริ่มลาก
     startDrag(event, container) {
       event.preventDefault();
 
@@ -576,10 +579,10 @@ if (typeof window.ImageConfigModal === 'undefined') {
       this.dragStartImagePos = { ...this.currentConfig[this.currentTab].position };
 
       container.style.cursor = 'grabbing';
-      console.log('[Image Config Modal] 开始拖拽');
+      console.log('[Image Config Modal] เริ่มลาก');
     }
 
-    // 处理拖拽
+    // ประมวลผลการลาก
     handleDrag(event) {
       if (!this.isDragging || !this.dragContainer) return;
 
@@ -589,34 +592,34 @@ if (typeof window.ImageConfigModal === 'undefined') {
       const clientX = event.touches ? event.touches[0].clientX : event.clientX;
       const clientY = event.touches ? event.touches[0].clientY : event.clientY;
 
-      // 计算当前鼠标在容器中的位置（百分比）
+      // คำนวณตำแหน่งปัจจุบันของเมาส์ในคอนเทนเนอร์ (เปอร์เซ็นต์)
       const currentX = ((clientX - rect.left) / rect.width) * 100;
       const currentY = ((clientY - rect.top) / rect.height) * 100;
 
-      // 计算拖拽开始时鼠标在容器中的位置（百分比）
+      // คำนวณตำแหน่งของเมาส์ในคอนเทนเนอร์เมื่อเริ่มลาก (เปอร์เซ็นต์)
       const startX = (this.dragStartPos.x / rect.width) * 100;
       const startY = (this.dragStartPos.y / rect.height) * 100;
 
-      // 计算偏移量
+      // คำนวณค่าออฟเซ็ต
       const deltaX = currentX - startX;
       const deltaY = currentY - startY;
 
-      // 更新图片位置（正确理解：拖拽方向与background-position相反）
-      // 向右拖拽 = 想看图片右边 = background-position X值减小
-      // 向下拖拽 = 想看图片下边 = background-position Y值减小
+      // อัปเดตตำแหน่งรูปภาพ (ทิศทางการลากตรงข้ามกับ background-position)
+      // ลากไปขวา = ต้องการเห็นรูปภาพด้านขวา = ค่า X ของ background-position ลดลง
+      // ลากลง = ต้องการเห็นรูปภาพด้านล่าง = ค่า Y ของ background-position ลดลง
       const newX = Math.max(0, Math.min(100, this.dragStartImagePos.x - deltaX));
       const newY = Math.max(0, Math.min(100, this.dragStartImagePos.y - deltaY));
 
       this.currentConfig[this.currentTab].position = { x: newX, y: newY };
 
-      // 实时更新预览（仅更新位置，避免重复更新其他属性）
+      // อัปเดตตัวอย่างแบบเรียลไทม์ (อัปเดตเฉพาะตำแหน่ง เพื่อหลีกเลี่ยงการอัปเดตคุณสมบัติอื่นซ้ำ)
       const previewElement = this.modalElement.querySelector(`#${this.currentTab}-preview`);
       if (previewElement) {
         previewElement.style.backgroundPosition = this.formatBackgroundPosition({ x: newX, y: newY });
       }
     }
 
-    // 结束拖拽
+    // สิ้นสุดการลาก
     endDrag() {
       if (this.isDragging) {
         this.isDragging = false;
@@ -624,11 +627,11 @@ if (typeof window.ImageConfigModal === 'undefined') {
           this.dragContainer.style.cursor = 'grab';
           this.dragContainer = null;
         }
-        console.log('[Image Config Modal] 结束拖拽');
+        console.log('[Image Config Modal] สิ้นสุดการลาก');
       }
     }
 
-    // 绑定控制事件
+    // ผูกอีเวนต์ตัวควบคุม
     bindControlEvents() {
       const sliders = this.modalElement.querySelectorAll('.control-slider');
 
@@ -637,7 +640,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
       });
     }
 
-    // 处理控制器变化
+    // ประมวลผลการเปลี่ยนแปลงตัวควบคุม
     handleControlChange(event) {
       const type = event.target.dataset.type;
       const property = event.target.dataset.property;
@@ -646,7 +649,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
       if (type && property) {
         this.currentConfig[type][property] = value;
 
-        // 更新显示值
+        // อัปเดตค่าที่แสดง
         const valueSpan = event.target.parentNode.querySelector('.control-value');
         if (valueSpan) {
           if (property === 'rotation') {
@@ -656,19 +659,19 @@ if (typeof window.ImageConfigModal === 'undefined') {
           }
         }
 
-        // 更新预览
+        // อัปเดตตัวอย่าง
         this.updatePreview();
 
-        console.log(`[Image Config Modal] 更新${type}的${property}:`, value);
+        console.log(`[Image Config Modal] อัปเดต ${property} ของ ${type}:`, value);
       }
     }
 
-    // 保存配置
+    // บันทึกการตั้งค่า
     async saveConfig() {
-      console.log('[Image Config Modal] 保存配置');
+      console.log('[Image Config Modal] บันทึกการตั้งค่า');
 
       if (!window.styleConfigManager || !window.styleConfigManager.isReady) {
-        console.error('[Image Config Modal] StyleConfigManager未就绪');
+        console.error('[Image Config Modal] StyleConfigManager ยังไม่พร้อม');
         if (window.MobilePhone && window.MobilePhone.showToast) {
           window.MobilePhone.showToast('ตัวจัดการการตั้งค่ายังไม่พร้อม', 'error');
         }
@@ -676,10 +679,10 @@ if (typeof window.ImageConfigModal === 'undefined') {
       }
 
       try {
-        // 获取当前配置的副本
+        // ดึงสำเนาการตั้งค่าปัจจุบัน
         const config = JSON.parse(JSON.stringify(window.styleConfigManager.currentConfig));
 
-        // 更新用户头像配置
+        // อัปเดตการตั้งค่าอวตารผู้ใช้
         if (this.currentConfig.avatar.image) {
           if (!config.messageSentAvatar) {
             config.messageSentAvatar = {
@@ -705,7 +708,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
           config.messageSentAvatar.scale = this.currentConfig.avatar.scale.toString();
         }
 
-        // 更新消息背景配置
+        // อัปเดตการตั้งค่าพื้นหลังข้อความ
         if (this.currentConfig.background.image) {
           if (!config.messagesApp) {
             config.messagesApp = {
@@ -729,23 +732,23 @@ if (typeof window.ImageConfigModal === 'undefined') {
           config.messagesApp.scale = this.currentConfig.background.scale.toString();
         }
 
-        // 更新StyleConfigManager的配置
+        // อัปเดตการตั้งค่าของ StyleConfigManager
         window.styleConfigManager.currentConfig = config;
 
-        // 保存配置
+        // บันทึกการตั้งค่า
         const success = await window.styleConfigManager.saveConfig();
 
         if (success) {
-          console.log('[Image Config Modal] 配置保存成功');
+          console.log('[Image Config Modal] บันทึกการตั้งค่าสำเร็จ');
           if (window.MobilePhone && window.MobilePhone.showToast) {
             window.MobilePhone.showToast('บันทึกการตั้งค่าแล้ว', 'success');
           }
           this.hide();
         } else {
-          throw new Error('保存失败');
+          throw new Error('บันทึกล้มเหลว');
         }
       } catch (error) {
-        console.error('[Image Config Modal] 保存配置失败:', error);
+        console.error('[Image Config Modal] บันทึกการตั้งค่าล้มเหลว:', error);
         if (window.MobilePhone && window.MobilePhone.showToast) {
           window.MobilePhone.showToast('บันทึกล้มเหลว กรุณาลองใหม่', 'error');
         }
@@ -753,79 +756,82 @@ if (typeof window.ImageConfigModal === 'undefined') {
     }
   }
 
-  // 先将类保存到全局，然后创建实例
+  // บันทึกคลาสไปยัง global ก่อน แล้วจึงสร้าง instance
   window.ImageConfigModalClass = ImageConfigModal;
   window.ImageConfigModal = new ImageConfigModal();
 
-  console.log('[Image Config Modal] 图片配置弹窗模块加载完成');
+  console.log('[Image Config Modal] โหลดโมดูลกล่องโต้ตอบตั้งค่ารูปภาพเสร็จสมบูรณ์');
 }
 
-// 使用立即执行函数确保好友弹窗类被正确定义
+// ใช้ฟังก์ชันแบบ IIFE เพื่อให้แน่ใจว่าคลาสกล่องโต้ตอบเพื่อนถูกประกาศอย่างถูกต้อง
 (function () {
-  console.log('[Friend Image Config Modal] 检查初始化条件...');
-  console.log('[Friend Image Config Modal] ImageConfigModalClass类型:', typeof window.ImageConfigModalClass);
-  console.log('[Friend Image Config Modal] ImageConfigModal实例类型:', typeof window.ImageConfigModal);
-  console.log('[Friend Image Config Modal] FriendImageConfigModal类型:', typeof window.FriendImageConfigModal);
+  console.log('[Friend Image Config Modal] ตรวจสอบเงื่อนไขเริ่มต้น...');
+  console.log('[Friend Image Config Modal] ประเภท ImageConfigModalClass:', typeof window.ImageConfigModalClass);
+  console.log('[Friend Image Config Modal] ประเภท instance ImageConfigModal:', typeof window.ImageConfigModal);
+  console.log('[Friend Image Config Modal] ประเภท FriendImageConfigModal:', typeof window.FriendImageConfigModal);
 
-  // 确保原始弹窗类已加载后再定义好友弹窗类
+  // ตรวจสอบว่าคลาสกล่องโต้ตอบดั้งเดิมโหลดแล้ว ก่อนประกาศคลาสกล่องโต้ตอบเพื่อน
   if (typeof window.ImageConfigModalClass !== 'undefined' && typeof window.FriendImageConfigModal === 'undefined') {
-    console.log('[Friend Image Config Modal] 开始定义好友弹窗类，父类已存在:', typeof window.ImageConfigModalClass);
+    console.log(
+      '[Friend Image Config Modal] เริ่มประกาศคลาสกล่องโต้ตอบเพื่อน คลาสแม่มีอยู่แล้ว:',
+      typeof window.ImageConfigModalClass,
+    );
 
     class FriendImageConfigModal extends window.ImageConfigModalClass {
       constructor() {
-        super(); // 调用父类构造函数
+        super(); // เรียกใช้ constructor ของคลาสแม่
 
-        // 好友弹窗特有的属性
+        // คุณสมบัติเฉพาะของกล่องโต้ตอบเพื่อน
         this.currentFriendId = null;
         this.currentFriendName = null;
 
-        console.log('[Friend Image Config Modal] 好友图片配置弹窗初始化完成');
+        console.log('[Friend Image Config Modal] เริ่มต้นกล่องโต้ตอบตั้งค่ารูปภาพเพื่อนเสร็จสมบูรณ์');
       }
 
-      // 显示弹窗
+      // แสดงกล่องโต้ตอบ
       show(friendId, friendName) {
-        console.log('[Friend Image Config Modal] 显示弹窗:', friendId, friendName);
-        console.log('[Friend Image Config Modal] 好友ID类型:', typeof friendId);
-        console.log('[Friend Image Config Modal] 好友名称类型:', typeof friendName);
+        console.log('[Friend Image Config Modal] แสดงกล่องโต้ตอบ:', friendId, friendName);
+        console.log('[Friend Image Config Modal] ประเภท ID เพื่อน:', typeof friendId);
+        console.log('[Friend Image Config Modal] ประเภทชื่อเพื่อน:', typeof friendName);
 
         this.currentFriendId = friendId;
         this.currentFriendName = friendName;
 
-        console.log('[Friend Image Config Modal] 设置后的好友ID:', this.currentFriendId);
-        console.log('[Friend Image Config Modal] 设置后的好友名称:', this.currentFriendName);
+        console.log('[Friend Image Config Modal] ID เพื่อนที่ตั้งค่าแล้ว:', this.currentFriendId);
+        console.log('[Friend Image Config Modal] ชื่อเพื่อนที่ตั้งค่าแล้ว:', this.currentFriendName);
 
-        // 加载当前好友的配置
+        // โหลดการตั้งค่าของเพื่อนปัจจุบัน
         this.loadFriendConfig();
 
-        // 创建弹窗HTML
+        // สร้าง HTML กล่องโต้ตอบ
         this.createModal();
 
-        // 绑定事件
+        // ผูกอีเวนต์
         this.bindEvents();
 
-        // 显示弹窗
+        // แสดงกล่องโต้ตอบ
         this.isVisible = true;
         this.modalElement.style.display = 'flex';
 
-        // 添加显示动画
+        // เพิ่มแอนิเมชันแสดง
         setTimeout(() => {
           this.modalElement.classList.add('show');
         }, 10);
 
-        // 更新预览
+        // อัปเดตตัวอย่าง
         this.updatePreview();
       }
 
-      // 隐藏弹窗
+      // ซ่อนกล่องโต้ตอบ
       hide() {
-        console.log('[Friend Image Config Modal] 隐藏弹窗');
+        console.log('[Friend Image Config Modal] ซ่อนกล่องโต้ตอบ');
 
         if (!this.modalElement) return;
 
-        // 清理拖拽事件监听器
+        // ล้างตัวรับฟังอีเวนต์การลาก
         this.cleanupDragEvents();
 
-        // 添加隐藏动画
+        // เพิ่มแอนิเมชันซ่อน
         this.modalElement.classList.remove('show');
 
         setTimeout(() => {
@@ -837,22 +843,22 @@ if (typeof window.ImageConfigModal === 'undefined') {
         }, 300);
       }
 
-      // 加载好友配置
+      // โหลดการตั้งค่าเพื่อน
       loadFriendConfig() {
         if (!window.styleConfigManager || !window.styleConfigManager.isReady) {
-          console.warn('[Friend Image Config Modal] StyleConfigManager未就绪');
+          console.warn('[Friend Image Config Modal] StyleConfigManager ยังไม่พร้อม');
           return;
         }
 
         const config = window.styleConfigManager.getConfig();
-        console.log('[Friend Image Config Modal] 加载配置，好友ID:', this.currentFriendId);
-        console.log('[Friend Image Config Modal] 当前配置:', config);
+        console.log('[Friend Image Config Modal] โหลดการตั้งค่า ID เพื่อน:', this.currentFriendId);
+        console.log('[Friend Image Config Modal] การตั้งค่าปัจจุบัน:', config);
 
-        // 加载好友头像配置
+        // โหลดการตั้งค่าอวตารเพื่อน
         if (config.messageReceivedAvatars) {
-          console.log('[Friend Image Config Modal] messageReceivedAvatars数组:', config.messageReceivedAvatars);
+          console.log('[Friend Image Config Modal] อาร์เรย์ messageReceivedAvatars:', config.messageReceivedAvatars);
           const friendAvatar = config.messageReceivedAvatars.find(avatar => avatar.friendId === this.currentFriendId);
-          console.log('[Friend Image Config Modal] 找到的好友头像配置:', friendAvatar);
+          console.log('[Friend Image Config Modal] พบการตั้งค่าอวตารเพื่อน:', friendAvatar);
 
           if (friendAvatar) {
             this.currentConfig.avatar = {
@@ -861,15 +867,15 @@ if (typeof window.ImageConfigModal === 'undefined') {
               rotation: parseFloat(friendAvatar.rotation || 0),
               scale: parseFloat(friendAvatar.scale || 1),
             };
-            console.log('[Friend Image Config Modal] 加载的头像配置:', this.currentConfig.avatar);
+            console.log('[Friend Image Config Modal] การตั้งค่าอวตารที่โหลด:', this.currentConfig.avatar);
           } else {
-            console.log('[Friend Image Config Modal] 未找到好友头像配置，使用默认值');
+            console.log('[Friend Image Config Modal] ไม่พบการตั้งค่าอวตารเพื่อน ใช้ค่าเริ่มต้น');
           }
         } else {
-          console.log('[Friend Image Config Modal] messageReceivedAvatars数组不存在');
+          console.log('[Friend Image Config Modal] อาร์เรย์ messageReceivedAvatars ไม่มีอยู่');
         }
 
-        // 加载好友专属聊天背景配置
+        // โหลดการตั้งค่าพื้นหลังแชทเฉพาะเพื่อน
         if (config.friendBackgrounds) {
           const friendBackground = config.friendBackgrounds.find(bg => bg.friendId === this.currentFriendId);
           if (friendBackground) {
@@ -883,20 +889,20 @@ if (typeof window.ImageConfigModal === 'undefined') {
         }
       }
 
-      // 创建弹窗HTML
+      // สร้าง HTML กล่องโต้ตอบ
       createModal() {
-        // 移除已存在的弹窗
+        // ลบกล่องโต้ตอบที่มีอยู่ออก
         const existingModal = document.querySelector('.friend-image-config-modal');
         if (existingModal) {
           existingModal.remove();
         }
 
-        // 创建弹窗元素
+        // สร้างเอเลเมนต์กล่องโต้ตอบ
         this.modalElement = document.createElement('div');
         this.modalElement.className = 'image-config-modal friend-image-config-modal';
         this.modalElement.innerHTML = this.getModalHTML();
 
-        // 添加到手机容器中，确保相对定位
+        // เพิ่มลงในคอนเทนเนอร์โทรศัพท์ ตรวจสอบให้มีตำแหน่งสัมพัทธ์
         const phoneContainer =
           document.querySelector('#mobile-phone-container .mobile-phone-frame') ||
           document.querySelector('.mobile-phone-frame') ||
@@ -905,14 +911,14 @@ if (typeof window.ImageConfigModal === 'undefined') {
 
         if (phoneContainer) {
           phoneContainer.appendChild(this.modalElement);
-          console.log('[Friend Image Config Modal] 弹窗已添加到手机容器');
+          console.log('[Friend Image Config Modal] เพิ่มกล่องโต้ตอบในคอนเทนเนอร์โทรศัพท์แล้ว');
         } else {
           document.body.appendChild(this.modalElement);
-          console.log('[Friend Image Config Modal] 弹窗已添加到body');
+          console.log('[Friend Image Config Modal] เพิ่มกล่องโต้ตอบที่ body แล้ว');
         }
       }
 
-      // 获取弹窗HTML
+      // ดึง HTML ของกล่องโต้ตอบ
       getModalHTML() {
         return `
         <div class="modal-backdrop"></div>
@@ -942,7 +948,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
       `;
       }
 
-      // 获取标签页内容 - 复用原有逻辑
+      // ดึงเนื้อหาของแท็บ - ใช้ logic เดิมซ้ำ
       getTabContent() {
         if (this.currentTab === 'avatar') {
           return this.getAvatarTabContent();
@@ -951,7 +957,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
         }
       }
 
-      // 获取头像标签页内容
+      // ดึงเนื้อหาของแท็บอวตาร
       getAvatarTabContent() {
         const config = this.currentConfig.avatar;
         return `
@@ -993,7 +999,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
       `;
       }
 
-      // 获取背景标签页内容
+      // ดึงเนื้อหาของแท็บพื้นหลัง
       getBackgroundTabContent() {
         const config = this.currentConfig.background;
         return `
@@ -1035,23 +1041,23 @@ if (typeof window.ImageConfigModal === 'undefined') {
       `;
       }
 
-      // 复用原有的方法 - 绑定事件
+      // ใช้เมธอดเดิมซ้ำ - ผูกอีเวนต์
       bindEvents() {
         if (!this.modalElement) return;
 
-        // 关闭按钮
+        // ปุ่มปิด
         const closeBtn = this.modalElement.querySelector('.modal-close-btn');
         if (closeBtn) {
           closeBtn.addEventListener('click', () => this.hide());
         }
 
-        // 背景点击关闭
+        // คลิกที่พื้นหลังเพื่อปิด
         const backdrop = this.modalElement.querySelector('.modal-backdrop');
         if (backdrop) {
           backdrop.addEventListener('click', () => this.hide());
         }
 
-        // 标签页切换
+        // สลับแท็บ
         const tabBtns = this.modalElement.querySelectorAll('.tab-btn');
         tabBtns.forEach(btn => {
           btn.addEventListener('click', e => {
@@ -1060,7 +1066,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
           });
         });
 
-        // 文件上传按钮
+        // ปุ่มอัปโหลดไฟล์
         const uploadBtns = this.modalElement.querySelectorAll('.upload-btn');
         uploadBtns.forEach(btn => {
           btn.addEventListener('click', e => {
@@ -1072,96 +1078,96 @@ if (typeof window.ImageConfigModal === 'undefined') {
           });
         });
 
-        // 文件输入
+        // ช่องป้อนไฟล์
         const fileInputs = this.modalElement.querySelectorAll('input[type="file"]');
         fileInputs.forEach(input => {
           input.addEventListener('change', e => this.handleFileUpload(e));
         });
 
-        // URL输入
+        // ป้อน URL
         const urlInputs = this.modalElement.querySelectorAll('.url-input');
         urlInputs.forEach(input => {
           input.addEventListener('input', e => this.handleUrlInput(e));
         });
 
-        // 滑块控制
+        // ตัวควบคุมสไลเดอร์
         const sliders = this.modalElement.querySelectorAll('.control-slider');
         sliders.forEach(slider => {
           slider.addEventListener('input', e => this.handleSliderChange(e));
         });
 
-        // 保存按钮
+        // ปุ่มบันทึก
         const saveBtn = this.modalElement.querySelector('.save-btn');
         if (saveBtn) {
           saveBtn.addEventListener('click', () => this.saveConfig());
         }
 
-        // 拖拽事件
+        // อีเวนต์การลาก
         this.bindDragEvents();
       }
 
-      // 复用原有的所有方法
+      // ใช้เมธอดเดิมทั้งหมดซ้ำ
       switchTab(tab) {
         this.currentTab = tab;
 
-        // 更新标签页按钮状态
+        // อัปเดตสถานะปุ่มแท็บ
         const tabBtns = this.modalElement.querySelectorAll('.tab-btn');
         tabBtns.forEach(btn => {
           btn.classList.toggle('active', btn.getAttribute('data-tab') === tab);
         });
 
-        // 更新内容
+        // อัปเดตเนื้อหา
         const modalBody = this.modalElement.querySelector('.modal-body');
         if (modalBody) {
           modalBody.innerHTML = this.getTabContent();
 
-          // 重新绑定事件
+          // ผูกอีเวนต์ใหม่
           this.bindEvents();
 
-          // 更新预览
+          // อัปเดตตัวอย่าง
           this.updatePreview();
         }
       }
 
-      // 处理文件上传 - 与原始弹窗一致
+      // ประมวลผลการอัปโหลดไฟล์ - เหมือนกับกล่องโต้ตอบดั้งเดิม
       async handleFileUpload(event) {
         const file = event.target.files[0];
         if (!file) return;
 
         try {
-          console.log(`[Friend Image Config Modal] 开始上传文件:`, file.name);
+          console.log(`[Friend Image Config Modal] เริ่มอัปโหลดไฟล์:`, file.name);
 
-          // 转换为Base64
+          // แปลงเป็น Base64
           const imageUrl = await this.fileToBase64(file);
 
-          // 更新配置
+          // อัปเดตการตั้งค่า
           this.currentConfig[this.currentTab].image = imageUrl;
 
-          // 更新预览
+          // อัปเดตตัวอย่าง
           this.updatePreview();
 
-          console.log(`[Friend Image Config Modal] 文件上传成功`);
+          console.log(`[Friend Image Config Modal] อัปโหลดไฟล์สำเร็จ`);
         } catch (error) {
-          console.error('[Friend Image Config Modal] 文件上传失败:', error);
+          console.error('[Friend Image Config Modal] อัปโหลดไฟล์ล้มเหลว:', error);
           if (window.MobilePhone && window.MobilePhone.showToast) {
             window.MobilePhone.showToast('อัปโหลดรูปภาพล้มเหลว', 'error');
           }
         }
       }
 
-      // 处理URL输入 - 与原始弹窗一致
+      // ประมวลผลการป้อน URL - เหมือนกับกล่องโต้ตอบดั้งเดิม
       handleUrlInput(event) {
         const url = event.target.value.trim();
         const type = event.target.dataset.type;
 
         if (url && this.isValidImageUrl(url)) {
-          console.log(`[Friend Image Config Modal] 设置${type}图片URL:`, url);
+          console.log(`[Friend Image Config Modal] ตั้งค่า URL รูปภาพ ${type}:`, url);
           this.currentConfig[type].image = url;
           this.updatePreview();
         }
       }
 
-      // 验证图片URL - 与原始弹窗一致
+      // ตรวจสอบความถูกต้องของ URL รูปภาพ - เหมือนกับกล่องโต้ตอบดั้งเดิม
       isValidImageUrl(url) {
         try {
           new URL(url);
@@ -1171,7 +1177,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
         }
       }
 
-      // 文件转Base64 - 与原始弹窗一致
+      // แปลงไฟล์เป็น Base64 - เหมือนกับกล่องโต้ตอบดั้งเดิม
       fileToBase64(file) {
         return new Promise((resolve, reject) => {
           const reader = new FileReader();
@@ -1185,7 +1191,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
         const scale = parseFloat(e.target.value);
         this.currentConfig[this.currentTab].scale = scale;
 
-        // 更新显示值
+        // อัปเดตค่าที่แสดง
         const scaleValue = this.modalElement.querySelector('.scale-value');
         if (scaleValue) {
           scaleValue.textContent = scale.toFixed(1) + 'x';
@@ -1198,7 +1204,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
         const rotation = parseInt(e.target.value);
         this.currentConfig[this.currentTab].rotation = rotation;
 
-        // 更新显示值
+        // อัปเดตค่าที่แสดง
         const rotationValue = this.modalElement.querySelector('.rotation-value');
         if (rotationValue) {
           rotationValue.textContent = rotation + '°';
@@ -1207,7 +1213,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
         this.updatePreview();
       }
 
-      // 处理滑块变化 - 与原始弹窗一致
+      // ประมวลผลการเปลี่ยนแปลงสไลเดอร์ - เหมือนกับกล่องโต้ตอบดั้งเดิม
       handleSliderChange(e) {
         const slider = e.target;
         const type = slider.getAttribute('data-type');
@@ -1216,10 +1222,10 @@ if (typeof window.ImageConfigModal === 'undefined') {
 
         if (!type || !property) return;
 
-        // 更新配置
+        // อัปเดตการตั้งค่า
         this.currentConfig[type][property] = value;
 
-        // 更新显示值
+        // อัปเดตค่าที่แสดง
         const controlRow = slider.closest('.control-row');
         const valueSpan = controlRow.querySelector('.control-value');
         if (valueSpan) {
@@ -1230,13 +1236,13 @@ if (typeof window.ImageConfigModal === 'undefined') {
           }
         }
 
-        // 更新预览
+        // อัปเดตตัวอย่าง
         this.updatePreview();
 
-        console.log(`[Friend Image Config Modal] 更新${type}的${property}:`, value);
+        console.log(`[Friend Image Config Modal] อัปเดต ${property} ของ ${type}:`, value);
       }
 
-      // 更新预览 - 与CSS生成逻辑保持一致
+      // อัปเดตตัวอย่าง - สอดคล้องกับ logic การสร้าง CSS
       updatePreview() {
         const config = this.currentConfig[this.currentTab];
         const previewElement = this.modalElement.querySelector(`#${this.currentTab}-preview`);
@@ -1249,46 +1255,46 @@ if (typeof window.ImageConfigModal === 'undefined') {
         previewElement.style.backgroundPosition = backgroundPosition;
         previewElement.style.backgroundRepeat = 'no-repeat';
 
-        // 关键修复：与CSS生成逻辑保持一致
+        // แก้ไขสำคัญ: สอดคล้องกับ logic การสร้าง CSS
         if (this.currentTab === 'avatar') {
-          // 头像：使用background-size控制缩放，transform只控制旋转
+          // อวตาร: ใช้ background-size ควบคุมการซูม transform ควบคุมเฉพาะการหมุน
           previewElement.style.backgroundSize = `${config.scale * 100}%`;
           previewElement.style.transform = `rotate(${config.rotation}deg)`;
         } else {
-          // 背景：使用transform同时控制旋转和缩放
+          // พื้นหลัง: ใช้ transform ควบคุมทั้งการหมุนและการซูม
           previewElement.style.backgroundSize = 'cover';
           previewElement.style.transform = `rotate(${config.rotation}deg) scale(${config.scale})`;
         }
 
-        // 更新控制器的值
+        // อัปเดตค่าตัวควบคุม
         this.updateControlValues();
 
-        // 更新URL输入框的值
+        // อัปเดตค่าช่องป้อน URL
         this.updateUrlInput();
 
-        console.log(`[Friend Image Config Modal] 更新${this.currentTab}预览:`, {
+        console.log(`[Friend Image Config Modal] อัปเดตตัวอย่าง ${this.currentTab}:`, {
           image: config.image.substring(0, 50) + '...',
           position: backgroundPosition,
           transform,
         });
       }
 
-      // 绑定拖拽事件 - 完全复制原始弹窗逻辑
+      // ผูกอีเวนต์การลาก - คัดลอก logic จากกล่องโต้ตอบดั้งเดิมทั้งหมด
       bindDragEvents() {
         const previewContainers = this.modalElement.querySelectorAll('.preview-container');
 
         previewContainers.forEach(container => {
-          // 鼠标事件
+          // อีเวนต์เมาส์
           container.addEventListener('mousedown', e => this.startDrag(e, container));
 
-          // 触摸事件
+          // อีเวนต์สัมผัส
           container.addEventListener('touchstart', e => this.startDrag(e, container), { passive: false });
 
-          // 防止默认的拖拽行为
+          // ป้องกันพฤติกรรมการลากเริ่มต้น
           container.addEventListener('dragstart', e => e.preventDefault());
         });
 
-        // 全局拖拽移动和结束事件（绑定到document确保在容器外也能响应）
+        // อีเวนต์การลากและสิ้นสุดแบบ global (ผูกกับ document เพื่อให้ตอบสนองได้แม้อยู่นอกคอนเทนเนอร์)
         this.dragMoveHandler = e => this.handleDrag(e);
         this.dragEndHandler = () => this.endDrag();
 
@@ -1298,7 +1304,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
         document.addEventListener('touchend', this.dragEndHandler);
       }
 
-      // 开始拖拽 - 完全复制原始弹窗逻辑
+      // เริ่มลาก - คัดลอก logic จากกล่องโต้ตอบดั้งเดิมทั้งหมด
       startDrag(event, container) {
         event.preventDefault();
 
@@ -1317,10 +1323,10 @@ if (typeof window.ImageConfigModal === 'undefined') {
         this.dragStartImagePos = { ...this.currentConfig[this.currentTab].position };
 
         container.style.cursor = 'grabbing';
-        console.log('[Friend Image Config Modal] 开始拖拽');
+        console.log('[Friend Image Config Modal] เริ่มลาก');
       }
 
-      // 处理拖拽 - 完全复制原始弹窗逻辑
+      // ประมวลผลการลาก - คัดลอก logic จากกล่องโต้ตอบดั้งเดิมทั้งหมด
       handleDrag(event) {
         if (!this.isDragging || !this.dragContainer) return;
 
@@ -1330,34 +1336,34 @@ if (typeof window.ImageConfigModal === 'undefined') {
         const clientX = event.touches ? event.touches[0].clientX : event.clientX;
         const clientY = event.touches ? event.touches[0].clientY : event.clientY;
 
-        // 计算当前鼠标在容器中的位置（百分比）
+        // คำนวณตำแหน่งปัจจุบันของเมาส์ในคอนเทนเนอร์ (เปอร์เซ็นต์)
         const currentX = ((clientX - rect.left) / rect.width) * 100;
         const currentY = ((clientY - rect.top) / rect.height) * 100;
 
-        // 计算拖拽开始时鼠标在容器中的位置（百分比）
+        // คำนวณตำแหน่งของเมาส์ในคอนเทนเนอร์เมื่อเริ่มลาก (เปอร์เซ็นต์)
         const startX = (this.dragStartPos.x / rect.width) * 100;
         const startY = (this.dragStartPos.y / rect.height) * 100;
 
-        // 计算偏移量
+        // คำนวณค่าออฟเซ็ต
         const deltaX = currentX - startX;
         const deltaY = currentY - startY;
 
-        // 更新图片位置（正确理解：拖拽方向与background-position相反）
-        // 向右拖拽 = 想看图片右边 = background-position X值减小
-        // 向下拖拽 = 想看图片下边 = background-position Y值减小
+        // อัปเดตตำแหน่งรูปภาพ (ทิศทางการลากตรงข้ามกับ background-position)
+        // ลากไปขวา = ต้องการเห็นรูปภาพด้านขวา = ค่า X ของ background-position ลดลง
+        // ลากลง = ต้องการเห็นรูปภาพด้านล่าง = ค่า Y ของ background-position ลดลง
         const newX = Math.max(0, Math.min(100, this.dragStartImagePos.x - deltaX));
         const newY = Math.max(0, Math.min(100, this.dragStartImagePos.y - deltaY));
 
         this.currentConfig[this.currentTab].position = { x: newX, y: newY };
 
-        // 实时更新预览（仅更新位置，避免重复更新其他属性）
+        // อัปเดตตัวอย่างแบบเรียลไทม์ (อัปเดตเฉพาะตำแหน่ง เพื่อหลีกเลี่ยงการอัปเดตคุณสมบัติอื่นซ้ำ)
         const previewElement = this.modalElement.querySelector(`#${this.currentTab}-preview`);
         if (previewElement) {
           previewElement.style.backgroundPosition = this.formatBackgroundPosition({ x: newX, y: newY });
         }
       }
 
-      // 结束拖拽 - 完全复制原始弹窗逻辑
+      // สิ้นสุดการลาก - คัดลอก logic จากกล่องโต้ตอบดั้งเดิมทั้งหมด
       endDrag() {
         if (this.isDragging) {
           this.isDragging = false;
@@ -1365,11 +1371,11 @@ if (typeof window.ImageConfigModal === 'undefined') {
             this.dragContainer.style.cursor = 'grab';
             this.dragContainer = null;
           }
-          console.log('[Friend Image Config Modal] 结束拖拽');
+          console.log('[Friend Image Config Modal] สิ้นสุดการลาก');
         }
       }
 
-      // 清理拖拽事件监听器 - 完全复制原始弹窗逻辑
+      // ล้างตัวรับฟังอีเวนต์การลาก - คัดลอก logic จากกล่องโต้ตอบดั้งเดิมทั้งหมด
       cleanupDragEvents() {
         if (this.dragMoveHandler) {
           document.removeEventListener('mousemove', this.dragMoveHandler);
@@ -1381,12 +1387,12 @@ if (typeof window.ImageConfigModal === 'undefined') {
         }
       }
 
-      // 保存配置
+      // บันทึกการตั้งค่า
       async saveConfig() {
-        console.log('[Friend Image Config Modal] 保存配置');
+        console.log('[Friend Image Config Modal] บันทึกการตั้งค่า');
 
         if (!window.styleConfigManager || !window.styleConfigManager.isReady) {
-          console.error('[Friend Image Config Modal] StyleConfigManager未就绪');
+          console.error('[Friend Image Config Modal] StyleConfigManager ยังไม่พร้อม');
           if (window.MobilePhone && window.MobilePhone.showToast) {
             window.MobilePhone.showToast('ตัวจัดการการตั้งค่ายังไม่พร้อม', 'error');
           }
@@ -1394,26 +1400,26 @@ if (typeof window.ImageConfigModal === 'undefined') {
         }
 
         try {
-          // 获取当前配置的副本
+          // ดึงสำเนาการตั้งค่าปัจจุบัน
           const config = JSON.parse(JSON.stringify(window.styleConfigManager.currentConfig));
 
-          // 保存好友头像配置
+          // บันทึกการตั้งค่าอวตารเพื่อน
           if (this.currentConfig.avatar.image) {
-            console.log('[Friend Image Config Modal] 开始保存好友头像配置');
-            console.log('[Friend Image Config Modal] 当前头像配置:', this.currentConfig.avatar);
-            console.log('[Friend Image Config Modal] 好友ID:', this.currentFriendId);
+            console.log('[Friend Image Config Modal] เริ่มบันทึกการตั้งค่าอวตารเพื่อน');
+            console.log('[Friend Image Config Modal] การตั้งค่าอวตารปัจจุบัน:', this.currentConfig.avatar);
+            console.log('[Friend Image Config Modal] ID เพื่อน:', this.currentFriendId);
 
-            // 确保messageReceivedAvatars数组存在
+            // ตรวจสอบว่าอาร์เรย์ messageReceivedAvatars มีอยู่
             if (!config.messageReceivedAvatars) {
               config.messageReceivedAvatars = [];
             }
 
-            // 查找或创建好友头像配置
+            // ค้นหาหรือสร้างการตั้งค่าอวตารเพื่อน
             let friendAvatarIndex = config.messageReceivedAvatars.findIndex(
               avatar => avatar.friendId === this.currentFriendId,
             );
 
-            console.log('[Friend Image Config Modal] 查找好友头像索引:', friendAvatarIndex);
+            console.log('[Friend Image Config Modal] ค้นหาดัชนีอวตารเพื่อน:', friendAvatarIndex);
 
             const avatarConfig = {
               id:
@@ -1434,29 +1440,29 @@ if (typeof window.ImageConfigModal === 'undefined') {
               scale: this.currentConfig.avatar.scale.toString(),
             };
 
-            console.log('[Friend Image Config Modal] 创建的头像配置:', avatarConfig);
+            console.log('[Friend Image Config Modal] การตั้งค่าอวตารที่สร้าง:', avatarConfig);
 
             if (friendAvatarIndex >= 0) {
               config.messageReceivedAvatars[friendAvatarIndex] = avatarConfig;
-              console.log('[Friend Image Config Modal] 更新现有头像配置');
+              console.log('[Friend Image Config Modal] อัปเดตการตั้งค่าอวตารที่มีอยู่');
             } else {
               config.messageReceivedAvatars.push(avatarConfig);
-              console.log('[Friend Image Config Modal] 添加新头像配置');
+              console.log('[Friend Image Config Modal] เพิ่มการตั้งค่าอวตารใหม่');
             }
 
-            console.log('[Friend Image Config Modal] 最终messageReceivedAvatars:', config.messageReceivedAvatars);
+            console.log('[Friend Image Config Modal] messageReceivedAvatars สุดท้าย:', config.messageReceivedAvatars);
           } else {
-            console.log('[Friend Image Config Modal] 跳过头像保存 - 没有图片');
+            console.log('[Friend Image Config Modal] ข้ามการบันทึกอวตาร - ไม่มีรูปภาพ');
           }
 
-          // 保存好友专属聊天背景配置
+          // บันทึกการตั้งค่าพื้นหลังแชทเฉพาะเพื่อน
           if (this.currentConfig.background.image) {
-            // 确保friendBackgrounds数组存在
+            // ตรวจสอบว่าอาร์เรย์ friendBackgrounds มีอยู่
             if (!config.friendBackgrounds) {
               config.friendBackgrounds = [];
             }
 
-            // 查找或创建好友背景配置
+            // ค้นหาหรือสร้างการตั้งค่าพื้นหลังเพื่อน
             let friendBgIndex = config.friendBackgrounds.findIndex(bg => bg.friendId === this.currentFriendId);
 
             const backgroundConfig = {
@@ -1484,45 +1490,45 @@ if (typeof window.ImageConfigModal === 'undefined') {
               config.friendBackgrounds.push(backgroundConfig);
             }
 
-            console.log(`[Friend Image Config Modal] 保存好友专属背景配置:`, backgroundConfig);
+            console.log(`[Friend Image Config Modal] บันทึกการตั้งค่าพื้นหลังเฉพาะเพื่อน:`, backgroundConfig);
           }
 
-          // 保存配置 - 修复：先更新styleConfigManager的currentConfig，再调用保存
-          console.log('[Friend Image Config Modal] 开始保存配置到styleConfigManager');
-          console.log('[Friend Image Config Modal] 保存前的完整配置:', JSON.stringify(config, null, 2));
+          // บันทึกการตั้งค่า - แก้ไข: อัปเดต currentConfig ของ styleConfigManager ก่อน แล้วจึงเรียกการบันทึก
+          console.log('[Friend Image Config Modal] เริ่มบันทึกการตั้งค่าไปยัง styleConfigManager');
+          console.log('[Friend Image Config Modal] การตั้งค่าทั้งหมดก่อนบันทึก:', JSON.stringify(config, null, 2));
 
-          // 关键修复：先更新styleConfigManager的currentConfig
+          // แก้ไขสำคัญ: อัปเดต currentConfig ของ styleConfigManager ก่อน
           window.styleConfigManager.currentConfig = config;
-          console.log('[Friend Image Config Modal] 已更新styleConfigManager.currentConfig');
+          console.log('[Friend Image Config Modal] อัปเดต styleConfigManager.currentConfig แล้ว');
 
-          // 然后调用无参数的saveConfig方法
+          // จากนั้นเรียกเมธอด saveConfig แบบไม่มีพารามิเตอร์
           const saveResult = await window.styleConfigManager.saveConfig();
-          console.log('[Friend Image Config Modal] 保存结果:', saveResult);
+          console.log('[Friend Image Config Modal] ผลการบันทึก:', saveResult);
 
-          // 验证保存后的配置
+          // ตรวจสอบการตั้งค่าหลังจากบันทึก
           const savedConfig = window.styleConfigManager.getConfig();
           console.log(
-            '[Friend Image Config Modal] 保存后的messageReceivedAvatars:',
+            '[Friend Image Config Modal] messageReceivedAvatars หลังบันทึก:',
             savedConfig.messageReceivedAvatars,
           );
-          console.log('[Friend Image Config Modal] 保存后的friendBackgrounds:', savedConfig.friendBackgrounds);
+          console.log('[Friend Image Config Modal] friendBackgrounds หลังบันทึก:', savedConfig.friendBackgrounds);
 
-          // 显示成功消息
+          // แสดงข้อความสำเร็จ
           if (window.MobilePhone && window.MobilePhone.showToast) {
             window.MobilePhone.showToast('บันทึกการตั้งค่าสำเร็จ', 'success');
           }
 
-          // 关闭弹窗
+          // ปิดกล่องโต้ตอบ
           this.hide();
         } catch (error) {
-          console.error('[Friend Image Config Modal] 保存配置失败:', error);
+          console.error('[Friend Image Config Modal] บันทึกการตั้งค่าล้มเหลว:', error);
           if (window.MobilePhone && window.MobilePhone.showToast) {
             window.MobilePhone.showToast('บันทึกล้มเหลว กรุณาลองใหม่', 'error');
           }
         }
       }
 
-      // 解析背景位置
+      // แยกวิเคราะห์ตำแหน่งพื้นหลัง
       parseBackgroundPosition(position) {
         const parts = position.split(' ');
         let x = 50,
@@ -1536,16 +1542,16 @@ if (typeof window.ImageConfigModal === 'undefined') {
         return { x, y };
       }
 
-      // 将坐标转换为CSS background-position - 与原始弹窗一致
+      // แปลงพิกัดเป็น CSS background-position - เหมือนกับกล่องโต้ตอบดั้งเดิม
       formatBackgroundPosition(position) {
         return `${position.x}% ${position.y}%`;
       }
 
-      // 更新控制器的值
+      // อัปเดตค่าตัวควบคุม
       updateControlValues() {
         const config = this.currentConfig[this.currentTab];
 
-        // 更新旋转滑块
+        // อัปเดตสไลเดอร์การหมุน
         const rotationSlider = this.modalElement.querySelector(
           `[data-type="${this.currentTab}"][data-property="rotation"]`,
         );
@@ -1553,13 +1559,13 @@ if (typeof window.ImageConfigModal === 'undefined') {
           rotationSlider.value = config.rotation;
         }
 
-        // 更新缩放滑块
+        // อัปเดตสไลเดอร์การซูม
         const scaleSlider = this.modalElement.querySelector(`[data-type="${this.currentTab}"][data-property="scale"]`);
         if (scaleSlider) {
           scaleSlider.value = config.scale;
         }
 
-        // 更新显示值
+        // อัปเดตค่าที่แสดง
         const controlValues = this.modalElement.querySelectorAll('.control-value');
         controlValues.forEach((valueSpan, index) => {
           if (index === 0) {
@@ -1570,7 +1576,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
         });
       }
 
-      // 更新URL输入框的值
+      // อัปเดตค่าช่องป้อน URL
       updateUrlInput() {
         const urlInput = this.modalElement.querySelector(`[data-type="${this.currentTab}"].url-input`);
         if (urlInput) {
@@ -1579,25 +1585,28 @@ if (typeof window.ImageConfigModal === 'undefined') {
       }
     }
 
-    // 延迟创建全局实例，确保DOM和其他依赖都已加载
+    // หน่วงเวลาสร้าง instance ระดับ global เพื่อให้ DOM และ dependencies อื่นโหลดเสร็จก่อน
     setTimeout(() => {
       try {
-        console.log('[Friend Image Config Modal] 开始创建好友弹窗实例');
+        console.log('[Friend Image Config Modal] เริ่มสร้าง instance กล่องโต้ตอบเพื่อน');
         window.FriendImageConfigModal = new FriendImageConfigModal();
-        console.log('[Friend Image Config Modal] 好友弹窗实例创建成功:', typeof window.FriendImageConfigModal);
-        console.log('[Friend Image Config Modal] 好友图片配置弹窗模块加载完成');
+        console.log(
+          '[Friend Image Config Modal] สร้าง instance กล่องโต้ตอบเพื่อนสำเร็จ:',
+          typeof window.FriendImageConfigModal,
+        );
+        console.log('[Friend Image Config Modal] โหลดโมดูลกล่องโต้ตอบตั้งค่ารูปภาพเพื่อนเสร็จสมบูรณ์');
       } catch (error) {
-        console.error('[Friend Image Config Modal] 创建好友弹窗实例失败:', error);
+        console.error('[Friend Image Config Modal] สร้าง instance กล่องโต้ตอบเพื่อนล้มเหลว:', error);
       }
     }, 100);
   } else {
     console.log(
-      '[Friend Image Config Modal] 跳过好友弹窗初始化 - ImageConfigModalClass:',
+      '[Friend Image Config Modal] ข้ามการเริ่มต้นกล่องโต้ตอบเพื่อน - ImageConfigModalClass:',
       typeof window.ImageConfigModalClass,
-      'ImageConfigModal实例:',
+      'instance ImageConfigModal:',
       typeof window.ImageConfigModal,
       'FriendImageConfigModal:',
       typeof window.FriendImageConfigModal,
     );
   }
-})(); // 结束立即执行函数
+})(); // สิ้นสุดฟังก์ชัน IIFE

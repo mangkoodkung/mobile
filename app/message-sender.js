@@ -1,9 +1,9 @@
 /**
- * Message Sender - 消息发送处理器
- * 专门处理消息发送格式和逻辑，参考qq-app.js的发送功能
+ * Message Sender - ตัวจัดการส่งข้อความ
+ * จัดการรูปแบบและ logic การส่งข้อความโดยเฉพาะ อ้างอิงฟังก์ชันส่งของ qq-app.js
  */
 
-// 避免重复定义
+// ป้องกันการประกาศซ้ำ
 if (typeof window.MessageSender === 'undefined') {
   class MessageSender {
     constructor() {
@@ -15,30 +15,30 @@ if (typeof window.MessageSender === 'undefined') {
     }
 
     init() {
-      console.log('[Message Sender] 消息发送器初始化完成');
+      console.log('[Message Sender] เริ่มต้นตัวส่งข้อความเสร็จสมบูรณ์');
       this.loadContextEditor();
     }
 
     /**
-     * 检查是否启用延迟点击发送按钮
+     * ตรวจสอบว่าเปิดใช้งานการคลิกปุ่มส่งแบบหน่วงเวลาหรือไม่
      */
     isDelayClickEnabled() {
       try {
         const settings = localStorage.getItem('messageSenderSettings');
         if (settings) {
           const parsed = JSON.parse(settings);
-          // 如果明确设置了 delayClickEnabled，使用该值；否则默认为 true
+          // หากตั้งค่า delayClickEnabled ไว้ชัดเจน ใช้ค่านั้น มิฉะนั้นค่าเริ่มต้นเป็น true
           return parsed.delayClickEnabled === undefined ? true : parsed.delayClickEnabled;
         }
-        return true; // 默认启用
+        return true; // เปิดใช้งานเป็นค่าเริ่มต้น
       } catch (error) {
-        console.warn('[Message Sender] 获取延迟点击设置失败:', error);
-        return true; // 默认启用
+        console.warn('[Message Sender] ดึงการตั้งค่าคลิกแบบหน่วงเวลาล้มเหลว:', error);
+        return true; // เปิดใช้งานเป็นค่าเริ่มต้น
       }
     }
 
     /**
-     * 设置是否启用延迟点击发送按钮
+     * ตั้งค่าว่าจะเปิดใช้งานการคลิกปุ่มส่งแบบหน่วงเวลาหรือไม่
      */
     setDelayClickEnabled(enabled) {
       try {
@@ -49,18 +49,18 @@ if (typeof window.MessageSender === 'undefined') {
         }
         settings.delayClickEnabled = enabled;
         localStorage.setItem('messageSenderSettings', JSON.stringify(settings));
-        console.log('[Message Sender] 延迟点击设置已保存:', enabled);
+        console.log('[Message Sender] บันทึกการตั้งค่าคลิกแบบหน่วงเวลาแล้ว:', enabled);
       } catch (error) {
-        console.error('[Message Sender] 保存延迟点击设置失败:', error);
+        console.error('[Message Sender] บันทึกการตั้งค่าคลิกแบบหน่วงเวลาล้มเหลว:', error);
       }
     }
 
     /**
-     * 检查是否启用禁止正文功能
+     * ตรวจสอบว่าเปิดใช้งานฟังก์ชันห้ามเนื้อหาหลักหรือไม่
      */
     isDisableBodyTextEnabled() {
       try {
-        // 尝试从SillyTavern的extension_settings中获取
+        // ลองดึงจาก extension_settings ของ SillyTavern
         if (window.SillyTavern && window.SillyTavern.getContext) {
           const context = window.SillyTavern.getContext();
           if (context.extensionSettings && context.extensionSettings.mobile_context) {
@@ -68,41 +68,41 @@ if (typeof window.MessageSender === 'undefined') {
           }
         }
 
-        // 回退到全局extension_settings
+        // ย้อนกลับไปใช้ extension_settings ระดับ global
         if (window.extension_settings && window.extension_settings.mobile_context) {
           return window.extension_settings.mobile_context.disableBodyText || false;
         }
 
-        return false; // 默认不启用
+        return false; // ไม่เปิดใช้งานเป็นค่าเริ่มต้น
       } catch (error) {
-        console.warn('[Message Sender] 获取禁止正文设置失败:', error);
-        return false; // 默认不启用
+        console.warn('[Message Sender] ดึงการตั้งค่าห้ามเนื้อหาหลักล้มเหลว:', error);
+        return false; // ไม่เปิดใช้งานเป็นค่าเริ่มต้น
       }
     }
 
     /**
-     * 加载上下文编辑器
+     * โหลดตัวแก้ไขบริบท
      */
     loadContextEditor() {
-      // 检查mobile上下文编辑器是否可用
+      // ตรวจสอบว่าตัวแก้ไขบริบท mobile พร้อมใช้งานหรือไม่
       if (window.mobileContextEditor) {
         this.contextEditor = window.mobileContextEditor;
-        console.log('[Message Sender] Mobile上下文编辑器已连接');
+        console.log('[Message Sender] เชื่อมต่อตัวแก้ไขบริบท Mobile แล้ว');
       } else {
-        console.warn('[Message Sender] Mobile上下文编辑器未找到，延迟重试...');
+        console.warn('[Message Sender] ไม่พบตัวแก้ไขบริบท Mobile ลองใหม่แบบหน่วงเวลา...');
         setTimeout(() => this.loadContextEditor(), 1000);
       }
     }
 
     /**
-     * 设置当前聊天对象
+     * ตั้งค่าเป้าหมายแชทปัจจุบัน
      */
     setCurrentChat(friendId, friendName, isGroup = false) {
       this.currentFriendId = friendId;
       this.currentFriendName = friendName;
       this.isGroup = isGroup;
 
-      console.log(`[Message Sender] 设置当前聊天对象:`, {
+      console.log(`[Message Sender] ตั้งค่าเป้าหมายแชทปัจจุบัน:`, {
         friendId,
         friendName,
         isGroup,
@@ -110,72 +110,72 @@ if (typeof window.MessageSender === 'undefined') {
     }
 
     /**
-     * 发送消息到SillyTavern
-     * 参考qq-app.js的sendToChat方法
+     * ส่งข้อความไปยัง SillyTavern
+     * อ้างอิงเมธอด sendToChat ของ qq-app.js
      */
     async sendToChat(message) {
       try {
-        console.log('[Message Sender] 尝试发送消息到SillyTavern:', message);
+        console.log('[Message Sender] กำลังส่งข้อความไปยัง SillyTavern:', message);
 
-        // 方法1: 直接使用DOM元素
+        // วิธีที่ 1: ใช้ DOM element โดยตรง
         const originalInput = document.getElementById('send_textarea');
         const sendButton = document.getElementById('send_but');
 
         if (!originalInput || !sendButton) {
-          console.error('[Message Sender] 找不到输入框或发送按钮元素');
+          console.error('[Message Sender] ไม่พบ element ของกล่องอินพุตหรือปุ่มส่ง');
           return await this.sendToChatBackup(message);
         }
 
-        // 检查输入框是否可用
+        // ตรวจสอบว่ากล่องอินพุตพร้อมใช้งานหรือไม่
         if (originalInput.disabled) {
-          console.warn('[Message Sender] 输入框被禁用');
+          console.warn('[Message Sender] กล่องอินพุตถูกปิดใช้งาน');
           return false;
         }
 
-        // 检查发送按钮是否可用
+        // ตรวจสอบว่าปุ่มส่งพร้อมใช้งานหรือไม่
         if (sendButton.classList.contains('disabled')) {
-          console.warn('[Message Sender] 发送按钮被禁用');
+          console.warn('[Message Sender] ปุ่มส่งถูกปิดใช้งาน');
           return false;
         }
 
-        // 追加消息到现有内容
+        // ต่อท้ายข้อความเข้ากับเนื้อหาที่มีอยู่
         const existingValue = originalInput.value;
         const newValue = existingValue ? existingValue + '\n' + message : message;
         originalInput.value = newValue;
-        console.log('[Message Sender] 已追加消息到输入框:', {
-          原有内容: existingValue,
-          新增内容: message,
-          最终内容: newValue,
+        console.log('[Message Sender] ต่อท้ายข้อความเข้ากล่องอินพุตแล้ว:', {
+          เนื้อหาเดิม: existingValue,
+          เนื้อหาที่เพิ่ม: message,
+          เนื้อหาสุดท้าย: newValue,
         });
 
-        // 触发输入事件
+        // กระตุ้นเหตุการณ์อินพุต
         originalInput.dispatchEvent(new Event('input', { bubbles: true }));
         originalInput.dispatchEvent(new Event('change', { bubbles: true }));
 
-        // 根据设置决定是否延迟点击发送按钮
+        // ตัดสินใจตามการตั้งค่าว่าจะคลิกปุ่มส่งแบบหน่วงเวลาหรือไม่
         if (this.isDelayClickEnabled()) {
-          // 延迟点击发送按钮
+          // คลิกปุ่มส่งแบบหน่วงเวลา
           await new Promise(resolve => setTimeout(resolve, 300));
           sendButton.click();
-          console.log('[Message Sender] 已延迟点击发送按钮');
+          console.log('[Message Sender] คลิกปุ่มส่งแบบหน่วงเวลาแล้ว');
         } else {
         }
 
         return true;
       } catch (error) {
-        console.error('[Message Sender] 发送消息时出错:', error);
+        console.error('[Message Sender] เกิดข้อผิดพลาดขณะส่งข้อความ:', error);
         return await this.sendToChatBackup(message);
       }
     }
 
     /**
-     * 备用发送方法
+     * วิธีส่งสำรอง
      */
     async sendToChatBackup(message) {
       try {
-        console.log('[Message Sender] 尝试备用发送方法:', message);
+        console.log('[Message Sender] กำลังลองวิธีส่งสำรอง:', message);
 
-        // 尝试查找其他可能的输入框
+        // ลองค้นหากล่องอินพุตอื่นที่เป็นไปได้
         const textareas = document.querySelectorAll('textarea');
         const inputs = document.querySelectorAll('input[type="text"]');
 
@@ -184,7 +184,7 @@ if (typeof window.MessageSender === 'undefined') {
           textarea.value = message;
           textarea.focus();
 
-          // 模拟键盘事件
+          // จำลองเหตุการณ์คีย์บอร์ด
           textarea.dispatchEvent(new Event('input', { bubbles: true }));
           textarea.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
           return true;
@@ -192,30 +192,30 @@ if (typeof window.MessageSender === 'undefined') {
 
         return false;
       } catch (error) {
-        console.error('[Message Sender] 备用发送方法失败:', error);
+        console.error('[Message Sender] วิธีส่งสำรองล้มเหลว:', error);
         return false;
       }
     }
 
     /**
-     * 构建消息格式并发送
-     * 参考qq-app.js的buildAndSendQQMessage方法
+     * สร้างรูปแบบข้อความและส่ง
+     * อ้างอิงเมธอด buildAndSendQQMessage ของ qq-app.js
      */
     async buildAndSendMessage(message) {
       if (!this.currentFriendId || !this.currentFriendName) {
-        throw new Error('未设置当前聊天对象');
+        throw new Error('ยังไม่ได้ตั้งค่าเป้าหมายแชทปัจจุบัน');
       }
 
-      // 将消息按行分割，过滤空行
+      // แยกข้อความตามบรรทัด กรองบรรทัดว่างออก
       const messageLines = message.split('\n').filter(line => line.trim());
 
       if (messageLines.length === 0) {
-        throw new Error('消息内容不能为空');
+        throw new Error('เนื้อหาข้อความต้องไม่ว่างเปล่า');
       }
 
-      console.log(`[Message Sender] 处理${messageLines.length}条消息:`, messageLines);
+      console.log(`[Message Sender] กำลังประมวลผล ${messageLines.length} ข้อความ:`, messageLines);
 
-      // 🌟 新增：检查是否为已格式化的特殊消息（语音、红包、表情包）
+      // 🌟 เพิ่มใหม่: ตรวจสอบว่าเป็นข้อความพิเศษที่จัดรูปแบบแล้วหรือไม่ (เสียง, ซองแดง, สติกเกอร์)
       const voiceMessageRegex = /^\[(?:我方消息\|我\|[^|]*|群聊消息\|[^|]*\|我)\|语音\|[^\]]*\]$/;
       const redpackMessageRegex = /^\[(?:我方消息\|我\|[^|]*|群聊消息\|[^|]*\|我)\|红包\|[^\]]*\]$/;
       const stickerMessageRegex = /^\[(?:我方消息\|我\|[^|]*|群聊消息\|[^|]*\|我)\|表情包\|[^\]]*\]$/;
@@ -227,49 +227,49 @@ if (typeof window.MessageSender === 'undefined') {
       });
 
       if (hasSpecialMessages) {
-        // 如果包含已格式化的语音消息，需要对混合消息进行分别处理
+        // หากมีข้อความเสียงที่จัดรูปแบบแล้ว ต้องประมวลผลข้อความผสมแยกกัน
         const processedMessages = [];
 
         messageLines.forEach((line, index) => {
           const trimmedLine = line.trim();
 
           if (voiceMessageRegex.test(trimmedLine)) {
-            // 语音消息直接保留
+            // คงรูปแบบข้อความเสียงไว้โดยตรง
             processedMessages.push(trimmedLine);
-            console.log(`[Message Sender] 第${index + 1}条: 保留语音消息格式:`, trimmedLine);
+            console.log(`[Message Sender] รายการที่ ${index + 1}: คงรูปแบบข้อความเสียง:`, trimmedLine);
           } else if (redpackMessageRegex.test(trimmedLine)) {
-            // 红包消息直接保留
+            // คงรูปแบบข้อความซองแดงไว้โดยตรง
             processedMessages.push(trimmedLine);
-            console.log(`[Message Sender] 第${index + 1}条: 保留红包消息格式:`, trimmedLine);
+            console.log(`[Message Sender] รายการที่ ${index + 1}: คงรูปแบบข้อความซองแดง:`, trimmedLine);
           } else if (stickerMessageRegex.test(trimmedLine)) {
-            // 🌟 新增：表情包消息直接保留
+            // 🌟 เพิ่มใหม่: คงรูปแบบข้อความสติกเกอร์ไว้โดยตรง
             processedMessages.push(trimmedLine);
-            console.log(`[Message Sender] 第${index + 1}条: 保留表情包消息格式:`, trimmedLine);
+            console.log(`[Message Sender] รายการที่ ${index + 1}: คงรูปแบบข้อความสติกเกอร์:`, trimmedLine);
           } else if (trimmedLine) {
-            // 普通文字需要格式化为正确的格式
+            // ข้อความตัวอักษรปกติต้องจัดให้อยู่ในรูปแบบที่ถูกต้อง
             const formattedMessage = this.isGroup
               ? `[我方消息|我|${this.currentFriendId}|文字|${trimmedLine}]`
               : `[我方消息|我|${this.currentFriendId}|文字|${trimmedLine}]`;
 
             processedMessages.push(formattedMessage);
-            console.log(`[Message Sender] 第${index + 1}条: 格式化文字消息:`, formattedMessage);
+            console.log(`[Message Sender] รายการที่ ${index + 1}: จัดรูปแบบข้อความตัวอักษร:`, formattedMessage);
           }
         });
 
         const targetPrefix = this.isGroup
-          ? `向${this.currentFriendName}（${this.currentFriendId}）发送群聊`
-          : `向${this.currentFriendName}（${this.currentFriendId}）发送消息`;
+          ? `ส่งแชทกลุ่มถึง ${this.currentFriendName} (${this.currentFriendId})`
+          : `ส่งข้อความถึง ${this.currentFriendName} (${this.currentFriendId})`;
 
-        // 检查是否启用禁止正文功能
+        // ตรวจสอบว่าเปิดใช้งานฟังก์ชันห้ามเนื้อหาหลักหรือไม่
         let finalMessage;
         if (this.isDisableBodyTextEnabled()) {
-          finalMessage = `<Request:强调！当用户只输出线上消息时，只回复线上消息，不回复正文>\n请用规定格式，${targetPrefix}\n${processedMessages.join('\n')}`;
-          console.log('[Message Sender] 禁止正文模式已启用，添加特殊前缀');
+          finalMessage = `<Request:เน้นย้ำ! เมื่อผู้ใช้ส่งเฉพาะข้อความออนไลน์ ให้ตอบกลับเฉพาะข้อความออนไลน์เท่านั้น ห้ามตอบกลับเนื้อหาหลัก>\nกรุณาใช้รูปแบบที่กำหนด ${targetPrefix}\n${processedMessages.join('\n')}`;
+          console.log('[Message Sender] เปิดใช้งานโหมดห้ามเนื้อหาหลักแล้ว เพิ่มคำนำหน้าพิเศษ');
         } else {
-          finalMessage = `请用规定格式，${targetPrefix}\n${processedMessages.join('\n')}`;
+          finalMessage = `กรุณาใช้รูปแบบที่กำหนด ${targetPrefix}\n${processedMessages.join('\n')}`;
         }
 
-        console.log('[Message Sender] 发送混合消息（包含特殊格式）:', finalMessage);
+        console.log('[Message Sender] ส่งข้อความผสม (รวมรูปแบบพิเศษ):', finalMessage);
 
         const success = await this.sendToChat(finalMessage);
 
@@ -282,17 +282,17 @@ if (typeof window.MessageSender === 'undefined') {
           let summaryMessage = '';
           const parts = [];
 
-          if (textCount > 0) parts.push(`${textCount}条文字`);
-          if (voiceCount > 0) parts.push(`${voiceCount}条语音`);
-          if (redpackCount > 0) parts.push(`${redpackCount}条红包`);
-          if (stickerCount > 0) parts.push(`${stickerCount}条表情包`);
+          if (textCount > 0) parts.push(`${textCount} ข้อความตัวอักษร`);
+          if (voiceCount > 0) parts.push(`${voiceCount} ข้อความเสียง`);
+          if (redpackCount > 0) parts.push(`${redpackCount} ซองแดง`);
+          if (stickerCount > 0) parts.push(`${stickerCount} สติกเกอร์`);
 
           if (parts.length > 1) {
             summaryMessage = parts.join(' + ');
           } else if (parts.length === 1) {
-            summaryMessage = parts[0] + '消息';
+            summaryMessage = parts[0];
           } else {
-            summaryMessage = `${processedMessages.length}条消息`;
+            summaryMessage = `${processedMessages.length} ข้อความ`;
           }
 
           this.showSendSuccessToast(summaryMessage);
@@ -301,7 +301,7 @@ if (typeof window.MessageSender === 'undefined') {
         return success;
       }
 
-      // 检查是否全为表情包消息
+      // ตรวจสอบว่าเป็นข้อความสติกเกอร์ทั้งหมดหรือไม่
       const stickerRegex = /^\[表情包\|([^\|]+)\|([^\]]+)\]$/;
       const allStickers = messageLines.every(line => stickerRegex.test(line.trim()));
 
@@ -309,33 +309,33 @@ if (typeof window.MessageSender === 'undefined') {
         return await this.sendStickerMessages(messageLines);
       }
 
-      // 处理普通消息
+      // ประมวลผลข้อความปกติ
       return await this.sendNormalMessages(messageLines);
     }
 
     /**
-     * 发送表情包消息
+     * ส่งข้อความสติกเกอร์
      */
     async sendStickerMessages(messageLines) {
       const targetPrefix = this.isGroup
-        ? `向${this.currentFriendName}（${this.currentFriendId}）发送群聊`
-        : `向${this.currentFriendName}（${this.currentFriendId}）发送消息`;
+        ? `ส่งแชทกลุ่มถึง ${this.currentFriendName} (${this.currentFriendId})`
+        : `ส่งข้อความถึง ${this.currentFriendName} (${this.currentFriendId})`;
 
-      // 检查是否启用禁止正文功能
+      // ตรวจสอบว่าเปิดใช้งานฟังก์ชันห้ามเนื้อหาหลักหรือไม่
       let finalMessage;
       if (this.isDisableBodyTextEnabled()) {
-        finalMessage = `<Request:强调！当用户只输出线上消息时，只回复线上消息，不回复正文>\n请用规定格式，${targetPrefix}\n${messageLines.join('\n')}`;
-        console.log('[Message Sender] 禁止正文模式已启用，添加特殊前缀');
+        finalMessage = `<Request:เน้นย้ำ! เมื่อผู้ใช้ส่งเฉพาะข้อความออนไลน์ ให้ตอบกลับเฉพาะข้อความออนไลน์เท่านั้น ห้ามตอบกลับเนื้อหาหลัก>\nกรุณาใช้รูปแบบที่กำหนด ${targetPrefix}\n${messageLines.join('\n')}`;
+        console.log('[Message Sender] เปิดใช้งานโหมดห้ามเนื้อหาหลักแล้ว เพิ่มคำนำหน้าพิเศษ');
       } else {
-        finalMessage = `请用规定格式，${targetPrefix}\n${messageLines.join('\n')}`;
+        finalMessage = `กรุณาใช้รูปแบบที่กำหนด ${targetPrefix}\n${messageLines.join('\n')}`;
       }
 
-      console.log('[Message Sender] 发送纯表情包消息:', finalMessage);
+      console.log('[Message Sender] ส่งข้อความสติกเกอร์ล้วน:', finalMessage);
 
       const success = await this.sendToChat(finalMessage);
 
       if (success) {
-        const summaryMessage = messageLines.length > 1 ? `${messageLines.length}个表情包` : '1个表情包';
+        const summaryMessage = messageLines.length > 1 ? `${messageLines.length} สติกเกอร์` : '1 สติกเกอร์';
 
         this.showSendSuccessToast(summaryMessage);
       }
@@ -344,13 +344,13 @@ if (typeof window.MessageSender === 'undefined') {
     }
 
     /**
-     * 发送普通消息
+     * ส่งข้อความปกติ
      */
     async sendNormalMessages(messageLines) {
       const formattedMessages = [];
 
       messageLines.forEach((line, index) => {
-        // 为每条消息生成独立的时间戳（间隔1秒）
+        // สร้าง timestamp อิสระสำหรับแต่ละข้อความ (ห่างกัน 1 วินาที)
         const messageTime = new Date(Date.now() + index * 1000);
         const currentTime = messageTime.toLocaleString('zh-CN', {
           year: 'numeric',
@@ -365,51 +365,51 @@ if (typeof window.MessageSender === 'undefined') {
         let messageContent = line.trim();
         let singleMessage;
 
-        // 检查是否包含特殊格式
+        // ตรวจสอบว่ามีรูปแบบพิเศษหรือไม่
         if (this.isSpecialFormat(messageContent)) {
-          // 处理特殊格式消息
+          // ประมวลผลข้อความรูปแบบพิเศษ
           singleMessage = this.formatSpecialMessage(messageContent, currentTime);
         } else {
-          // 处理普通文本消息
+          // ประมวลผลข้อความตัวอักษรปกติ
           singleMessage = this.formatNormalMessage(messageContent, currentTime);
         }
 
         formattedMessages.push(singleMessage);
-        console.log(`[Message Sender] 第${index + 1}条消息格式:`, singleMessage);
+        console.log(`[Message Sender] รูปแบบข้อความที่ ${index + 1}:`, singleMessage);
       });
 
-      // 验证消息格式
+      // ตรวจสอบความถูกต้องของรูปแบบข้อความ
       const validatedMessages = this.validateMessages(formattedMessages);
 
-      // 构建最终消息
+      // สร้างข้อความสุดท้าย
       let targetPrefix;
       if (this.isGroup) {
-        // 获取群聊成员列表
+        // ดึงรายชื่อสมาชิกของแชทกลุ่ม
         const groupMembers = this.getCurrentGroupMembers();
-        const membersText = groupMembers.length > 0 ? `，群聊内成员有${groupMembers.join('、')}` : '';
+        const membersText = groupMembers.length > 0 ? ` สมาชิกในกลุ่มมี ${groupMembers.join('、')}` : '';
 
-        targetPrefix = `向${this.currentFriendName}（${this.currentFriendId}）发送群聊${membersText}。请按照线上聊天群聊消息中的要求和格式生成群聊内角色回复，回复需要符合所有角色的人设和当前剧情`;
+        targetPrefix = `ส่งแชทกลุ่มถึง ${this.currentFriendName} (${this.currentFriendId})${membersText} กรุณาสร้างการตอบกลับของตัวละครในกลุ่มตามข้อกำหนดและรูปแบบในข้อความแชทกลุ่มออนไลน์ การตอบกลับต้องสอดคล้องกับการตั้งค่าตัวละครทั้งหมดและเนื้อเรื่องปัจจุบัน`;
       } else {
-        targetPrefix = `向${this.currentFriendName}（${this.currentFriendId}）发送消息，请按照线上聊天私聊消息中的要求和格式生成角色回复，回复需要符合角色人设和当前剧情`;
+        targetPrefix = `ส่งข้อความถึง ${this.currentFriendName} (${this.currentFriendId}) กรุณาสร้างการตอบกลับของตัวละครตามข้อกำหนดและรูปแบบในข้อความแชทส่วนตัวออนไลน์ การตอบกลับต้องสอดคล้องกับการตั้งค่าตัวละครและเนื้อเรื่องปัจจุบัน`;
       }
 
-      // 检查是否启用禁止正文功能
+      // ตรวจสอบว่าเปิดใช้งานฟังก์ชันห้ามเนื้อหาหลักหรือไม่
       let finalMessage;
       if (this.isDisableBodyTextEnabled()) {
-        finalMessage = `<Request:强调！当用户只输出线上消息时，只回复线上消息，不回复正文>\n请用规定格式，${targetPrefix}\n${validatedMessages.join('\n')}`;
-        console.log('[Message Sender] 禁止正文模式已启用，添加特殊前缀');
+        finalMessage = `<Request:เน้นย้ำ! เมื่อผู้ใช้ส่งเฉพาะข้อความออนไลน์ ให้ตอบกลับเฉพาะข้อความออนไลน์เท่านั้น ห้ามตอบกลับเนื้อหาหลัก>\nกรุณาใช้รูปแบบที่กำหนด ${targetPrefix}\n${validatedMessages.join('\n')}`;
+        console.log('[Message Sender] เปิดใช้งานโหมดห้ามเนื้อหาหลักแล้ว เพิ่มคำนำหน้าพิเศษ');
       } else {
-        finalMessage = `请用规定格式，${targetPrefix}\n${validatedMessages.join('\n')}`;
+        finalMessage = `กรุณาใช้รูปแบบที่กำหนด ${targetPrefix}\n${validatedMessages.join('\n')}`;
       }
 
-      console.log('[Message Sender] 最终消息:', finalMessage);
+      console.log('[Message Sender] ข้อความสุดท้าย:', finalMessage);
 
       const success = await this.sendToChat(finalMessage);
 
       if (success) {
         const summaryMessage =
           messageLines.length > 1
-            ? `${messageLines.length}条消息: ${messageLines[0].substring(0, 10)}...`
+            ? `${messageLines.length} ข้อความ: ${messageLines[0].substring(0, 10)}...`
             : messageLines[0];
 
         this.showSendSuccessToast(summaryMessage);
@@ -419,56 +419,56 @@ if (typeof window.MessageSender === 'undefined') {
     }
 
     /**
-     * 检查是否为特殊格式（表情包、语音、红包等）
+     * ตรวจสอบว่าเป็นรูปแบบพิเศษหรือไม่ (สติกเกอร์, เสียง, ซองแดง ฯลฯ)
      */
     isSpecialFormat(content) {
       const specialFormats = [
-        /^\[表情包\|([^\|]+)\|([^\]]+)\]$/, // 旧表情包格式
-        /^\[语音\|([^\|]+)\|([^\]]+)\]$/, // 旧语音格式
-        /^\[红包\|([^\|]+)\|([^\]]+)\]$/, // 旧红包格式
-        /^\[(?:我方消息\|我\|[^|]*|群聊消息\|[^|]*\|我)\|语音\|[^\]]*\]$/, // 新语音消息格式
-        /^\[(?:我方消息\|我\|[^|]*|群聊消息\|[^|]*\|我)\|红包\|[^\]]*\]$/, // 新红包消息格式
-        /^\[(?:我方消息\|我\|[^|]*|群聊消息\|[^|]*\|我)\|表情包\|[^\]]*\]$/, // 新表情包消息格式
-        /^语音：/, // 语音前缀
-        /^红包：/, // 红包前缀
+        /^\[表情包\|([^\|]+)\|([^\]]+)\]$/, // รูปแบบสติกเกอร์เก่า
+        /^\[语音\|([^\|]+)\|([^\]]+)\]$/, // รูปแบบเสียงเก่า
+        /^\[红包\|([^\|]+)\|([^\]]+)\]$/, // รูปแบบซองแดงเก่า
+        /^\[(?:我方消息\|我\|[^|]*|群聊消息\|[^|]*\|我)\|语音\|[^\]]*\]$/, // รูปแบบข้อความเสียงใหม่
+        /^\[(?:我方消息\|我\|[^|]*|群聊消息\|[^|]*\|我)\|红包\|[^\]]*\]$/, // รูปแบบข้อความซองแดงใหม่
+        /^\[(?:我方消息\|我\|[^|]*|群聊消息\|[^|]*\|我)\|表情包\|[^\]]*\]$/, // รูปแบบข้อความสติกเกอร์ใหม่
+        /^语音：/, // คำนำหน้าเสียง
+        /^红包：/, // คำนำหน้าซองแดง
       ];
 
       return specialFormats.some(regex => regex.test(content));
     }
 
     /**
-     * 格式化特殊消息
+     * จัดรูปแบบข้อความพิเศษ
      */
     formatSpecialMessage(content, currentTime) {
-      // 🌟 检查是否为已格式化的语音消息，如果是则直接返回，不再包装
+      // 🌟 ตรวจสอบว่าเป็นข้อความเสียงที่จัดรูปแบบแล้วหรือไม่ ถ้าใช่ส่งคืนโดยตรง ไม่ต้องห่อหุ้มอีก
       const voiceMessageRegex = /^\[(?:我方消息\|我\|[^|]*|群聊消息\|[^|]*\|我)\|语音\|[^\]]*\]$/;
       if (voiceMessageRegex.test(content)) {
-        console.log(`[Message Sender] 检测到已格式化的语音消息，直接返回:`, content);
-        return content; // 直接返回，不再包装
+        console.log(`[Message Sender] ตรวจพบข้อความเสียงที่จัดรูปแบบแล้ว ส่งคืนโดยตรง:`, content);
+        return content; // ส่งคืนโดยตรง ไม่ต้องห่อหุ้มอีก
       }
 
-      // 🌟 检查是否为已格式化的红包消息，如果是则直接返回，不再包装
+      // 🌟 ตรวจสอบว่าเป็นข้อความซองแดงที่จัดรูปแบบแล้วหรือไม่ ถ้าใช่ส่งคืนโดยตรง ไม่ต้องห่อหุ้มอีก
       const redpackMessageRegex = /^\[(?:我方消息\|我\|[^|]*|群聊消息\|[^|]*\|我)\|红包\|[^\]]*\]$/;
       if (redpackMessageRegex.test(content)) {
-        console.log(`[Message Sender] 检测到已格式化的红包消息，直接返回:`, content);
-        return content; // 直接返回，不再包装
+        console.log(`[Message Sender] ตรวจพบข้อความซองแดงที่จัดรูปแบบแล้ว ส่งคืนโดยตรง:`, content);
+        return content; // ส่งคืนโดยตรง ไม่ต้องห่อหุ้มอีก
       }
 
-      // 🌟 检查是否为已格式化的表情包消息，如果是则直接返回，不再包装
+      // 🌟 ตรวจสอบว่าเป็นข้อความสติกเกอร์ที่จัดรูปแบบแล้วหรือไม่ ถ้าใช่ส่งคืนโดยตรง ไม่ต้องห่อหุ้มอีก
       const stickerMessageRegex = /^\[(?:我方消息\|我\|[^|]*|群聊消息\|[^|]*\|我)\|表情包\|[^\]]*\]$/;
       if (stickerMessageRegex.test(content)) {
-        console.log(`[Message Sender] 检测到已格式化的表情包消息，直接返回:`, content);
-        return content; // 直接返回，不再包装
+        console.log(`[Message Sender] ตรวจพบข้อความสติกเกอร์ที่จัดรูปแบบแล้ว ส่งคืนโดยตรง:`, content);
+        return content; // ส่งคืนโดยตรง ไม่ต้องห่อหุ้มอีก
       }
 
-      // 如果已经是完整的特殊格式，直接包装
+      // หากเป็นรูปแบบพิเศษที่สมบูรณ์แล้ว ห่อหุ้มโดยตรง
       if (content.startsWith('[') && content.endsWith(']')) {
         return this.isGroup
           ? `[我方消息|${this.currentFriendName}|${this.currentFriendId}|我|${content}|${currentTime}]`
           : `[我方消息|${this.currentFriendName}|${this.currentFriendId}|${content}|${currentTime}]`;
       }
 
-      // 处理简单前缀格式
+      // ประมวลผลรูปแบบคำนำหน้าอย่างง่าย
       if (content.startsWith('语音：')) {
         content = `语音：${content.substring(3)}`;
       } else if (content.startsWith('红包：')) {
@@ -481,7 +481,7 @@ if (typeof window.MessageSender === 'undefined') {
     }
 
     /**
-     * 格式化普通消息
+     * จัดรูปแบบข้อความปกติ
      */
     formatNormalMessage(content, currentTime) {
       return this.isGroup
@@ -490,12 +490,12 @@ if (typeof window.MessageSender === 'undefined') {
     }
 
     /**
-     * 验证消息格式
+     * ตรวจสอบความถูกต้องของรูปแบบข้อความ
      */
     validateMessages(messages) {
       return messages.map((msg, index) => {
         if (!msg.trim().endsWith(']')) {
-          console.warn(`[Message Sender] 第${index + 1}条消息格式不完整:`, msg);
+          console.warn(`[Message Sender] รูปแบบข้อความที่ ${index + 1} ไม่สมบูรณ์:`, msg);
           return msg.trim() + ']';
         }
         return msg.trim();
@@ -503,16 +503,16 @@ if (typeof window.MessageSender === 'undefined') {
     }
 
     /**
-     * 显示发送成功提示
+     * แสดง toast แจ้งเตือนเมื่อส่งสำเร็จ
      */
     showSendSuccessToast(message) {
       const toast = document.createElement('div');
       toast.className = 'send-status-toast success';
       toast.innerHTML = `
-            <div style="font-weight: bold; margin-bottom: 5px;">✅ 消息已发送</div>
+            <div style="font-weight: bold; margin-bottom: 5px;">✅ ส่งข้อความแล้ว</div>
             <div style="font-size: 12px; opacity: 0.9;">
-                发送给: ${this.currentFriendName}<br>
-                内容: ${message.length > 20 ? message.substring(0, 20) + '...' : message}
+                ส่งถึง: ${this.currentFriendName}<br>
+                เนื้อหา: ${message.length > 20 ? message.substring(0, 20) + '...' : message}
             </div>
         `;
 
@@ -524,15 +524,15 @@ if (typeof window.MessageSender === 'undefined') {
     }
 
     /**
-     * 显示发送失败提示
+     * แสดง toast แจ้งเตือนเมื่อส่งล้มเหลว
      */
     showSendErrorToast(error) {
       const toast = document.createElement('div');
       toast.className = 'send-status-toast error';
       toast.innerHTML = `
-            <div style="font-weight: bold; margin-bottom: 5px;">❌ 发送失败</div>
+            <div style="font-weight: bold; margin-bottom: 5px;">❌ ส่งล้มเหลว</div>
             <div style="font-size: 12px; opacity: 0.9;">
-                错误: ${error}
+                ข้อผิดพลาด: ${error}
             </div>
         `;
 
@@ -544,14 +544,14 @@ if (typeof window.MessageSender === 'undefined') {
     }
 
     /**
-     * 处理回车发送
+     * จัดการการกด Enter เพื่อส่ง
      */
     handleEnterSend(event, textareaElement) {
       if (event.key === 'Enter' && !event.shiftKey) {
-        // 不再阻止默认行为，让回车键正常换行
+        // ไม่บล็อก default behavior แล้ว ให้ปุ่ม Enter ขึ้นบรรทัดใหม่ตามปกติ
         // event.preventDefault();
 
-        // 换行后重新调整textarea高度
+        // ปรับความสูง textarea ใหม่หลังขึ้นบรรทัด
         setTimeout(() => {
           this.adjustTextareaHeight(textareaElement);
         }, 0);
@@ -559,33 +559,33 @@ if (typeof window.MessageSender === 'undefined') {
     }
 
     /**
-     * 发送消息的主要方法
+     * เมธอดหลักสำหรับส่งข้อความ
      */
     async sendMessage(message) {
       if (!message.trim()) {
-        this.showSendErrorToast('消息内容不能为空');
+        this.showSendErrorToast('เนื้อหาข้อความต้องไม่ว่างเปล่า');
         return false;
       }
 
       if (!this.currentFriendId) {
-        this.showSendErrorToast('请选择一个聊天对象');
+        this.showSendErrorToast('กรุณาเลือกเป้าหมายแชท');
         return false;
       }
 
       try {
-        // 显示发送中状态
+        // แสดงสถานะกำลังส่ง
         this.setSendingState(true);
 
         const success = await this.buildAndSendMessage(message);
 
         if (!success) {
-          this.showSendErrorToast('发送失败，请重试');
+          this.showSendErrorToast('ส่งล้มเหลว กรุณาลองใหม่');
         }
 
         return success;
       } catch (error) {
-        console.error('[Message Sender] 发送消息失败:', error);
-        this.showSendErrorToast(error.message || '发送失败');
+        console.error('[Message Sender] ส่งข้อความล้มเหลว:', error);
+        this.showSendErrorToast(error.message || 'ส่งล้มเหลว');
         return false;
       } finally {
         this.setSendingState(false);
@@ -593,7 +593,7 @@ if (typeof window.MessageSender === 'undefined') {
     }
 
     /**
-     * 设置发送中状态
+     * ตั้งค่าสถานะกำลังส่ง
      */
     setSendingState(isSending) {
       const sendButton = document.getElementById('send-message-btn');
@@ -617,7 +617,7 @@ if (typeof window.MessageSender === 'undefined') {
     }
 
     /**
-     * 自动调整textarea高度
+     * ปรับความสูง textarea อัตโนมัติ
      */
     adjustTextareaHeight(textareaElement) {
       textareaElement.style.height = 'auto';
@@ -625,7 +625,7 @@ if (typeof window.MessageSender === 'undefined') {
     }
 
     /**
-     * 插入特殊格式到输入框
+     * แทรกรูปแบบพิเศษเข้ากล่องอินพุต
      */
     insertSpecialFormat(format, params) {
       const textareaElement = document.getElementById('message-send-input');
@@ -650,11 +650,11 @@ if (typeof window.MessageSender === 'undefined') {
           return;
       }
 
-      // 获取当前输入框的值和光标位置
+      // ดึงค่าปัจจุบันของกล่องอินพุตและตำแหน่งเคอร์เซอร์
       const currentValue = textareaElement.value;
       const cursorPosition = textareaElement.selectionStart;
 
-      // 如果输入框不为空且光标前的字符不是换行符，添加换行
+      // หากกล่องอินพุตไม่ว่างและตัวอักษรก่อนเคอร์เซอร์ไม่ใช่ขึ้นบรรทัดใหม่ ให้เพิ่มขึ้นบรรทัดใหม่
       let newValue;
       if (currentValue && cursorPosition > 0 && currentValue[cursorPosition - 1] !== '\n') {
         newValue = currentValue.slice(0, cursorPosition) + '\n' + specialText + currentValue.slice(cursorPosition);
@@ -662,20 +662,20 @@ if (typeof window.MessageSender === 'undefined') {
         newValue = currentValue.slice(0, cursorPosition) + specialText + currentValue.slice(cursorPosition);
       }
 
-      // 设置新值
+      // ตั้งค่าใหม่
       textareaElement.value = newValue;
 
-      // 调整高度
+      // ปรับความสูง
       this.adjustTextareaHeight(textareaElement);
 
-      // 设置光标位置
+      // ตั้งตำแหน่งเคอร์เซอร์
       const newCursorPosition = cursorPosition + specialText.length + (newValue !== currentValue + specialText ? 1 : 0);
       textareaElement.setSelectionRange(newCursorPosition, newCursorPosition);
       textareaElement.focus();
     }
 
     /**
-     * 获取当前聊天对象信息
+     * ดึงข้อมูลเป้าหมายแชทปัจจุบัน
      */
     getCurrentChatInfo() {
       return {
@@ -686,7 +686,7 @@ if (typeof window.MessageSender === 'undefined') {
     }
 
     /**
-     * 清空当前聊天对象
+     * ล้างเป้าหมายแชทปัจจุบัน
      */
     clearCurrentChat() {
       this.currentFriendId = null;
@@ -695,7 +695,7 @@ if (typeof window.MessageSender === 'undefined') {
     }
 
     /**
-     * 获取当前群聊的成员列表
+     * ดึงรายชื่อสมาชิกของแชทกลุ่มปัจจุบัน
      */
     getCurrentGroupMembers() {
       if (!this.isGroup || !this.currentFriendId) {
@@ -703,69 +703,69 @@ if (typeof window.MessageSender === 'undefined') {
       }
 
       try {
-        // 方法1: 从聊天记录中查找最新的群聊信息
+        // วิธีที่ 1: ค้นหาข้อมูลแชทกลุ่มล่าสุดจากประวัติแชท
         const messageElements = document.querySelectorAll('.mes_text, .mes_block');
         let latestGroupInfo = null;
 
-        // 创建正则表达式匹配该群的信息：[群聊|群名|群号|成员列表] 或 [创建群聊|群号|群名|成员列表]
+        // สร้าง regex เพื่อจับคู่ข้อมูลกลุ่มนี้: [群聊|ชื่อกลุ่ม|รหัสกลุ่ม|รายชื่อสมาชิก] หรือ [创建群聊|รหัสกลุ่ม|ชื่อกลุ่ม|รายชื่อสมาชิก]
         const groupRegex1 = new RegExp(`\\[群聊\\|([^\\|]+)\\|${this.currentFriendId}\\|([^\\]]+)\\]`, 'g');
         const groupRegex2 = new RegExp(`\\[创建群聊\\|${this.currentFriendId}\\|([^\\|]+)\\|([^\\]]+)\\]`, 'g');
 
-        // 从最新消息开始查找
+        // ค้นหาจากข้อความล่าสุด
         for (let i = messageElements.length - 1; i >= 0; i--) {
           const messageText = messageElements[i].textContent || '';
 
-          // 重置正则表达式索引
+          // รีเซ็ต index ของ regex
           groupRegex1.lastIndex = 0;
           groupRegex2.lastIndex = 0;
 
-          // 尝试匹配第一种格式：[群聊|群名|群号|成员列表]
+          // ลองจับคู่รูปแบบที่ 1: [群聊|ชื่อกลุ่ม|รหัสกลุ่ม|รายชื่อสมาชิก]
           let match = groupRegex1.exec(messageText);
           if (match) {
             latestGroupInfo = {
               groupName: match[1],
               members: match[2],
             };
-            console.log('[Message Sender] 找到群聊信息 (格式1):', latestGroupInfo);
+            console.log('[Message Sender] พบข้อมูลแชทกลุ่ม (รูปแบบ 1):', latestGroupInfo);
             break;
           }
 
-          // 尝试匹配第二种格式：[创建群聊|群号|群名|成员列表]
+          // ลองจับคู่รูปแบบที่ 2: [创建群聊|รหัสกลุ่ม|ชื่อกลุ่ม|รายชื่อสมาชิก]
           match = groupRegex2.exec(messageText);
           if (match) {
             latestGroupInfo = {
               groupName: match[1],
               members: match[2],
             };
-            console.log('[Message Sender] 找到群聊信息 (格式2):', latestGroupInfo);
+            console.log('[Message Sender] พบข้อมูลแชทกลุ่ม (รูปแบบ 2):', latestGroupInfo);
             break;
           }
         }
 
         if (latestGroupInfo) {
-          // 解析成员列表
+          // แยกรายชื่อสมาชิก
           const members = latestGroupInfo.members
             .split(/[、,，]/)
             .map(name => name.trim())
             .filter(name => name);
 
-          console.log('[Message Sender] 解析到群聊成员:', members);
+          console.log('[Message Sender] แยกสมาชิกแชทกลุ่มได้:', members);
           return members;
         } else {
-          console.log('[Message Sender] 未找到群聊成员信息，返回空数组');
+          console.log('[Message Sender] ไม่พบข้อมูลสมาชิกแชทกลุ่ม ส่งคืน array ว่าง');
           return [];
         }
       } catch (error) {
-        console.error('[Message Sender] 获取群聊成员失败:', error);
+        console.error('[Message Sender] ดึงสมาชิกแชทกลุ่มล้มเหลว:', error);
         return [];
       }
     }
 
     /**
-     * 调试方法
+     * เมธอดดีบัก
      */
     debug() {
-      console.log('[Message Sender] 调试信息:', {
+      console.log('[Message Sender] ข้อมูลดีบัก:', {
         currentFriendId: this.currentFriendId,
         currentFriendName: this.currentFriendName,
         isGroup: this.isGroup,
@@ -774,17 +774,17 @@ if (typeof window.MessageSender === 'undefined') {
     }
   }
 
-  // 创建全局实例
+  // สร้าง instance ระดับ global
   window.MessageSender = MessageSender;
 
-  // 如果页面已加载，立即创建实例
+  // หากเพจโหลดแล้ว สร้าง instance ทันที
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
       window.messageSender = new MessageSender();
-      console.log('[Message Sender] 全局实例已创建');
+      console.log('[Message Sender] สร้าง instance ระดับ global แล้ว');
     });
   } else {
     window.messageSender = new MessageSender();
-    console.log('[Message Sender] 全局实例已创建');
+    console.log('[Message Sender] สร้าง instance ระดับ global แล้ว');
   }
-} // 结束 if (typeof window.MessageSender === 'undefined') 检查
+} // สิ้นสุดการตรวจสอบ if (typeof window.MessageSender === 'undefined')
