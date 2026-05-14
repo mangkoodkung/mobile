@@ -1,9 +1,9 @@
 /**
- * 论坛UI样式 - 奶油风格设计
- * 基于参考设计重构
+ * สไตล์ UI ฟอรัม - การออกแบบสไตล์ครีม
+ * ปรับโครงสร้างใหม่ตามการออกแบบอ้างอิง
  */
 
-/* 导入Font Awesome图标库 */
+/* นำเข้าไลบรารีไอคอน Font Awesome */
 @import url('');
 
 /* CSS变量定义 */
@@ -24,7 +24,7 @@
   --avatar-gradient-2: linear-gradient(120deg, #d4fc79 0%, #96e6a1 100%);
   --avatar-gradient-3: linear-gradient(120deg, #a1c4fd 0%, #c2e9fb 100%);
 
-  /* 新增头像颜色 */
+  /* เพิ่มสีอวาตาร์ */
   --avatar-color-1: #b28cb9;
   --avatar-color-2: #e2b3d4;
   --avatar-color-3: #f7d1e6;
@@ -47,7 +47,7 @@
   --avatar-color-20: #a3b4e2;
 }
 
-/* 论坛应用主容器 */
+/* คอนเทนเนอร์หลักแอปฟอรัม */
 .forum-app {
   height: 100%;
   background: var(--screen-bg);
@@ -86,7 +86,7 @@
   transform: scale(1.05);
 }
 
-/* 论坛内容区域 */
+/* พื้นที่เนื้อหาฟอรัม */
 .forum-content {
   flex-grow: 1;
   overflow-y: auto;
@@ -94,14 +94,14 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  width:100%
+  width: 100%;
 }
 
 .forum-content::-webkit-scrollbar {
   display: none;
 }
 
-/* 空状态 */
+/* สถานะว่างเปล่า */
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -151,7 +151,7 @@
   box-shadow: 0 6px 16px var(--shadow-color);
 }
 
-/* 帖子卡片样式 - 基于参考设计 */
+/* สไตล์การ์ดโพสต์ - อ้างอิงจากการออกแบบ */
 .thread-item {
   background: var(--card-bg);
   border-radius: 16px;
@@ -159,7 +159,9 @@
   cursor: pointer;
   border: 1px solid var(--border-color);
   box-shadow: 0 4px 15px var(--shadow-color);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
 .thread-item:hover {
@@ -273,7 +275,7 @@
   color: var(--accent-pink);
 }
 
-/* 帖子详情页面 */
+/* หน้ารายละเอียดโพสต์ */
 .thread-detail {
   background: var(--screen-bg);
   min-height: 100%;
@@ -325,12 +327,12 @@
   padding-bottom: 4px;
 }
 
-/* 评论输入框样式 */
+/* สไตล์ช่องป้อนข้อมูลคอมเมนต์ */
 .comment-input-bar {
   padding: 12px 8px;
   background: var(--screen-bg);
   border-top: 1px solid var(--border-color);
-  display: none; /* 默认隐藏 */
+  display: none; /* ซ่อนตามค่าเริ่มต้น */
   align-items: center;
   gap: 8px;
   margin-top: auto;
@@ -340,7 +342,7 @@
 }
 
 .comment-input-bar.show {
-  display: flex; /* 显示状态 */
+  display: flex; /* สถานะแสดง */
 }
 
 .comment-input-bar input {
@@ -411,7 +413,7 @@
   color: #4e7ce8;
 }
 
-/* 回复列表 */
+/* รายการตอบกลับ */
 .reply-list {
   background: var(--screen-bg);
 }
@@ -424,12 +426,12 @@
   color: var(--text-primary);
 }
 
-/* 评论项样式 */
+/* สไตล์รายการคอมเมนต์ */
 .comment-item {
   display: flex;
   gap: 6px;
   margin-bottom: 6px;
-      flex-wrap: wrap;
+  flex-wrap: wrap;
 }
 
 .comment-avatar {
@@ -590,7 +592,7 @@
   border-radius: 12px;
 }
 
-/* 回复输入框 */
+/* ช่องป้อนข้อมูลตอบกลับ */
 .reply-input-container {
   background: white;
   border-top: 8px solid #f5f5f5;
@@ -625,7 +627,7 @@
 
 .reply-actions {
   display: flex;
-  justify-content:space-around;
+  justify-content: space-around;
   align-items: center;
   margin-top: 0;
   margin-left: 10px;
@@ -662,7 +664,7 @@
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
-/* 发帖对话框 */
+/* กล่องโต้ตอบสร้างโพสต์ */
 .post-dialog {
   position: fixed;
   top: 0;
@@ -807,7 +809,7 @@
   box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
-/* 内容格式化 */
+/* การจัดรูปแบบเนื้อหา */
 .emoji-placeholder {
   background: #ffe4e1;
   color: #e53e3e;
@@ -831,7 +833,7 @@
   font-weight: 600;
 }
 
-/* 动画效果 */
+/* เอฟเฟกต์แอนิเมชัน */
 @keyframes slideIn {
   from {
     transform: translateX(100%);
@@ -847,15 +849,15 @@
   animation: slideIn 0.3s ease-out;
 }
 
-/* 响应式设计 */
+/* การออกแบบแบบตอบสนอง */
 @media (max-width: 480px) {
-  /* 论坛内容区域 */
+  /* พื้นที่เนื้อหาฟอรัม */
   .forum-content {
     padding: 6px;
     gap: 3px;
   }
 
-  /* 帖子卡片 */
+  /* การ์ดโพสต์ */
   .thread-item {
     padding: 10px;
     border-radius: 14px;
@@ -895,7 +897,7 @@
     font-size: 11px;
   }
 
-  /* 帖子详情页 */
+  /* หน้ารายละเอียดโพสต์ */
   .thread-detail {
     padding: 6px;
   }
@@ -908,7 +910,7 @@
     font-size: 13px;
   }
 
-  /* 评论相关 */
+  /* เกี่ยวกับคอมเมนต์ */
   .comment-avatar {
     width: 24px;
     height: 24px;
@@ -922,7 +924,7 @@
     font-size: 12px;
   }
 
-  /* 评论输入框 */
+  /* ช่องป้อนข้อมูลคอมเมนต์ */
   .comment-input-bar {
     padding: 8px 6px;
   }
@@ -933,7 +935,7 @@
   }
 }
 
-/* 平板设备响应式 */
+/* แบบตอบสนองสำหรับแท็บเล็ต */
 @media (max-width: 768px) and (min-width: 481px) {
   .forum-content {
     padding: 14px;
@@ -958,7 +960,7 @@
   }
 }
 
-/* 大屏幕优化 */
+/* ปรับแต่งสำหรับหน้าจอใหญ่ */
 @media (min-width: 769px) {
   .forum-content {
     max-width: 800px;
@@ -970,7 +972,7 @@
   }
 }
 
-/* 点赞动画效果 */
+/* เอฟเฟกต์แอนิเมชันกดถูกใจ */
 @keyframes heartFloat {
   0% {
     opacity: 1;
@@ -986,7 +988,7 @@
   }
 }
 
-/* 点赞按钮样式 */
+/* สไตล์ปุ่มกดถูกใจ */
 .action-btn.liked {
   background-color: rgba(231, 76, 60, 0.1);
   border-color: #e74c3c;
@@ -1006,7 +1008,7 @@
   transform: translateY(0);
 }
 
-/* 点赞按钮过渡效果 */
+/* เอฟเฟกต์ทรานซิชันปุ่มกดถูกใจ */
 .action-btn {
   transition: all 0.2s ease;
 }
@@ -1015,7 +1017,7 @@
   transition: color 0.2s ease;
 }
 
-/* 深色模式支持 */
+/* รองรับโหมดมืด */
 @media (prefers-color-scheme: dark) {
   .forum-app {
     background: #1a1a1a;
@@ -1095,7 +1097,7 @@
   }
 }
 
-/* 楼中楼样式 */
+/* สไตล์ตอบกลับซ้อน */
 .sub-replies-container {
   margin-top: 12px;
   padding: 12px;
@@ -1188,7 +1190,7 @@
   color: #4e7ce8;
 }
 
-/* 楼中楼回复输入框 */
+/* ช่องป้อนข้อมูลตอบกลับซ้อน */
 .sub-reply-input-container {
   margin-top: 12px;
   padding: 12px;
@@ -1263,7 +1265,7 @@
   box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
-/* 楼中楼响应式调整 */
+/* ปรับแต่งแบบตอบสนองสำหรับตอบกลับซ้อน */
 @media (max-width: 480px) {
   .sub-replies-container {
     padding: 8px;
@@ -1290,9 +1292,8 @@
   }
 }
 
-/* 删除按钮样式 */
+/* สไตล์ปุ่มลบ */
 .delete-btn.forum-delete-btn {
-
   top: 10px;
   right: 10px;
   background: #9ca3af;
@@ -1316,7 +1317,7 @@
   transform: scale(0.95);
 }
 
-/* 确保thread-header有相对定位以便删除按钮绝对定位 */
+/* ให้แน่ใจว่า thread-header มีตำแหน่งสัมพัทธ์เพื่อให้ปุ่มลบจัดตำแหน่งสัมบูรณ์ได้ */
 .thread-header {
   position: relative;
 }

@@ -1,4 +1,4 @@
-/* 背包应用样式 */
+/* สไตล์แอปกระเป๋าเป้ */
 .backpack-app {
   height: 100%;
   display: flex;
@@ -7,12 +7,12 @@
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
-/* 确保app-content有正确的定位上下文 */
+/* ให้แน่ใจว่า app-content มีบริบทการจัดตำแหน่งที่ถูกต้อง */
 .backpack-app #app-content {
   position: relative;
 }
 
-/* 背包列表容器 */
+/* คอนเทนเนอร์รายการกระเป๋าเป้ */
 .backpack-item-list {
   flex: 1;
   overflow-y: auto;
@@ -20,7 +20,7 @@
   background: #f8fafb;
 }
 
-/* 背包头部 */
+/* ส่วนหัวกระเป๋าเป้ */
 .backpack-header {
   background: rgba(255, 255, 255, 0.95);
   padding: 8px 12px;
@@ -44,20 +44,22 @@
   text-align: center;
 }
 
-/* 背包物品网格 - 改为单列布局 */
+/* กริดไอเทมกระเป๋าเป้ - เปลี่ยนเป็นเลย์เอาต์คอลัมน์เดียว */
 .backpack-grid {
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-/* 背包物品卡片 - 紧凑样式 */
+/* การ์ดไอเทมกระเป๋าเป้ - สไตล์กระชับ */
 .backpack-item {
   background: #fff;
   border-radius: 6px;
   padding: 8px 10px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
   border: 1px solid #f0f0f0;
   cursor: pointer;
 }
@@ -67,14 +69,14 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-/* 物品信息容器 */
+/* คอนเทนเนอร์ข้อมูลไอเทม */
 .backpack-item-info {
   display: flex;
   flex-direction: column;
   gap: 3px;
 }
 
-/* 物品头部 - 名称和类型 */
+/* ส่วนหัวไอเทม - ชื่อและประเภท */
 .backpack-item-header {
   display: flex;
   justify-content: space-between;
@@ -107,7 +109,7 @@
   margin: 2px 0;
 }
 
-/* 物品底部 - 数量和使用按钮 */
+/* ส่วนล่างไอเทม - จำนวนและปุ่มใช้งาน */
 .backpack-item-footer {
   display: flex;
   justify-content: space-between;
@@ -127,7 +129,7 @@
   white-space: nowrap;
 }
 
-/* 使用物品按钮 */
+/* ปุ่มใช้ไอเทม */
 .use-item-btn {
   background: #667eea;
   color: white;
@@ -151,7 +153,7 @@
   transform: translateY(0);
 }
 
-/* 物品类型标签栏样式 - 参考shop-app */
+/* สไตล์แถบแท็บประเภทไอเทม - อ้างอิง shop-app */
 .backpack-type-tabs {
   display: flex;
   padding: 8px 12px;
@@ -186,7 +188,7 @@
   color: white;
 }
 
-/* 搜索栏样式 */
+/* สไตล์แถบค้นหา */
 .backpack-search-bar {
   display: flex;
   align-items: center;
@@ -238,7 +240,7 @@
   color: white;
 }
 
-/* 空状态 */
+/* สถานะว่างเปล่า */
 .backpack-empty-state {
   flex: 1;
   display: flex;
@@ -295,7 +297,7 @@
   transform: translateY(-1px);
 }
 
-/* 错误状态 */
+/* สถานะข้อผิดพลาด */
 .error-placeholder {
   flex: 1;
   display: flex;
@@ -324,7 +326,7 @@
   margin-bottom: 20px;
 }
 
-/* 加载状态 */
+/* สถานะกำลังโหลด */
 .loading-placeholder {
   flex: 1;
   display: flex;
@@ -355,7 +357,7 @@
   }
 }
 
-/* 提示消息 */
+/* ข้อความแจ้งเตือน */
 .backpack-toast {
   position: fixed;
   top: 20px;
@@ -391,7 +393,7 @@
   background: #2196f3;
 }
 
-/* 响应式设计 */
+/* การออกแบบแบบตอบสนอง */
 @media (max-width: 768px) {
   .modal-content {
     width: 95%;
@@ -499,7 +501,7 @@
   }
 }
 
-/* 滚动条样式 */
+/* สไตล์แถบเลื่อน */
 .backpack-item-list::-webkit-scrollbar {
   width: 4px;
 }
@@ -518,7 +520,7 @@
   background: rgba(255, 255, 255, 0.5);
 }
 
-/* 自定义弹窗样式 - 参考live-app */
+/* สไตล์ป๊อปอัปกำหนดเอง - อ้างอิง live-app */
 .custom-modal {
   position: absolute;
   inset: 0;
@@ -681,7 +683,7 @@
   transform: translateY(-1px);
 }
 
-/* 装备按钮样式（绿色） */
+/* สไตล์ปุ่มสวมใส่ (สีเขียว) */
 .equip-item-btn {
   padding: 6px 14px;
   background: linear-gradient(135deg, #51cf66 0%, #40c057 100%);
@@ -704,7 +706,7 @@
   transform: translateY(0);
 }
 
-/* 装备部位选择模态框 */
+/* โมดอลเลือกตำแหน่งสวมใส่ */
 .backpack-equip-modal-overlay {
   position: absolute;
   top: 0;

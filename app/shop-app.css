@@ -1,6 +1,6 @@
-/* Shop App 购物应用样式 */
+/* Shop App สไตล์แอปช้อปปิ้ง */
 
-/* 购物应用header样式覆盖 */
+/* สไตล์ทับ header แอปช้อปปิ้ง */
 .shop-app-active .app-header {
   background: #ff6b35 !important;
   height: 40px !important;
@@ -29,8 +29,10 @@
   background: rgba(255, 255, 255, 0.3) !important;
   color: white !important;
 }
-.product-meta{color: #333;}
-/* 通用样式 */
+.product-meta {
+  color: #333;
+}
+/* สไตล์ทั่วไป */
 .shop-app {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: #333;
@@ -39,7 +41,7 @@
   overflow: hidden;
 }
 
-/* 购物页面标签页样式 */
+/* สไตล์แท็บหน้าช้อปปิ้ง */
 .shop-tabs {
   display: flex;
   background: #ff6b35;
@@ -73,7 +75,7 @@
   color: white;
 }
 
-/* 产品类型标签页样式 */
+/* สไตล์แท็บประเภทสินค้า */
 .product-type-tabs {
   display: flex;
   padding: 8px 12px;
@@ -108,7 +110,7 @@
   color: white;
 }
 
-/* 空状态样式 */
+/* สไตล์สถานะว่างเปล่า */
 .shop-empty-state {
   display: flex;
   flex-direction: column;
@@ -146,7 +148,7 @@
   margin-top: 10px;
 }
 
-/* 商品列表样式 */
+/* สไตล์รายการสินค้า */
 .shop-product-list {
   height: 100%;
   overflow: hidden;
@@ -169,7 +171,9 @@
   border-radius: 8px;
   padding: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
   border: 1px solid #f0f0f0;
 }
 
@@ -251,7 +255,7 @@
   transform: translateY(0);
 }
 
-/* 购物车样式 */
+/* สไตล์ตะกร้าสินค้า */
 .shop-cart {
   height: 100%;
   overflow: hidden;
@@ -456,7 +460,7 @@
   box-shadow: 0 6px 16px rgba(255, 107, 53, 0.4);
 }
 
-/* 滚动条样式 */
+/* สไตล์แถบเลื่อน */
 .product-grid::-webkit-scrollbar,
 .cart-items::-webkit-scrollbar {
   width: 4px;
@@ -479,7 +483,7 @@
   background: #e55a2b;
 }
 
-/* 产品类型标签栏滚动条 */
+/* แถบเลื่อนแถบแท็บประเภทสินค้า */
 .product-type-tabs::-webkit-scrollbar {
   height: 2px;
 }
@@ -493,7 +497,7 @@
   border-radius: 1px;
 }
 
-/* 响应式设计 */
+/* การออกแบบแบบตอบสนอง */
 @media (max-width: 768px) {
   .shop-tab {
     font-size: 13px;
@@ -523,7 +527,7 @@
   }
 }
 
-/* 结算页面样式 */
+/* สไตล์หน้าชำระเงิน */
 .shop-checkout {
   height: 100%;
   overflow: hidden;
@@ -658,7 +662,7 @@
   box-shadow: 0 6px 16px rgba(243, 156, 18, 0.4);
 }
 
-/* 弹窗样式 */
+/* สไตล์ป๊อปอัป */
 .shop-modal {
   position: fixed;
   top: 0;
@@ -725,7 +729,7 @@
   color: #333;
 }
 
-/* 提示消息样式 */
+/* สไตล์ข้อความแจ้งเตือน */
 .shop-toast {
   position: fixed;
   top: 20px;
@@ -759,7 +763,7 @@
   background: #e74c3c;
 }
 
-/* 响应式设计 */
+/* การออกแบบแบบตอบสนอง */
 @media (max-width: 480px) {
   .product-item {
     flex-direction: column;
@@ -784,7 +788,7 @@
   }
 }
 
-/* 滚动条样式 */
+/* สไตล์แถบเลื่อน */
 .product-grid::-webkit-scrollbar,
 .cart-items::-webkit-scrollbar,
 .order-summary::-webkit-scrollbar {
@@ -811,7 +815,7 @@
   background: #a1a1a1;
 }
 
-/* 加载动画 */
+/* แอนิเมชันโหลด */
 .shop-loading {
   display: flex;
   flex-direction: column;
@@ -840,7 +844,7 @@
   }
 }
 
-/* 错误状态样式 */
+/* สไตล์สถานะข้อผิดพลาด */
 .error-message {
   display: flex;
   flex-direction: column;
@@ -884,9 +888,9 @@
   background: #5a6fd8;
   transform: translateY(-1px);
 }
-/* Shop App 购物应用样式 */
+/* Shop App สไตล์แอปช้อปปิ้ง */
 
-/* 购物应用header样式覆盖 */
+/* สไตล์ทับ header แอปช้อปปิ้ง */
 .shop-app-active .app-header {
   background: #ff6b35 !important;
   height: 40px !important;
@@ -915,8 +919,10 @@
   background: rgba(255, 255, 255, 0.3) !important;
   color: white !important;
 }
-.product-meta{color: #333;}
-/* 通用样式 */
+.product-meta {
+  color: #333;
+}
+/* สไตล์ทั่วไป */
 .shop-app {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   color: #333;
@@ -925,7 +931,7 @@
   overflow: hidden;
 }
 
-/* 购物页面标签页样式 */
+/* สไตล์แท็บหน้าช้อปปิ้ง */
 .shop-tabs {
   display: flex;
   background: #ff6b35;
@@ -959,7 +965,7 @@
   color: white;
 }
 
-/* 产品类型标签页样式 */
+/* สไตล์แท็บประเภทสินค้า */
 .product-type-tabs {
   display: flex;
   padding: 8px 12px;
@@ -994,7 +1000,7 @@
   color: white;
 }
 
-/* 空状态样式 */
+/* สไตล์สถานะว่างเปล่า */
 .shop-empty-state {
   display: flex;
   flex-direction: column;
@@ -1032,7 +1038,7 @@
   margin-top: 10px;
 }
 
-/* 商品列表样式 */
+/* สไตล์รายการสินค้า */
 .shop-product-list {
   height: 100%;
   overflow: hidden;
@@ -1055,7 +1061,9 @@
   border-radius: 8px;
   padding: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
   border: 1px solid #f0f0f0;
 }
 
@@ -1137,7 +1145,7 @@
   transform: translateY(0);
 }
 
-/* 购物车样式 */
+/* สไตล์ตะกร้าสินค้า */
 .shop-cart {
   height: 100%;
   overflow: hidden;
@@ -1342,7 +1350,7 @@
   box-shadow: 0 6px 16px rgba(255, 107, 53, 0.4);
 }
 
-/* 滚动条样式 */
+/* สไตล์แถบเลื่อน */
 .product-grid::-webkit-scrollbar,
 .cart-items::-webkit-scrollbar {
   width: 4px;
@@ -1365,7 +1373,7 @@
   background: #e55a2b;
 }
 
-/* 产品类型标签栏滚动条 */
+/* แถบเลื่อนแถบแท็บประเภทสินค้า */
 .product-type-tabs::-webkit-scrollbar {
   height: 2px;
 }
@@ -1379,7 +1387,7 @@
   border-radius: 1px;
 }
 
-/* 响应式设计 */
+/* การออกแบบแบบตอบสนอง */
 @media (max-width: 768px) {
   .shop-tab {
     font-size: 13px;
@@ -1409,7 +1417,7 @@
   }
 }
 
-/* 结算页面样式 */
+/* สไตล์หน้าชำระเงิน */
 .shop-checkout {
   height: 100%;
   overflow: hidden;
@@ -1544,7 +1552,7 @@
   box-shadow: 0 6px 16px rgba(243, 156, 18, 0.4);
 }
 
-/* 弹窗样式 */
+/* สไตล์ป๊อปอัป */
 .shop-modal {
   position: fixed;
   top: 0;
@@ -1611,7 +1619,7 @@
   color: #333;
 }
 
-/* 提示消息样式 */
+/* สไตล์ข้อความแจ้งเตือน */
 .shop-toast {
   position: fixed;
   top: 20px;
@@ -1645,7 +1653,7 @@
   background: #e74c3c;
 }
 
-/* 响应式设计 */
+/* การออกแบบแบบตอบสนอง */
 @media (max-width: 480px) {
   .product-item {
     flex-direction: column;
@@ -1670,7 +1678,7 @@
   }
 }
 
-/* 滚动条样式 */
+/* สไตล์แถบเลื่อน */
 .product-grid::-webkit-scrollbar,
 .cart-items::-webkit-scrollbar,
 .order-summary::-webkit-scrollbar {
@@ -1697,7 +1705,7 @@
   background: #a1a1a1;
 }
 
-/* 加载动画 */
+/* แอนิเมชันโหลด */
 .shop-loading {
   display: flex;
   flex-direction: column;
@@ -1726,7 +1734,7 @@
   }
 }
 
-/* 错误状态样式 */
+/* สไตล์สถานะข้อผิดพลาด */
 .error-message {
   display: flex;
   flex-direction: column;
