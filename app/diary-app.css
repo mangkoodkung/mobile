@@ -1,6 +1,6 @@
 /**
- * Diary App Styles - 日记应用样式
- * 清爽简洁的日记界面
+ * Diary App Styles - สไตล์แอปไดอารี่
+ * อินเทอร์เฟซไดอารี่ที่สะอาดและเรียบง่าย
  */
 
 .cd-diary-app {
@@ -10,7 +10,7 @@
   background: #f8f9fa;
 }
 
-/* 头部 */
+/* ส่วนหัว */
 .cd-diary-header {
   display: flex;
   align-items: center;
@@ -38,14 +38,14 @@
   backdrop-filter: blur(10px);
 }
 
-/* 日记列表容器 */
+/* คอนเทนเนอร์รายการไดอารี่ */
 .cd-diary-list {
   flex: 1;
   overflow-y: auto;
   padding: 16px;
 }
 
-/* 空状态 */
+/* สถานะว่างเปล่า */
 .cd-diary-empty {
   display: flex;
   flex-direction: column;
@@ -74,7 +74,7 @@
   color: #868e96;
 }
 
-/* 日记条目 */
+/* รายการไดอารี่ */
 .cd-diary-item {
   background: white;
   border-radius: 12px;
@@ -89,7 +89,7 @@
   transform: translateY(-2px);
 }
 
-/* 日记条目头部 */
+/* ส่วนหัวรายการไดอารี่ */
 .cd-diary-item-header {
   display: flex;
   align-items: center;
@@ -127,12 +127,14 @@
   transform: rotate(0deg);
 }
 
-/* 日记内容区域 */
+/* พื้นที่เนื้อหาไดอารี่ */
 .cd-diary-item-content {
   padding: 0 20px;
   max-height: 0;
   overflow: hidden;
-  transition: max-height 0.3s ease, padding 0.3s ease;
+  transition:
+    max-height 0.3s ease,
+    padding 0.3s ease;
 }
 
 .cd-diary-item-content.cd-show {
@@ -145,7 +147,7 @@
   padding: 0 20px;
 }
 
-/* 日记文本内容 */
+/* เนื้อหาข้อความไดอารี่ */
 .cd-diary-content-text {
   font-size: 15px;
   line-height: 1.8;
@@ -158,7 +160,7 @@
   border-left: 4px solid #ff9a56;
 }
 
-/* 滚动条样式 */
+/* สไตล์แถบเลื่อน */
 .cd-diary-list::-webkit-scrollbar {
   width: 6px;
 }
@@ -176,7 +178,7 @@
   background: #adb5bd;
 }
 
-/* 响应式设计 */
+/* การออกแบบแบบตอบสนอง */
 @media (max-width: 480px) {
   .cd-diary-header {
     padding: 12px 16px;
@@ -208,7 +210,7 @@
   }
 }
 
-/* 加载动画 */
+/* แอนิเมชันโหลด */
 @keyframes cd-fadeIn {
   from {
     opacity: 0;
@@ -224,7 +226,7 @@
   animation: cd-fadeIn 0.3s ease;
 }
 
-/* 展开/收起动画优化 */
+/* ปรับแต่งแอนิเมชันขยาย/ยุบ */
 .cd-diary-item.cd-expanded {
   margin-bottom: 16px;
 }
@@ -232,4 +234,3 @@
 .cd-diary-item.cd-collapsed {
   margin-bottom: 12px;
 }
-

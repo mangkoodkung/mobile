@@ -1,4 +1,4 @@
-/* Status App Styles - 清爽风格，所有class加cd-前缀避免冲突 */
+/* Status App Styles - สไตล์สะอาดตา ทุก class เพิ่ม prefix cd- เพื่อหลีกเลี่ยงการชนกัน */
 
 .cd-status-app {
   height: 100%;
@@ -7,7 +7,7 @@
   background: linear-gradient(to bottom, #f8f9fa, #ffffff);
 }
 
-/* 标签页 */
+/* แท็บ */
 .cd-status-tabs {
   display: flex;
   gap: 8px;
@@ -39,14 +39,14 @@
   box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
 }
 
-/* 内容区域 */
+/* พื้นที่เนื้อหา */
 .cd-status-content {
   flex: 1;
   overflow-y: auto;
   padding: 16px;
 }
 
-/* 空状态 */
+/* สถานะว่างเปล่า */
 .cd-status-empty {
   display: flex;
   flex-direction: column;
@@ -66,7 +66,7 @@
   font-size: 14px;
 }
 
-/* 用户状态卡片 */
+/* การ์ดสถานะผู้ใช้ */
 .cd-user-status-card {
   background: #ffffff;
   border-radius: 16px;
@@ -102,7 +102,7 @@
   flex: 1;
 }
 
-/* 货币显示 */
+/* แสดงสกุลเงิน */
 .cd-status-currency {
   font-size: 16px;
   font-weight: 600;
@@ -115,7 +115,7 @@
   border: 2px solid #ffed4e;
 }
 
-/* 信息区块 */
+/* บล็อกข้อมูล */
 .cd-info-section {
   margin-bottom: 16px;
 }
@@ -168,7 +168,7 @@
   border-radius: 8px;
 }
 
-/* 好友ID样式 */
+/* สไตล์ ID เพื่อน */
 .cd-friend-id {
   font-size: 12px;
   color: #667eea;
@@ -180,7 +180,7 @@
   word-break: break-all;
 }
 
-/* 服装列表 */
+/* รายการเสื้อผ้า */
 .cd-clothing-list {
   display: flex;
   flex-direction: column;
@@ -249,7 +249,7 @@
   transform: scale(0.95);
 }
 
-/* NPC列表 */
+/* รายการ NPC */
 .cd-npc-list {
   display: flex;
   flex-direction: column;
@@ -306,7 +306,7 @@
   font-weight: 600;
 }
 
-/* 好感度颜色 */
+/* สีระดับความชอบ */
 .cd-npc-favor.cd-favor-high {
   background: #ffe3e3;
   color: #e03131;
@@ -332,7 +332,7 @@
   color: #364fc7;
 }
 
-/* NPC展开收起 */
+/* ขยาย/ยุบ NPC */
 .cd-npc-toggle {
   font-size: 14px;
   color: #868e96;
@@ -342,7 +342,9 @@
 
 .cd-npc-content {
   overflow: hidden;
-  transition: max-height 0.3s ease, opacity 0.3s ease;
+  transition:
+    max-height 0.3s ease,
+    opacity 0.3s ease;
   padding-top: 16px;
 }
 
@@ -357,7 +359,7 @@
   padding-top: 16px;
 }
 
-/* 内心想法区块 - 永远显示 */
+/* บล็อกความคิดภายใน - แสดงเสมอ */
 .cd-inner-thought-section {
   margin-bottom: 12px !important;
   position: relative;
@@ -379,7 +381,7 @@
   align-items: center;
 }
 
-/* 确保收起状态下内心想法仍然可见 */
+/* ให้แน่ใจว่าความคิดภายในยังคงมองเห็นได้ในสถานะยุบ */
 .cd-npc-content.cd-collapsed .cd-inner-thought-section {
   display: block !important;
   visibility: visible !important;
@@ -388,12 +390,12 @@
   overflow: visible !important;
 }
 
-/* 收起状态下隐藏其他内容 */
+/* ซ่อนเนื้อหาอื่นในสถานะยุบ */
 .cd-npc-content.cd-collapsed > .cd-info-section:not(.cd-inner-thought-section) {
   display: none;
 }
 
-/* 人物记忆 */
+/* ความทรงจำตัวละคร */
 .cd-memory-list {
   display: flex;
   flex-direction: column;
@@ -410,7 +412,7 @@
   border-left: 3px solid #74c0fc;
 }
 
-/* 滚动条样式 */
+/* สไตล์แถบเลื่อน */
 .cd-status-content::-webkit-scrollbar {
   width: 6px;
 }
@@ -428,7 +430,7 @@
   background: #ced4da;
 }
 
-/* 响应式调整 */
+/* ปรับแต่งแบบตอบสนอง */
 @media (max-width: 400px) {
   .cd-info-grid {
     grid-template-columns: repeat(2, 1fr);

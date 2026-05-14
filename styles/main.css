@@ -1,4 +1,4 @@
-/* Mobile插件主样式文件 */
+/* ไฟล์สไตล์หลักของปลั๊กอิน Mobile */
 
 /* Mobile Context Monitor Plugin Styles */
 
@@ -81,7 +81,7 @@ inputP {
   font-weight: bold;
 }
 
-/* 兼容深色主题 */
+/* รองรับธีมมืด */
 @media (prefers-color-scheme: dark) {
   #mobile_context_settings {
     color: #fff;
@@ -116,19 +116,63 @@ inputP {
 .style-config-settings .tab-content {
   display: block !important;
 }
-[force_avatar="false"][is_user="true"] .mes_text{padding:10px;border-radius: 10px;border:1px solid rgba(255,255,255,0.6)}
-.mobile-phone-screen input,.mobile-phone-screen textarea,.mobile-phone-screen select{background:#eee !important;color:#333 !important}
-.unified-api-settings .toggle-label{background-color: unset;}
-.m-tab-content{background: #fff;}
-.mobile-content input ,.mobile-content select,.mobile-content textarea{background: #f3f3f3 !important;}
-.mobile-content .tab-btn{border-radius: 0;}
-button.app-header-btn[title="保存"]{display: none;}
-.mobile-content .tab-navigation{margin-bottom: 10px;}
-.message-item{border-bottom:1px solid #f6f6f6}
-.product-grid img,.backpack-grid img{margin-top: 10px;}
-.product-name,.product-description{text-align: left;}
-#test-api-connection{display: none !important;}
-.config-list-actions{display: flex;margin-top: 10px;padding: 0 10px; box-sizing:border-box;}
-.config-list-actions > button{width: 33.33%;}
-.delete-group-content{padding-top: 10px;}
-.message-content img{width:100%}
+[force_avatar='false'][is_user='true'] .mes_text {
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+}
+.mobile-phone-screen input,
+.mobile-phone-screen textarea,
+.mobile-phone-screen select {
+  background: #eee !important;
+  color: #333 !important;
+}
+.unified-api-settings .toggle-label {
+  background-color: unset;
+}
+.m-tab-content {
+  background: #fff;
+}
+.mobile-content input,
+.mobile-content select,
+.mobile-content textarea {
+  background: #f3f3f3 !important;
+}
+.mobile-content .tab-btn {
+  border-radius: 0;
+}
+button.app-header-btn[title='บันทึก'] {
+  display: none;
+}
+.mobile-content .tab-navigation {
+  margin-bottom: 10px;
+}
+.message-item {
+  border-bottom: 1px solid #f6f6f6;
+}
+.product-grid img,
+.backpack-grid img {
+  margin-top: 10px;
+}
+.product-name,
+.product-description {
+  text-align: left;
+}
+#test-api-connection {
+  display: none !important;
+}
+.config-list-actions {
+  display: flex;
+  margin-top: 10px;
+  padding: 0 10px;
+  box-sizing: border-box;
+}
+.config-list-actions > button {
+  width: 33.33%;
+}
+.delete-group-content {
+  padding-top: 10px;
+}
+.message-content img {
+  width: 100%;
+}

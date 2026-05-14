@@ -1,10 +1,10 @@
 /* ==SillyTavern Weibo Control App Styles== */
 /* @name         Weibo Control App Styles for Mobile Extension */
 /* @version      1.0.0 */
-/* @description  微博控制应用的样式，包含弹窗、表单、按钮等样式 */
+/* @description  สไตล์แอปควบคุมเวยป๋อ รวมสไตล์ป๊อปอัป ฟอร์ม ปุ่ม ฯลฯ */
 /* @author       Assistant */
 
-/* ===== 弹窗容器样式 ===== */
+/* ===== สไตล์คอนเทนเนอร์ป๊อปอัป ===== */
 .weibo-dialog-container {
   position: fixed;
   top: 0;
@@ -19,7 +19,7 @@
   pointer-events: all;
 }
 
-/* ===== 弹窗遮罩样式 ===== */
+/* ===== สไตล์พื้นหลังป๊อปอัป ===== */
 .weibo-dialog-overlay {
   position: absolute;
   top: 0;
@@ -34,7 +34,7 @@
   backdrop-filter: blur(2px);
 }
 
-/* ===== 弹窗主体样式 ===== */
+/* ===== สไตล์ตัวป๊อปอัปหลัก ===== */
 .weibo-dialog {
   background: white;
   border-radius: 12px;
@@ -53,7 +53,7 @@
   opacity: 1;
 }
 
-/* ===== 弹窗头部样式 ===== */
+/* ===== สไตล์ส่วนหัวป๊อปอัป ===== */
 .dialog-header {
   display: flex;
   align-items: center;
@@ -93,14 +93,14 @@
   font-size: 14px;
 }
 
-/* ===== 弹窗内容样式 ===== */
+/* ===== สไตล์เนื้อหาป๊อปอัป ===== */
 .dialog-content {
   padding: 20px;
   max-height: 60vh;
   overflow-y: auto;
 }
 
-/* 确认对话框内容 */
+/* เนื้อหากล่องยืนยัน */
 .confirm-dialog .dialog-content p {
   margin: 0;
   font-size: 16px;
@@ -109,7 +109,7 @@
   text-align: center;
 }
 
-/* 输入对话框内容 */
+/* เนื้อหากล่องป้อนข้อมูล */
 .input-dialog .dialog-content input {
   width: 100%;
   padding: 12px 16px;
@@ -125,7 +125,7 @@
   border-color: #ff8500;
 }
 
-/* ===== 用户信息样式 ===== */
+/* ===== สไตล์ข้อมูลผู้ใช้ ===== */
 .user-info {
   display: flex;
   align-items: center;
@@ -161,7 +161,7 @@
   display: inline-block;
 }
 
-/* ===== 发博输入区域样式 ===== */
+/* ===== สไตล์พื้นที่ป้อนข้อมูลโพสต์ ===== */
 .post-input-section {
   margin-bottom: 16px;
 }
@@ -179,8 +179,8 @@
   outline: none;
   transition: border-color 0.2s ease;
   font-family: inherit;
-  background: white !important; /* 强制白色背景 */
-  color: black !important; /* 强制黑色文字 */
+  background: white !important; /* บังคับพื้นหลังสีขาว */
+  color: black !important; /* บังคับข้อความสีดำ */
 }
 
 .post-input-section textarea:focus {
@@ -188,7 +188,7 @@
 }
 
 .post-input-section textarea::placeholder {
-  color: #999 !important; /* 强制placeholder颜色 */
+  color: #999 !important; /* บังคับสี placeholder */
 }
 
 .char-count {
@@ -199,7 +199,7 @@
   color: #666;
 }
 
-/* ===== 发博选项样式 ===== */
+/* ===== สไตล์ตัวเลือกโพสต์ ===== */
 .post-options {
   display: flex;
   gap: 8px;
@@ -231,7 +231,7 @@
   font-size: 12px;
 }
 
-/* ===== 弹窗底部样式 ===== */
+/* ===== สไตล์ส่วนล่างป๊อปอัป ===== */
 .dialog-footer {
   display: flex;
   gap: 12px;
@@ -283,7 +283,7 @@
   color: white;
 }
 
-/* ===== Toast 提示样式 ===== */
+/* ===== สไตล์ Toast แจ้งเตือน ===== */
 .weibo-toast {
   position: fixed;
   top: 20px;
@@ -311,7 +311,7 @@
   background: #1890ff;
 }
 
-/* ===== 响应式设计 ===== */
+/* ===== การออกแบบแบบตอบสนอง ===== */
 @media (max-width: 480px) {
   .weibo-dialog-overlay {
     padding: 16px;
@@ -414,7 +414,7 @@
   }
 }
 
-/* ===== 动画效果 ===== */
+/* ===== เอฟเฟกต์แอนิเมชัน ===== */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -437,7 +437,7 @@
   }
 }
 
-/* ===== 滚动条样式 ===== */
+/* ===== สไตล์แถบเลื่อน ===== */
 .dialog-content::-webkit-scrollbar {
   width: 6px;
 }
@@ -456,7 +456,7 @@
   background: #999;
 }
 
-/* ===== 焦点样式 ===== */
+/* ===== สไตล์โฟกัส ===== */
 .weibo-dialog button:focus,
 .weibo-dialog input:focus,
 .weibo-dialog textarea:focus {
@@ -464,7 +464,7 @@
   outline-offset: 2px;
 }
 
-/* ===== 禁用状态样式 ===== */
+/* ===== สไตล์สถานะปิดใช้งาน ===== */
 .weibo-dialog button:disabled {
   opacity: 0.6;
   cursor: not-allowed;

@@ -3,7 +3,7 @@
  * TypeScript Version
  */
 
-/* 主容器样式 */
+/* สไตล์คอนเทนเนอร์หลัก */
 #mobile_context_settings {
   margin: 10px 0;
 }
@@ -37,7 +37,7 @@
   border-radius: 0 0 8px 8px;
 }
 
-/* 表单控件样式 */
+/* สไตล์ตัวควบคุมฟอร์ม */
 #mobile_context_settings .flex-container {
   display: flex;
   flex-direction: column;
@@ -59,14 +59,14 @@
   background: var(--SmartThemeHoverColor, rgba(255, 255, 255, 0.1));
 }
 
-#mobile_context_settings input[type="checkbox"] {
+#mobile_context_settings input[type='checkbox'] {
   width: 16px;
   height: 16px;
-  accent-color: var(--SmartThemeAccentColor, #4CAF50);
+  accent-color: var(--SmartThemeAccentColor, #4caf50);
 }
 
 #mobile_context_settings select,
-#mobile_context_settings input[type="number"] {
+#mobile_context_settings input[type='number'] {
   background: var(--SmartThemeInputColor, #2a2a2a);
   color: var(--SmartThemeBodyColor, #fff);
   border: 1px solid var(--SmartThemeBorderColor, #444);
@@ -77,15 +77,15 @@
 }
 
 #mobile_context_settings select:focus,
-#mobile_context_settings input[type="number"]:focus {
+#mobile_context_settings input[type='number']:focus {
   outline: none;
-  border-color: var(--SmartThemeAccentColor, #4CAF50);
+  border-color: var(--SmartThemeAccentColor, #4caf50);
   box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2);
 }
 
-/* 按钮样式 */
+/* สไตล์ปุ่ม */
 #mobile_context_settings .menu_button {
-  background: linear-gradient(135deg, var(--SmartThemeAccentColor, #4CAF50), var(--SmartThemeAccentColorDark, #45a049));
+  background: linear-gradient(135deg, var(--SmartThemeAccentColor, #4caf50), var(--SmartThemeAccentColorDark, #45a049));
   color: white;
   border: none;
   border-radius: 6px;
@@ -99,7 +99,7 @@
 }
 
 #mobile_context_settings .menu_button:hover {
-  background: linear-gradient(135deg, var(--SmartThemeAccentColorDark, #45a049), var(--SmartThemeAccentColor, #4CAF50));
+  background: linear-gradient(135deg, var(--SmartThemeAccentColorDark, #45a049), var(--SmartThemeAccentColor, #4caf50));
   transform: translateY(-1px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
@@ -109,48 +109,48 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-/* 特殊按钮样式 */
+/* สไตล์ปุ่มพิเศษ */
 #mobile_context_compile_btn {
-  background: linear-gradient(135deg, #2196F3, #1976D2) !important;
+  background: linear-gradient(135deg, #2196f3, #1976d2) !important;
 }
 
 #mobile_context_compile_btn:hover {
-  background: linear-gradient(135deg, #1976D2, #2196F3) !important;
+  background: linear-gradient(135deg, #1976d2, #2196f3) !important;
 }
 
 #mobile_context_clear_btn {
-  background: linear-gradient(135deg, #FF9800, #F57C00) !important;
+  background: linear-gradient(135deg, #ff9800, #f57c00) !important;
 }
 
 #mobile_context_clear_btn:hover {
-  background: linear-gradient(135deg, #F57C00, #FF9800) !important;
+  background: linear-gradient(135deg, #f57c00, #ff9800) !important;
 }
 
 #mobile_context_reload_btn {
-  background: linear-gradient(135deg, #9C27B0, #7B1FA2) !important;
+  background: linear-gradient(135deg, #9c27b0, #7b1fa2) !important;
 }
 
 #mobile_context_reload_btn:hover {
-  background: linear-gradient(135deg, #7B1FA2, #9C27B0) !important;
+  background: linear-gradient(135deg, #7b1fa2, #9c27b0) !important;
 }
 
-/* 响应式设计 */
+/* การออกแบบแบบตอบสนอง */
 @media (max-width: 768px) {
   #mobile_context_settings .flex-container {
     gap: 8px;
   }
-  
+
   #mobile_context_settings .menu_button {
     width: 100%;
     margin: 2px 0;
   }
-  
+
   #mobile_context_settings .inline-drawer-content {
     padding: 12px;
   }
 }
 
-/* 深色主题适配 */
+/* ปรับให้เข้ากับธีมมืด */
 @media (prefers-color-scheme: dark) {
   #mobile_context_settings {
     --SmartThemeBackgroundColor: #1a1a1a;
@@ -160,12 +160,12 @@
     --SmartThemeBorderColor: #444;
     --SmartThemeInputColor: #2a2a2a;
     --SmartThemeHoverColor: rgba(255, 255, 255, 0.1);
-    --SmartThemeAccentColor: #4CAF50;
+    --SmartThemeAccentColor: #4caf50;
     --SmartThemeAccentColorDark: #45a049;
   }
 }
 
-/* 亮色主题适配 */
+/* ปรับให้เข้ากับธีมสว่าง */
 @media (prefers-color-scheme: light) {
   #mobile_context_settings {
     --SmartThemeBackgroundColor: #ffffff;
@@ -175,12 +175,12 @@
     --SmartThemeBorderColor: #ddd;
     --SmartThemeInputColor: #ffffff;
     --SmartThemeHoverColor: rgba(0, 0, 0, 0.05);
-    --SmartThemeAccentColor: #2196F3;
-    --SmartThemeAccentColorDark: #1976D2;
+    --SmartThemeAccentColor: #2196f3;
+    --SmartThemeAccentColorDark: #1976d2;
   }
 }
 
-/* 动画效果 */
+/* เอฟเฟกต์แอนิเมชัน */
 #mobile_context_settings .inline-drawer-content {
   animation: slideDown 0.3s ease-out;
 }
@@ -196,12 +196,12 @@
   }
 }
 
-/* TypeScript 特定样式 */
+/* สไตล์เฉพาะ TypeScript */
 .typescript-indicator {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: linear-gradient(135deg, #3178C6, #235a97);
+  background: linear-gradient(135deg, #3178c6, #235a97);
   color: white;
   padding: 2px 6px;
   border-radius: 12px;
@@ -212,11 +212,11 @@
 }
 
 .typescript-indicator::before {
-  content: "TS";
+  content: 'TS';
   font-weight: 700;
 }
 
-/* 状态指示器 */
+/* ตัวบ่งชี้สถานะ */
 .status-indicator {
   display: inline-block;
   width: 8px;
@@ -226,7 +226,7 @@
 }
 
 .status-indicator.running {
-  background: #4CAF50;
+  background: #4caf50;
   animation: pulse 2s infinite;
 }
 
@@ -247,4 +247,4 @@
     opacity: 1;
     transform: scale(1);
   }
-} 
+}

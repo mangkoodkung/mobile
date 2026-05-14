@@ -1,6 +1,6 @@
-/* Task App 样式文件 - 基于shop-app.css */
+/* Task App ไฟล์สไตล์ - อ้างอิงจาก shop-app.css */
 
-/* 任务应用容器 */
+/* คอนเทนเนอร์แอปภารกิจ */
 .task-app {
   display: flex;
   flex-direction: column;
@@ -8,7 +8,7 @@
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
-/* 任务列表容器 */
+/* คอนเทนเนอร์รายการภารกิจ */
 .task-list {
   padding: 12px 16px;
   flex: 1;
@@ -16,7 +16,7 @@
   background: transparent;
 }
 
-/* 任务网格 */
+/* กริดภารกิจ */
 .task-grid {
   display: flex;
   flex-direction: column;
@@ -24,7 +24,7 @@
   margin-bottom: 12px;
 }
 
-/* 任务项 */
+/* รายการภารกิจ */
 .task-item {
   background: white;
   border-radius: 12px;
@@ -49,12 +49,12 @@
   color: #6c757d;
 }
 
-/* 任务信息 */
+/* ข้อมูลภารกิจ */
 .task-info {
   flex: 1;
 }
 
-/* 任务头部行 - 包含任务名称和按钮/状态 */
+/* แถวส่วนหัวภารกิจ - ประกอบด้วยชื่อภารกิจและปุ่ม/สถานะ */
 .task-header-row {
   display: flex;
   justify-content: space-between;
@@ -116,7 +116,7 @@
   display: inline-block;
 }
 
-/* 任务操作按钮 */
+/* ปุ่มดำเนินการภารกิจ */
 .accept-task-btn {
   background: #6366f1;
   color: white;
@@ -157,7 +157,7 @@
   box-shadow: 0 4px 12px rgba(116, 185, 255, 0.4);
 }
 
-/* 空状态 */
+/* สถานะว่างเปล่า */
 .task-empty-state {
   text-align: center;
   padding: 80px 20px;
@@ -186,7 +186,7 @@
   color: #7f8c8d;
 }
 
-/* 标签页 */
+/* แท็บ */
 .task-tabs {
   display: flex;
   background: white;
@@ -220,7 +220,7 @@
   color: #2c3e50;
 }
 
-/* 提示消息 */
+/* ข้อความแจ้งเตือน */
 .task-toast {
   position: fixed;
   top: 20px;
@@ -256,7 +256,7 @@
   background: linear-gradient(135deg, #fdcb6e 0%, #e17055 100%);
 }
 
-/* 响应式设计 */
+/* การออกแบบแบบตอบสนอง */
 @media (max-width: 768px) {
   .task-list {
     padding: 8px 12px;
@@ -275,7 +275,7 @@
   }
 }
 
-/* 滚动条样式 */
+/* สไตล์แถบเลื่อน */
 .task-list::-webkit-scrollbar {
   width: 8px;
 }
@@ -294,7 +294,7 @@
   background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
 }
 
-/* 加载动画 */
+/* แอนิเมชันโหลด */
 .task-loading {
   display: flex;
   justify-content: center;
@@ -324,7 +324,7 @@
   }
 }
 
-/* 任务状态指示器 */
+/* ตัวบ่งชี้สถานะภารกิจ */
 .task-status-indicator {
   position: absolute;
   top: 10px;
@@ -347,7 +347,7 @@
   background: #27ae60;
 }
 
-/* 任务优先级标签 */
+/* ป้ายลำดับความสำคัญภารกิจ */
 .task-priority {
   position: absolute;
   top: 10px;
@@ -374,7 +374,7 @@
   color: white;
 }
 
-/* 任务标签 */
+/* แท็กภารกิจ */
 .task-tags {
   display: flex;
   flex-wrap: wrap;
@@ -391,7 +391,7 @@
   font-weight: 600;
 }
 
-/* 任务进度条 */
+/* แถบความคืบหน้าภารกิจ */
 .task-progress {
   margin-top: 10px;
   height: 4px;
@@ -406,7 +406,7 @@
   transition: width 0.3s ease;
 }
 
-/* 任务统计卡片 */
+/* การ์ดสถิติภารกิจ */
 .task-stats-card {
   background: white;
   border-radius: 12px;
