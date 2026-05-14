@@ -5,11 +5,11 @@
  * @version 1.0.0
  */
 
-// 获取 SillyTavern 的 getRequestHeaders 函数
+// รับฟังก์ชัน getRequestHeaders ของ SillyTavern
 function getRequestHeaders() {
-  // 尝试多种方式获取认证头部
+  // ลองหลายวิธีในการรับ header การยืนยันตัวตน
   if (typeof window !== 'undefined') {
-    // 方法1：使用 SillyTavern 的 getContext
+    // วิธีที่ 1: ใช้ getContext ของ SillyTavern
     if (window['SillyTavern'] && window['SillyTavern']['getContext']) {
       const context = window['SillyTavern']['getContext']();
       if (context && context['getRequestHeaders']) {
@@ -17,12 +17,12 @@ function getRequestHeaders() {
       }
     }
 
-    // 方法2：使用全局 getRequestHeaders 函数
+    // วิธีที่ 2: ใช้ฟังก์ชัน getRequestHeaders แบบ global
     if (window['getRequestHeaders']) {
       return window['getRequestHeaders']();
     }
 
-    // 方法3：使用 token 全局变量
+    // วิธีที่ 3: ใช้ตัวแปร global token
     if (window['token']) {
       return {
         'Content-Type': 'application/json',
@@ -31,7 +31,7 @@ function getRequestHeaders() {
     }
   }
 
-  // 回退方案：基本头部
+  // แผนสำรอง: header พื้นฐาน
   return {
     'Content-Type': 'application/json',
   };
@@ -47,10 +47,10 @@ class MobileUploadManager {
   }
 
   /**
-   * 初始化事件监听器
+   * เริ่มต้น event listener
    */
   initEventListeners() {
-    // 监听拖拽上传（移动端支持）
+    // ฟัง event ลากวางอัปโหลด (รองรับมือถือ)
     document.addEventListener('dragover', e => {
       e.preventDefault();
       e.stopPropagation();
@@ -62,14 +62,14 @@ class MobileUploadManager {
       this.handleFileDrop(e);
     });
 
-    // 监听粘贴上传 - 已禁用
+    // ฟัง event วางอัปโหลด - ปิดใช้งานแล้ว
     // document.addEventListener('paste', (e) => {
     //     this.handlePasteUpload(e);
     // });
   }
 
   /**
-   * 处理文件拖拽
+   * จัดการการลากวางไฟล์
    */
   async handleFileDrop(event) {
     const files = Array.from(event.dataTransfer.files);
@@ -83,15 +83,15 @@ class MobileUploadManager {
   }
 
   /**
-   * 处理粘贴上传 - 已禁用
+   * จัดการการวางอัปโหลด - ปิดใช้งานแล้ว
    */
   async handlePasteUpload(event) {
-    // 粘贴上传功能已禁用
+    // ฟังก์ชันวางอัปโหลดปิดใช้งานแล้ว
     return;
   }
 
   /**
-   * 将文件转换为 base64
+   * แปลงไฟล์เป็น base64
    */
   async fileToBase64(file) {
     return new Promise((resolve, reject) => {
@@ -111,29 +111,29 @@ class MobileUploadManager {
   }
 
   /**
-   * 上传文件（使用 SillyTavern API）
+   * อัปโหลดไฟล์ (ใช้ SillyTavern API)
    */
   async uploadFile(file) {
     const startTime = Date.now();
 
     try {
-      // 验证文件大小
+      // ตรวจสอบขนาดไฟล์
       if (file.size > this.maxFileSize) {
         throw new Error(`ขนาดไฟล์เกินขีดจำกัด (${this.maxFileSize / 1024 / 1024}MB)`);
       }
 
       this.showMobileNotification(`กำลังอัปโหลด: ${file.name}`, 'info');
 
-      // 转换文件为 base64
+      // แปลงไฟล์เป็น base64
       const base64Data = await this.fileToBase64(file);
 
-      // 生成唯一文件名
+      // สร้างชื่อไฟล์ที่ไม่ซ้ำ
       const timestamp = Date.now();
       const randomId = Math.random().toString(36).substring(2, 8);
       const fileExtension = file.name.split('.').pop() || 'txt';
       const uniqueFileName = `mobile_upload_${timestamp}_${randomId}.${fileExtension}`;
 
-      // 调用 SillyTavern API
+      // เรียก SillyTavern API
       const response = await fetch('/api/files/upload', {
         method: 'POST',
         headers: getRequestHeaders(),
@@ -151,7 +151,7 @@ class MobileUploadManager {
       const responseData = await response.json();
       const filePath = responseData.path;
 
-      // 记录成功的上传
+      // บันทึกการอัปโหลดที่สำเร็จ
       const uploadRecord = {
         originalFilename: file.name,
         filename: uniqueFileName,
@@ -166,7 +166,7 @@ class MobileUploadManager {
 
       this.uploadHistory.push(uploadRecord);
 
-      // 触发上传完成事件
+      // ทริกเกอร์ event อัปโหลดเสร็จ
       document.dispatchEvent(
         new CustomEvent('mobile-upload-complete', {
           detail: uploadRecord,
@@ -180,7 +180,7 @@ class MobileUploadManager {
     } catch (error) {
       console.error(`[Mobile Upload] การอัปโหลดล้มเหลว: ${file.name}`, error);
 
-      // 记录失败的上传
+      // บันทึกการอัปโหลดที่ล้มเหลว
       const failRecord = {
         originalFilename: file.name,
         filename: '',
@@ -201,7 +201,7 @@ class MobileUploadManager {
   }
 
   /**
-   * 上传文本内容
+   * อัปโหลดเนื้อหาข้อความ
    */
   async uploadTextContent(text, filename = 'content.txt') {
     const startTime = Date.now();
@@ -209,17 +209,17 @@ class MobileUploadManager {
     try {
       this.showMobileNotification(`กำลังอัปโหลดข้อความ: ${filename}`, 'info');
 
-      // 将文本转换为 base64
+      // แปลงข้อความเป็น base64
       const base64Data = btoa(unescape(encodeURIComponent(text)));
 
-      // 生成唯一文件名
+      // สร้างชื่อไฟล์ที่ไม่ซ้ำ
       const timestamp = Date.now();
       const randomId = Math.random().toString(36).substring(2, 8);
       const fileExtension = filename.split('.').pop() || 'txt';
       const baseName = filename.replace(/\.[^/.]+$/, '');
       const uniqueFileName = `mobile_${baseName}_${timestamp}_${randomId}.${fileExtension}`;
 
-      // 调用 SillyTavern API
+      // เรียก SillyTavern API
       const response = await fetch('/api/files/upload', {
         method: 'POST',
         headers: getRequestHeaders(),
@@ -237,7 +237,7 @@ class MobileUploadManager {
       const responseData = await response.json();
       const filePath = responseData.path;
 
-      // 记录成功的上传
+      // บันทึกการอัปโหลดที่สำเร็จ
       const uploadRecord = {
         originalFilename: filename,
         filename: uniqueFileName,
@@ -253,7 +253,7 @@ class MobileUploadManager {
 
       this.uploadHistory.push(uploadRecord);
 
-      // 触发上传完成事件
+      // ทริกเกอร์ event อัปโหลดเสร็จ
       document.dispatchEvent(
         new CustomEvent('mobile-upload-complete', {
           detail: uploadRecord,
@@ -267,7 +267,7 @@ class MobileUploadManager {
     } catch (error) {
       console.error(`[Mobile Upload] การอัปโหลดข้อความล้มเหลว: ${filename}`, error);
 
-      // 记录失败的上传
+      // บันทึกการอัปโหลดที่ล้มเหลว
       const failRecord = {
         originalFilename: filename,
         filename: '',
@@ -289,11 +289,11 @@ class MobileUploadManager {
   }
 
   /**
-   * 读取文件内容
+   * อ่านเนื้อหาไฟล์
    */
   async readFile(filename) {
     try {
-      // 查找文件记录
+      // ค้นหาบันทึกไฟล์
       const record = this.uploadHistory.find(
         h => (h.originalFilename === filename || h.filename === filename) && h.success,
       );
@@ -308,7 +308,7 @@ class MobileUploadManager {
 
       this.showMobileNotification(`กำลังอ่าน: ${filename}`, 'info');
 
-      // 使用文件路径读取内容（不使用缓存）
+      // ใช้เส้นทางไฟล์อ่านเนื้อหา (ไม่ใช้แคช)
       const response = await fetch(record.path, {
         method: 'GET',
         headers: {
@@ -342,11 +342,11 @@ class MobileUploadManager {
   }
 
   /**
-   * 删除文件
+   * ลบไฟล์
    */
   async deleteFile(filename) {
     try {
-      // 查找文件记录
+      // ค้นหาบันทึกไฟล์
       const recordIndex = this.uploadHistory.findIndex(
         h => (h.originalFilename === filename || h.filename === filename) && h.success,
       );
@@ -358,7 +358,7 @@ class MobileUploadManager {
       const record = this.uploadHistory[recordIndex];
       this.showMobileNotification(`กำลังลบ: ${filename}`, 'info');
 
-      // 调用 SillyTavern 删除 API
+      // เรียก SillyTavern API ลบไฟล์
       const response = await fetch('/api/files/delete', {
         method: 'POST',
         headers: getRequestHeaders(),
@@ -372,7 +372,7 @@ class MobileUploadManager {
         throw new Error(`ลบไฟล์ล้มเหลว: ${response.status} ${response.statusText}`);
       }
 
-      // 从历史记录中移除
+      // ลบออกจากประวัติ
       this.uploadHistory.splice(recordIndex, 1);
 
       this.showMobileNotification(`✅ ลบสำเร็จ: ${filename}`, 'success');
@@ -387,7 +387,7 @@ class MobileUploadManager {
   }
 
   /**
-   * 列出文件
+   * แสดงรายการไฟล์
    */
   async listFiles() {
     try {
@@ -413,21 +413,21 @@ class MobileUploadManager {
   }
 
   /**
-   * 显示移动端通知
+   * แสดงการแจ้งเตือนบนมือถือ
    */
   showMobileNotification(message, type = 'info') {
-    // 如果存在手机界面，在手机屏幕上显示通知
+    // ถ้ามีอินเทอร์เฟซมือถือ แสดงการแจ้งเตือนบนหน้าจอมือถือ
     const phoneScreen = document.querySelector('.phone-screen');
     if (phoneScreen) {
       this.showPhoneNotification(message, type);
     } else {
-      // 回退到普通通知
+      // ใช้การแจ้งเตือนปกติแทน
       this.showRegularNotification(message, type);
     }
   }
 
   /**
-   * 在手机屏幕上显示通知
+   * แสดงการแจ้งเตือนบนหน้าจอมือถือ
    */
   showPhoneNotification(message, type = 'info') {
     const notification = document.createElement('div');
@@ -451,7 +451,7 @@ class MobileUploadManager {
 
     document.body.appendChild(notification);
 
-    // 3秒后自动消失
+    // หายไปอัตโนมัติหลัง 3 วินาที
     setTimeout(() => {
       if (notification.parentNode) {
         notification.parentNode.removeChild(notification);
@@ -460,19 +460,19 @@ class MobileUploadManager {
   }
 
   /**
-   * 显示普通通知
+   * แสดงการแจ้งเตือนปกติ
    */
   showRegularNotification(message, type = 'info') {
     console.log(`[Mobile Upload] ${message}`);
 
-    // 尝试使用toastr（如果可用）
+    // ลองใช้ toastr (ถ้ามี)
     if (typeof toastr !== 'undefined') {
       toastr[type](message);
     }
   }
 
   /**
-   * 创建移动端上传UI
+   * สร้าง UI อัปโหลดบนมือถือ
    */
   createMobileUploadUI() {
     const uploadUI = document.createElement('div');
@@ -529,48 +529,48 @@ class MobileUploadManager {
   }
 
   /**
-   * 绑定移动端事件
+   * ผูก event บนมือถือ
    */
   bindMobileEvents() {
-    // 关闭按钮
+    // ปุ่มปิด
     document.getElementById('mobile-upload-close').addEventListener('click', () => {
       this.hideMobileUploadUI();
     });
 
-    // 选择文件按钮
+    // ปุ่มเลือกไฟล์
     document.getElementById('mobile-upload-file').addEventListener('click', () => {
       document.getElementById('mobile-file-input').click();
     });
 
-    // 文件输入变化
+    // การเปลี่ยนแปลง input ไฟล์
     document.getElementById('mobile-file-input').addEventListener('change', async e => {
       const files = Array.from(e.target.files);
       if (files.length > 0) {
         for (const file of files) {
           await this.uploadFile(file);
         }
-        e.target.value = ''; // 清空输入
+        e.target.value = ''; // ล้าง input
       }
     });
 
-    // 上传文本按钮
+    // ปุ่มอัปโหลดข้อความ
     document.getElementById('mobile-upload-text').addEventListener('click', () => {
       this.showTextUploadDialog();
     });
 
-    // 文件列表按钮
+    // ปุ่มรายการไฟล์
     document.getElementById('mobile-upload-list').addEventListener('click', () => {
       this.showFileList();
     });
 
-    // 统计信息按钮
+    // ปุ่มสถิติ
     document.getElementById('mobile-upload-stats').addEventListener('click', () => {
       this.showStats();
     });
   }
 
   /**
-   * 显示移动端上传UI
+   * แสดง UI อัปโหลดบนมือถือ
    */
   showMobileUploadUI() {
     let uploadUI = document.getElementById('mobile-upload-ui');
@@ -583,7 +583,7 @@ class MobileUploadManager {
   }
 
   /**
-   * 隐藏移动端上传UI
+   * ซ่อน UI อัปโหลดบนมือถือ
    */
   hideMobileUploadUI() {
     const uploadUI = document.getElementById('mobile-upload-ui');
@@ -594,7 +594,7 @@ class MobileUploadManager {
   }
 
   /**
-   * 切换移动端上传UI
+   * สลับ UI อัปโหลดบนมือถือ
    */
   toggleMobileUploadUI() {
     if (this.isUIVisible) {
@@ -605,7 +605,7 @@ class MobileUploadManager {
   }
 
   /**
-   * 显示文本上传对话框
+   * แสดงกล่องโต้ตอบอัปโหลดข้อความ
    */
   showTextUploadDialog() {
     const content = document.getElementById('mobile-upload-content');
@@ -628,7 +628,7 @@ class MobileUploadManager {
             </div>
         `;
 
-    // 绑定事件
+    // ผูก event
     document.getElementById('mobile-do-text-upload').addEventListener('click', async () => {
       const textContent = document.getElementById('mobile-text-content').value;
       const filename = document.getElementById('mobile-text-filename').value;
@@ -645,9 +645,9 @@ class MobileUploadManager {
 
       try {
         await this.uploadTextContent(textContent, filename);
-        this.showFileList(); // 上传成功后显示文件列表
+        this.showFileList(); // แสดงรายการไฟล์หลังอัปโหลดสำเร็จ
       } catch (error) {
-        // 错误已在 uploadTextContent 中处理
+        // ข้อผิดพลาดถูกจัดการใน uploadTextContent แล้ว
       }
     });
 
@@ -657,7 +657,7 @@ class MobileUploadManager {
   }
 
   /**
-   * 显示文件列表
+   * แสดงรายการไฟล์
    */
   async showFileList() {
     try {
@@ -703,7 +703,7 @@ class MobileUploadManager {
   }
 
   /**
-   * 显示统计信息
+   * แสดงข้อมูลสถิติ
    */
   showStats() {
     const stats = this.getStats();
@@ -741,16 +741,16 @@ class MobileUploadManager {
   }
 
   /**
-   * 更新移动端UI
+   * อัปเดต UI มือถือ
    */
   updateMobileUI() {
     if (this.isUIVisible) {
-      this.showFileList(); // 默认显示文件列表
+      this.showFileList(); // แสดงรายการไฟล์เป็นค่าเริ่มต้น
     }
   }
 
   /**
-   * 获取统计信息
+   * รับข้อมูลสถิติ
    */
   getStats() {
     const total = this.uploadHistory.length;
@@ -769,14 +769,14 @@ class MobileUploadManager {
   }
 
   /**
-   * 获取上传历史
+   * รับประวัติการอัปโหลด
    */
   getHistory() {
     return this.uploadHistory;
   }
 
   /**
-   * 清除上传历史
+   * ล้างประวัติการอัปโหลด
    */
   clearHistory() {
     this.uploadHistory = [];
@@ -785,7 +785,7 @@ class MobileUploadManager {
   }
 }
 
-// 创建全局实例
+// สร้าง instance แบบ global
 window.mobileUploadManager = new MobileUploadManager();
 
 console.log('[Mobile Upload] ✅ ตัวจัดการการอัปโหลดบนมือถือเริ่มต้นแล้ว');

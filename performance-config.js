@@ -1,182 +1,184 @@
 /**
- * Mobile插件性能配置
- * 允许用户自定义性能设置以优化卡顿问题
+ * การตั้งค่าประสิทธิภาพปลั๊กอิน Mobile
+ * อนุญาตให้ผู้ใช้ปรับแต่งการตั้งค่าประสิทธิภาพเพื่อแก้ปัญหาการกระตุก
  */
 
 const MOBILE_PERFORMANCE_CONFIG = {
-    // 文件加载优化
-    loading: {
-        // 启用异步并行加载
-        enableParallelLoading: true,
-        // 启用懒加载
-        enableLazyLoading: true,
-        // 分块加载大小（KB）
-        chunkSize: 50,
-        // 加载超时时间（毫秒）
-        loadTimeout: 10000,
-        // 重试次数
-        retryCount: 3
-    },
+  // การเพิ่มประสิทธิภาพการโหลดไฟล์
+  loading: {
+    // เปิดใช้งานการโหลดแบบขนานแบบ async
+    enableParallelLoading: true,
+    // เปิดใช้งานการโหลดแบบ lazy
+    enableLazyLoading: true,
+    // ขนาดการโหลดแบบแบ่งส่วน (KB)
+    chunkSize: 50,
+    // เวลา timeout การโหลด (มิลลิวินาที)
+    loadTimeout: 10000,
+    // จำนวนครั้งที่ลองใหม่
+    retryCount: 3,
+  },
 
-    // 监控器优化
-    monitoring: {
-        // 上下文监控间隔（毫秒）
-        contextMonitorInterval: 5000, // 从3秒改为5秒
-        // 启用智能监控（仅在必要时监控）
-        enableSmartMonitoring: true,
-        // 事件防抖延迟（毫秒）
-        debounceDelay: 500,
-        // 最大历史记录数
-        maxHistoryRecords: 100, // 从50改为100但有清理机制
-        // 启用性能监控
-        enablePerformanceMonitoring: true
-    },
+  // การเพิ่มประสิทธิภาพตัวตรวจสอบ
+  monitoring: {
+    // ช่วงเวลาตรวจสอบบริบท (มิลลิวินาที)
+    contextMonitorInterval: 5000, // เปลี่ยนจาก 3 วินาทีเป็น 5 วินาที
+    // เปิดใช้งานการตรวจสอบอัจฉริยะ (ตรวจสอบเฉพาะเมื่อจำเป็น)
+    enableSmartMonitoring: true,
+    // หน่วงเวลา debounce ของ event (มิลลิวินาที)
+    debounceDelay: 500,
+    // จำนวนบันทึกประวัติสูงสุด
+    maxHistoryRecords: 100, // เปลี่ยนจาก 50 เป็น 100 แต่มีกลไกทำความสะอาด
+    // เปิดใช้งานการตรวจสอบประสิทธิภาพ
+    enablePerformanceMonitoring: true,
+  },
 
-    // 缓存优化
-    caching: {
-        // 启用智能缓存
-        enableSmartCaching: true,
-        // 缓存过期时间（毫秒）
-        cacheExpiry: 300000, // 5分钟
-        // 最大缓存大小（MB）
-        maxCacheSize: 10,
-        // 自动清理缓存
-        autoCleanupCache: true
-    },
+  // การเพิ่มประสิทธิภาพแคช
+  caching: {
+    // เปิดใช้งานแคชอัจฉริยะ
+    enableSmartCaching: true,
+    // เวลาหมดอายุแคช (มิลลิวินาที)
+    cacheExpiry: 300000, // 5 นาที
+    // ขนาดแคชสูงสุด (MB)
+    maxCacheSize: 10,
+    // ทำความสะอาดแคชอัตโนมัติ
+    autoCleanupCache: true,
+  },
 
-    // 渲染优化
-    rendering: {
-        // 启用虚拟滚动
-        enableVirtualScrolling: true,
-        // 渲染批处理大小
-        renderBatchSize: 20,
-        // 渲染间隔（毫秒）
-        renderInterval: 100,
-        // 启用增量渲染
-        enableIncrementalRendering: true,
-        // 最大同时渲染数
-        maxConcurrentRenders: 3
-    },
+  // การเพิ่มประสิทธิภาพการเรนเดอร์
+  rendering: {
+    // เปิดใช้งาน virtual scrolling
+    enableVirtualScrolling: true,
+    // ขนาด batch การเรนเดอร์
+    renderBatchSize: 20,
+    // ช่วงเวลาการเรนเดอร์ (มิลลิวินาที)
+    renderInterval: 100,
+    // เปิดใช้งานการเรนเดอร์แบบ incremental
+    enableIncrementalRendering: true,
+    // จำนวนการเรนเดอร์พร้อมกันสูงสุด
+    maxConcurrentRenders: 3,
+  },
 
-    // 内存管理
-    memory: {
-        // 启用内存监控
-        enableMemoryMonitoring: true,
-        // 内存清理间隔（毫秒）
-        memoryCleanupInterval: 60000, // 1分钟
-        // 内存使用阈值（MB）
-        memoryThreshold: 50,
-        // 自动垃圾回收
-        autoGarbageCollection: true
-    },
+  // การจัดการหน่วยความจำ
+  memory: {
+    // เปิดใช้งานการตรวจสอบหน่วยความจำ
+    enableMemoryMonitoring: true,
+    // ช่วงเวลาทำความสะอาดหน่วยความจำ (มิลลิวินาที)
+    memoryCleanupInterval: 60000, // 1 นาที
+    // ค่าขีดจำกัดการใช้หน่วยความจำ (MB)
+    memoryThreshold: 50,
+    // เก็บขยะอัตโนมัติ
+    autoGarbageCollection: true,
+  },
 
-    // 网络优化
-    network: {
-        // 启用请求合并
-        enableRequestMerging: true,
-        // 请求超时时间（毫秒）
-        requestTimeout: 8000,
-        // 最大并发请求数
-        maxConcurrentRequests: 5,
-        // 启用请求缓存
-        enableRequestCache: true
-    },
+  // การเพิ่มประสิทธิภาพเครือข่าย
+  network: {
+    // เปิดใช้งานการรวม request
+    enableRequestMerging: true,
+    // เวลา timeout ของ request (มิลลิวินาที)
+    requestTimeout: 8000,
+    // จำนวน request พร้อมกันสูงสุด
+    maxConcurrentRequests: 5,
+    // เปิดใช้งานแคช request
+    enableRequestCache: true,
+  },
 
-    // 调试选项
-    debug: {
-        // 启用性能日志
-        enablePerformanceLogging: false,
-        // 启用内存使用日志
-        enableMemoryLogging: false,
-        // 启用渲染性能日志
-        enableRenderLogging: false,
-        // 日志级别：'error', 'warn', 'info', 'debug'
-        logLevel: 'info'
-    }
+  // ตัวเลือกดีบัก
+  debug: {
+    // เปิดใช้งาน log ประสิทธิภาพ
+    enablePerformanceLogging: false,
+    // เปิดใช้งาน log การใช้หน่วยความจำ
+    enableMemoryLogging: false,
+    // เปิดใช้งาน log ประสิทธิภาพการเรนเดอร์
+    enableRenderLogging: false,
+    // ระดับ log: 'error', 'warn', 'info', 'debug'
+    logLevel: 'info',
+  },
 };
 
-// 性能监控工具
+// เครื่องมือตรวจสอบประสิทธิภาพ
 class PerformanceMonitor {
-    constructor() {
-        this.metrics = {
-            loadTime: 0,
-            renderTime: 0,
-            memoryUsage: 0,
-            cacheHitRate: 0,
-            errorCount: 0
-        };
-        this.startTime = performance.now();
-        this.observers = [];
+  constructor() {
+    this.metrics = {
+      loadTime: 0,
+      renderTime: 0,
+      memoryUsage: 0,
+      cacheHitRate: 0,
+      errorCount: 0,
+    };
+    this.startTime = performance.now();
+    this.observers = [];
+  }
+
+  startTimer(name) {
+    this.timers = this.timers || {};
+    this.timers[name] = performance.now();
+  }
+
+  endTimer(name) {
+    if (this.timers && this.timers[name]) {
+      const duration = performance.now() - this.timers[name];
+      this.metrics[name + 'Time'] = duration;
+      delete this.timers[name];
+      return duration;
     }
+    return 0;
+  }
 
-    startTimer(name) {
-        this.timers = this.timers || {};
-        this.timers[name] = performance.now();
-    }
+  recordMetric(name, value) {
+    this.metrics[name] = value;
+  }
 
-    endTimer(name) {
-        if (this.timers && this.timers[name]) {
-            const duration = performance.now() - this.timers[name];
-            this.metrics[name + 'Time'] = duration;
-            delete this.timers[name];
-            return duration;
-        }
-        return 0;
-    }
+  getMetrics() {
+    return { ...this.metrics };
+  }
 
-    recordMetric(name, value) {
-        this.metrics[name] = value;
-    }
+  startMemoryMonitoring() {
+    if (!performance.memory) return;
 
-    getMetrics() {
-        return { ...this.metrics };
-    }
+    const monitor = () => {
+      const memory = performance.memory;
+      this.recordMetric('memoryUsage', memory.usedJSHeapSize / 1024 / 1024); // MB
 
-    startMemoryMonitoring() {
-        if (!performance.memory) return;
+      // ถ้าการใช้หน่วยความจำเกินค่าขีดจำกัด ทริกเกอร์การทำความสะอาด
+      if (memory.usedJSHeapSize / 1024 / 1024 > MOBILE_PERFORMANCE_CONFIG.memory.memoryThreshold) {
+        this.triggerMemoryCleanup();
+      }
+    };
 
-        const monitor = () => {
-            const memory = performance.memory;
-            this.recordMetric('memoryUsage', memory.usedJSHeapSize / 1024 / 1024); // MB
+    setInterval(monitor, MOBILE_PERFORMANCE_CONFIG.memory.memoryCleanupInterval);
+  }
 
-            // 如果内存使用超过阈值，触发清理
-            if (memory.usedJSHeapSize / 1024 / 1024 > MOBILE_PERFORMANCE_CONFIG.memory.memoryThreshold) {
-                this.triggerMemoryCleanup();
-            }
-        };
+  triggerMemoryCleanup() {
+    // ทริกเกอร์ event ทำความสะอาดหน่วยความจำ
+    window.dispatchEvent(
+      new CustomEvent('mobile-memory-cleanup', {
+        detail: { threshold: MOBILE_PERFORMANCE_CONFIG.memory.memoryThreshold },
+      }),
+    );
+  }
 
-        setInterval(monitor, MOBILE_PERFORMANCE_CONFIG.memory.memoryCleanupInterval);
-    }
+  generateReport() {
+    const metrics = this.getMetrics();
+    const totalTime = performance.now() - this.startTime;
 
-    triggerMemoryCleanup() {
-        // 触发内存清理事件
-        window.dispatchEvent(new CustomEvent('mobile-memory-cleanup', {
-            detail: { threshold: MOBILE_PERFORMANCE_CONFIG.memory.memoryThreshold }
-        }));
-    }
-
-    generateReport() {
-        const metrics = this.getMetrics();
-        const totalTime = performance.now() - this.startTime;
-
-        return {
-            totalTime,
-            metrics,
-            timestamp: new Date().toISOString(),
-            config: MOBILE_PERFORMANCE_CONFIG
-        };
-    }
+    return {
+      totalTime,
+      metrics,
+      timestamp: new Date().toISOString(),
+      config: MOBILE_PERFORMANCE_CONFIG,
+    };
+  }
 }
 
-// 创建全局性能监控器
+// สร้างตัวตรวจสอบประสิทธิภาพแบบ global
 window.mobilePerformanceMonitor = new PerformanceMonitor();
 
-// 导出配置
+// ส่งออกการตั้งค่า
 if (typeof module !== 'undefined' && module.exports) {
-    module.exports = { MOBILE_PERFORMANCE_CONFIG, PerformanceMonitor };
+  module.exports = { MOBILE_PERFORMANCE_CONFIG, PerformanceMonitor };
 } else {
-    window.MOBILE_PERFORMANCE_CONFIG = MOBILE_PERFORMANCE_CONFIG;
-    window.PerformanceMonitor = PerformanceMonitor;
+  window.MOBILE_PERFORMANCE_CONFIG = MOBILE_PERFORMANCE_CONFIG;
+  window.PerformanceMonitor = PerformanceMonitor;
 }
 
-console.log('[Mobile Performance] 性能配置已加载');
+console.log('[Mobile Performance] โหลดการตั้งค่าประสิทธิภาพแล้ว');
