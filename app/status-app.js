@@ -1,10 +1,10 @@
 /**
- * Status App - 状态应用
- * 为mobile-phone.js提供状态查看功能
+ * Status App - แอปสถานะ
+ * ให้ฟังก์ชันดูสถานะสำหรับ mobile-phone.js
  */
 
 // @ts-nocheck
-// 避免重复定义
+// ป้องกันการประกาศซ้ำ
 if (typeof window.StatusApp === 'undefined') {
   class StatusApp {
     constructor() {
@@ -18,32 +18,32 @@ if (typeof window.StatusApp === 'undefined') {
     }
 
     init() {
-      console.log('[Status App] 状态应用初始化开始 - 版本 2.0');
+      console.log('[Status App] เริ่มต้นแอปสถานะ - เวอร์ชัน 2.0');
 
-      // 立即从变量管理器读取一次状态信息
+      // อ่านข้อมูลสถานะจากตัวจัดการตัวแปรทันที
       this.parseStatusFromContext();
 
-      // 异步初始化监控，避免阻塞界面渲染
+      // เริ่มต้นการตรวจสอบแบบ async เพื่อไม่ให้บล็อกการเรนเดอร์ UI
       setTimeout(() => {
         this.setupContextMonitor();
       }, 100);
 
-      console.log('[Status App] 状态应用初始化完成');
+      console.log('[Status App] เริ่มต้นแอปสถานะเสร็จสมบูรณ์');
     }
 
-    // 设置上下文监控
+    // ตั้งค่าการตรวจสอบบริบท
     setupContextMonitor() {
-      console.log('[Status App] 设置上下文监控...');
+      console.log('[Status App] ตั้งค่าการตรวจสอบบริบท...');
       this.setupSillyTavernEventListeners();
     }
 
-    // 手动刷新状态数据
+    // รีเฟรชข้อมูลสถานะด้วยตนเอง
     refreshStatusData() {
-      console.log('[Status App] 🔄 手动刷新状态数据...');
+      console.log('[Status App] 🔄 รีเฟรชข้อมูลสถานะด้วยตนเอง...');
       this.parseStatusFromContext();
     }
 
-    // 设置SillyTavern事件监听器
+    // ตั้งค่า Event Listener ของ SillyTavern
     setupSillyTavernEventListeners() {
       if (this.eventListenersSetup) {
         return;
@@ -57,15 +57,15 @@ if (typeof window.StatusApp === 'undefined') {
           this.eventListenersSetup = true;
 
           const handleMessageReceived = () => {
-            console.log('[Status App] 📨 收到 MESSAGE_RECEIVED 事件，刷新状态数据...');
+            console.log('[Status App] 📨 ได้รับ event MESSAGE_RECEIVED รีเฟรชข้อมูลสถานะ...');
             setTimeout(() => {
-              // 先解析数据
+              // แยกวิเคราะห์ข้อมูลก่อน
               this.parseStatusFromContext();
 
-              // 如果应用当前处于活动状态，强制刷新UI
+              // หากแอปอยู่ในสถานะใช้งาน บังคับรีเฟรช UI
               const appContent = document.getElementById('app-content');
               if (appContent && appContent.querySelector('.cd-status-app')) {
-                console.log('[Status App] 🔄 强制刷新状态应用UI...');
+                console.log('[Status App] 🔄 บังคับรีเฟรช UI แอปสถานะ...');
                 appContent.innerHTML = this.getAppContent();
                 this.bindEvents();
               }
@@ -74,17 +74,17 @@ if (typeof window.StatusApp === 'undefined') {
 
           if (event_types.MESSAGE_RECEIVED) {
             eventSource.on(event_types.MESSAGE_RECEIVED, handleMessageReceived);
-            console.log('[Status App] ✅ 已注册 MESSAGE_RECEIVED 事件监听');
+            console.log('[Status App] ✅ ลงทะเบียน event MESSAGE_RECEIVED แล้ว');
           }
 
           if (event_types.CHAT_CHANGED) {
             eventSource.on(event_types.CHAT_CHANGED, () => {
-              console.log('[Status App] 📨 聊天已切换，刷新状态数据...');
+              console.log('[Status App] 📨 แชทถูกเปลี่ยน รีเฟรชข้อมูลสถานะ...');
               setTimeout(() => {
                 this.parseStatusFromContext();
               }, 500);
             });
-            console.log('[Status App] ✅ 已注册 CHAT_CHANGED 事件监听');
+            console.log('[Status App] ✅ ลงทะเบียน event CHAT_CHANGED แล้ว');
           }
 
           this.messageReceivedHandler = handleMessageReceived;
@@ -94,41 +94,41 @@ if (typeof window.StatusApp === 'undefined') {
           }, 5000);
         }
       } catch (error) {
-        console.warn('[Status App] 设置SillyTavern事件监听器失败:', error);
+        console.warn('[Status App] ตั้งค่า Event Listener ของ SillyTavern ล้มเหลว:', error);
       }
     }
 
-    // 从上下文解析状态信息
+    // แยกวิเคราะห์ข้อมูลสถานะจากบริบท
     parseStatusFromContext() {
       try {
         const statusData = this.getCurrentStatusData();
         this.userData = statusData.userData;
         this.npcList = statusData.npcList;
-        console.log('[Status App] 📊 状态数据已更新');
+        console.log('[Status App] 📊 อัปเดตข้อมูลสถานะแล้ว');
 
-        // 只有在当前显示状态应用时才更新UI
+        // อัปเดต UI เฉพาะเมื่อแอปสถานะกำลังแสดงอยู่
         if (this.isCurrentlyActive()) {
-          console.log('[Status App] 🎨 状态应用处于活动状态，更新UI...');
+          console.log('[Status App] 🎨 แอปสถานะอยู่ในสถานะใช้งาน อัปเดต UI...');
           this.updateAppContent();
         } else {
-          console.log('[Status App] 💤 状态应用未激活，数据已更新但UI延迟渲染');
+          console.log('[Status App] 💤 แอปสถานะไม่ได้เปิดใช้งาน ข้อมูลอัปเดตแล้วแต่ UI จะเรนเดอร์ภายหลัง');
         }
       } catch (error) {
-        console.error('[Status App] 解析状态信息失败:', error);
+        console.error('[Status App] แยกวิเคราะห์ข้อมูลสถานะล้มเหลว:', error);
       }
     }
 
-    // 检查状态应用是否当前活动
+    // ตรวจสอบว่าแอปสถานะกำลังใช้งานอยู่หรือไม่
     isCurrentlyActive() {
       const appContent = document.getElementById('app-content');
       if (!appContent) return false;
 
-      // 检查是否包含状态应用的特征元素
+      // ตรวจสอบว่ามี element เฉพาะของแอปสถานะหรือไม่
       return appContent.querySelector('.cd-status-container') !== null;
     }
 
     /**
-     * 从变量管理器获取状态数据
+     * ดึงข้อมูลสถานะจากตัวจัดการตัวแปร
      */
     getCurrentStatusData() {
       try {
@@ -153,49 +153,49 @@ if (typeof window.StatusApp === 'undefined') {
           }
 
           const mvuData = window.Mvu.getMvuData({ type: 'message', message_id: targetMessageId });
-          console.log('[Status App] 从 Mvu 获取变量数据:', mvuData);
-          console.log('[Status App] stat_data 存在:', !!mvuData?.stat_data);
+          console.log('[Status App] ดึงข้อมูลตัวแปรจาก Mvu:', mvuData);
+          console.log('[Status App] stat_data มีอยู่:', !!mvuData?.stat_data);
           if (mvuData?.stat_data) {
-            console.log('[Status App] stat_data 的键:', Object.keys(mvuData.stat_data));
-            console.log('[Status App] 用户是否存在:', !!mvuData.stat_data['用户']);
-            console.log('[Status App] NPC是否存在:', !!mvuData.stat_data['NPC']);
+            console.log('[Status App] คีย์ของ stat_data:', Object.keys(mvuData.stat_data));
+            console.log('[Status App] ข้อมูลผู้ใช้มีอยู่:', !!mvuData.stat_data['用户']);
+            console.log('[Status App] ข้อมูล NPC มีอยู่:', !!mvuData.stat_data['NPC']);
             if (mvuData.stat_data['用户']) {
-              console.log('[Status App] 用户数据:', mvuData.stat_data['用户']);
+              console.log('[Status App] ข้อมูลผู้ใช้:', mvuData.stat_data['用户']);
             }
             if (mvuData.stat_data['NPC']) {
-              console.log('[Status App] NPC数据:', mvuData.stat_data['NPC']);
+              console.log('[Status App] ข้อมูล NPC:', mvuData.stat_data['NPC']);
             }
           }
 
           let userData = null;
           let npcList = [];
 
-          // 尝试从 stat_data 读取用户数据
+          // ลองอ่านข้อมูลผู้ใช้จาก stat_data
           if (mvuData && mvuData.stat_data && mvuData.stat_data['用户']) {
             userData = this.parseUserData(mvuData.stat_data['用户']);
-            console.log('[Status App] ✅ 从 stat_data 获取到用户数据:', userData);
+            console.log('[Status App] ✅ ดึงข้อมูลผู้ใช้จาก stat_data ได้:', userData);
           } else if (mvuData && mvuData['用户']) {
             userData = this.parseUserData(mvuData['用户']);
-            console.log('[Status App] ✅ 从根级别获取到用户数据:', userData);
+            console.log('[Status App] ✅ ดึงข้อมูลผู้ใช้จากระดับ root ได้:', userData);
           } else {
-            console.warn('[Status App] ⚠️ 未找到用户数据');
+            console.warn('[Status App] ⚠️ ไม่พบข้อมูลผู้ใช้');
           }
 
-          // 尝试从 stat_data 读取NPC数据
+          // ลองอ่านข้อมูล NPC จาก stat_data
           if (mvuData && mvuData.stat_data && mvuData.stat_data['NPC']) {
             npcList = this.parseNPCData(mvuData.stat_data['NPC']);
-            console.log('[Status App] ✅ 从 stat_data 获取到NPC数据，数量:', npcList.length);
+            console.log('[Status App] ✅ ดึงข้อมูล NPC จาก stat_data ได้ จำนวน:', npcList.length);
           } else if (mvuData && mvuData['NPC']) {
             npcList = this.parseNPCData(mvuData['NPC']);
-            console.log('[Status App] ✅ 从根级别获取到NPC数据，数量:', npcList.length);
+            console.log('[Status App] ✅ ดึงข้อมูล NPC จากระดับ root ได้ จำนวน:', npcList.length);
           } else {
-            console.warn('[Status App] ⚠️ 未找到NPC数据');
+            console.warn('[Status App] ⚠️ ไม่พบข้อมูล NPC');
           }
 
           return { userData, npcList };
         }
 
-        // 备用方法
+        // วิธีสำรอง
         if (window.SillyTavern) {
           const context = window.SillyTavern.getContext ? window.SillyTavern.getContext() : window.SillyTavern;
           if (context && context.chatMetadata && context.chatMetadata.variables) {
@@ -209,16 +209,16 @@ if (typeof window.StatusApp === 'undefined') {
           }
         }
 
-        console.log('[Status App] 未找到状态数据');
+        console.log('[Status App] ไม่พบข้อมูลสถานะ');
       } catch (error) {
-        console.warn('[Status App] 获取状态数据失败:', error);
+        console.warn('[Status App] ดึงข้อมูลสถานะล้มเหลว:', error);
       }
 
       return { userData: null, npcList: [] };
     }
 
     /**
-     * 解析用户数据
+     * แยกวิเคราะห์ข้อมูลผู้ใช้
      */
     parseUserData(userData) {
       if (!userData || typeof userData !== 'object') return null;
@@ -255,7 +255,7 @@ if (typeof window.StatusApp === 'undefined') {
     }
 
     /**
-     * 解析NPC数据
+     * แยกวิเคราะห์ข้อมูล NPC
      */
     parseNPCData(npcData) {
       if (!npcData || typeof npcData !== 'object') return [];
@@ -276,7 +276,7 @@ if (typeof window.StatusApp === 'undefined') {
           return item && Array.isArray(item) ? item[0] : '';
         };
 
-        // 解析人物记忆
+        // แยกวิเคราะห์ความทรงจำของตัวละคร
         const memories = [];
         const memoryData = npc['人物记忆'];
         if (memoryData && Array.isArray(memoryData) && memoryData[0] && Array.isArray(memoryData[0])) {
@@ -315,17 +315,22 @@ if (typeof window.StatusApp === 'undefined') {
         });
       });
 
-      console.log('[Status App] 解析NPC完成，数量:', npcList.length);
+      console.log('[Status App] แยกวิเคราะห์ NPC เสร็จ จำนวน:', npcList.length);
       return npcList;
     }
 
-    // 获取应用内容
+    // ดึงเนื้อหาแอป
     getAppContent() {
-      // 每次打开应用时重新解析一次数据（确保显示最新内容）
+      // แยกวิเคราะห์ข้อมูลใหม่ทุกครั้งที่เปิดแอป (เพื่อให้แน่ใจว่าแสดงเนื้อหาล่าสุด)
       const statusData = this.getCurrentStatusData();
       this.userData = statusData.userData;
       this.npcList = statusData.npcList;
-      console.log('[Status App] 📊 打开应用时更新状态数据，用户:', !!this.userData, 'NPC数:', this.npcList.length);
+      console.log(
+        '[Status App] 📊 อัปเดตข้อมูลสถานะเมื่อเปิดแอป ผู้ใช้:',
+        !!this.userData,
+        'จำนวน NPC:',
+        this.npcList.length,
+      );
 
       return `
         <div class="cd-status-app">
@@ -337,21 +342,21 @@ if (typeof window.StatusApp === 'undefined') {
       `;
     }
 
-    // 渲染标签页
+    // เรนเดอร์แท็บ
     renderTabs() {
       return `
         <div class="cd-status-tabs">
           <button class="cd-status-tab ${this.currentView === 'user' ? 'cd-active' : ''}" data-view="user">
-            我的状态
+            สถานะของฉัน
           </button>
           <button class="cd-status-tab ${this.currentView === 'npc' ? 'cd-active' : ''}" data-view="npc">
-            NPC状态 (${this.npcList.length})
+            สถานะ NPC (${this.npcList.length})
           </button>
         </div>
       `;
     }
 
-    // 渲染用户状态
+    // เรนเดอร์สถานะผู้ใช้
     renderUserStatus() {
       if (!this.userData) {
         return `
@@ -379,7 +384,7 @@ if (typeof window.StatusApp === 'undefined') {
               </div>
               <div class="cd-info-item">
                 <span class="cd-info-label">อายุ</span>
-                <span class="cd-info-value">${this.userData.年龄}岁</span>
+                <span class="cd-info-value">${this.userData.年龄} ปี</span>
               </div>
               <div class="cd-info-item">
                 <span class="cd-info-label">ส่วนสูง</span>
@@ -423,10 +428,10 @@ if (typeof window.StatusApp === 'undefined') {
       `;
     }
 
-    // 渲染服装项（isUser=true表示可以穿脱）
+    // เรนเดอร์รายการเสื้อผ้า (isUser=true หมายถึงสามารถสวม/ถอดได้)
     renderClothingItem(slot, item, isUser = false) {
       const isEmpty = !item || item.trim() === '';
-      const displayText = isEmpty ? '未穿戴' : item;
+      const displayText = isEmpty ? 'ไม่ได้สวมใส่' : item;
 
       if (isUser) {
         return `
@@ -448,13 +453,13 @@ if (typeof window.StatusApp === 'undefined') {
       }
     }
 
-    // 渲染NPC列表
+    // เรนเดอร์รายการ NPC
     renderNPCList() {
       if (!this.npcList.length) {
         return `
           <div class="cd-status-empty">
             <div class="cd-empty-icon">👥</div>
-            <div class="cd-empty-text">暂无NPC数据</div>
+            <div class="cd-empty-text">ยังไม่มีข้อมูล NPC</div>
           </div>
         `;
       }
@@ -474,13 +479,13 @@ if (typeof window.StatusApp === 'undefined') {
 
             <div class="cd-npc-content cd-collapsed">
             <div class="cd-info-section cd-inner-thought-section">
-              <div class="cd-info-title">💭 内心想法</div>
-              <div class="cd-inner-thought">${npc.内心想法 || '暂无想法'}</div>
+              <div class="cd-info-title">💭 ความคิดในใจ</div>
+              <div class="cd-inner-thought">${npc.内心想法 || 'ยังไม่มีความคิด'}</div>
             </div>
             ${
               npc.好友ID
                 ? `<div class="cd-info-section">
-              <div class="cd-info-title">好友ID</div>
+              <div class="cd-info-title">ID เพื่อน</div>
               <div class="cd-friend-id">${npc.好友ID}</div>
             </div>`
                 : ''
@@ -494,7 +499,7 @@ if (typeof window.StatusApp === 'undefined') {
                 </div>
                 <div class="cd-info-item">
                   <span class="cd-info-label">อายุ</span>
-                  <span class="cd-info-value">${npc.年龄}岁</span>
+                  <span class="cd-info-value">${npc.年龄} ปี</span>
                 </div>
                 <div class="cd-info-item">
                   <span class="cd-info-label">ส่วนสูง</span>
@@ -566,7 +571,7 @@ if (typeof window.StatusApp === 'undefined') {
       `;
     }
 
-    // 获取好感度样式类
+    // ดึงคลาสสไตล์ความชอบ
     getFavorClass(favor) {
       if (favor >= 60) return 'cd-favor-high';
       if (favor >= 20) return 'cd-favor-mid';
@@ -575,7 +580,7 @@ if (typeof window.StatusApp === 'undefined') {
       return 'cd-favor-hostile';
     }
 
-    // 更新应用内容
+    // อัปเดตเนื้อหาแอป
     updateAppContent() {
       const appContent = document.getElementById('app-content');
       if (appContent) {
@@ -584,9 +589,9 @@ if (typeof window.StatusApp === 'undefined') {
       }
     }
 
-    // 绑定事件
+    // ผูก event
     bindEvents() {
-      // 标签页切换
+      // สลับแท็บ
       document.querySelectorAll('.cd-status-tab').forEach(btn => {
         btn.addEventListener('click', e => {
           const view = e.target.getAttribute('data-view');
@@ -594,7 +599,7 @@ if (typeof window.StatusApp === 'undefined') {
         });
       });
 
-      // 脱下装备按钮
+      // ปุ่มถอดอุปกรณ์
       document.querySelectorAll('.cd-clothing-btn.cd-remove').forEach(btn => {
         btn.addEventListener('click', e => {
           const slot = e.target.getAttribute('data-slot');
@@ -602,10 +607,10 @@ if (typeof window.StatusApp === 'undefined') {
         });
       });
 
-      // NPC卡片展开/收起
+      // การ์ด NPC ขยาย/ย่อ
       document.querySelectorAll('.cd-npc-header').forEach(header => {
         header.addEventListener('click', e => {
-          // 如果点击的是好感度标签，不触发展开收起
+          // หากคลิกที่ป้ายความชอบ ไม่ทริกเกอร์การขยาย/ย่อ
           if (e.target.classList.contains('cd-npc-favor')) {
             return;
           }
@@ -627,12 +632,12 @@ if (typeof window.StatusApp === 'undefined') {
       });
     }
 
-    // 脱下装备（并放入背包）
+    // ถอดอุปกรณ์ (และใส่ในกระเป๋า)
     async removeClothing(slot) {
       try {
-        console.log('[Status App] 脱下装备:', slot);
+        console.log('[Status App] ถอดอุปกรณ์:', slot);
 
-        // 获取目标消息ID
+        // ดึง ID ข้อความเป้าหมาย
         let targetMessageId = 'latest';
         if (typeof window.getLastMessageId === 'function' && typeof window.getChatMessages === 'function') {
           let currentId = window.getLastMessageId();
@@ -646,90 +651,90 @@ if (typeof window.StatusApp === 'undefined') {
           }
         }
 
-        // 获取Mvu数据
+        // ดึงข้อมูล Mvu
         const mvuData = window.Mvu.getMvuData({ type: 'message', message_id: targetMessageId });
         if (!mvuData || !mvuData.stat_data) {
-          throw new Error('无法获取Mvu变量数据');
+          throw new Error('ไม่สามารถดึงข้อมูลตัวแปร Mvu ได้');
         }
 
-        // 获取当前装备名称
+        // ดึงชื่ออุปกรณ์ปัจจุบัน
         const clothingItem = mvuData.stat_data['用户']?.['当前着装']?.[slot]?.[0];
         if (!clothingItem || clothingItem.trim() === '') {
-          throw new Error('该部位没有装备');
+          throw new Error('ตำแหน่งนี้ไม่มีอุปกรณ์');
         }
 
-        console.log('[Status App] 脱下的装备:', clothingItem);
+        console.log('[Status App] อุปกรณ์ที่ถอด:', clothingItem);
 
-        // 1. 脱下装备（清空着装栏）
+        // 1. ถอดอุปกรณ์ (ล้างช่องเสื้อผ้า)
         await window.Mvu.setMvuVariable(mvuData, `用户.当前着装.${slot}[0]`, '', {
-          reason: `脱下${slot}`,
+          reason: `ถอด${slot}`,
           is_recursive: false,
         });
 
-        // 2. 放入背包（根据部位类型放入对应分类）
+        // 2. ใส่ในกระเป๋า (ใส่ในหมวดหมู่ที่ตรงกับประเภทตำแหน่ง)
         const backpackCategory = this.mapSlotToBackpackCategory(slot);
         const backpackPath = `道具.${backpackCategory}`;
         const backpackItems = mvuData.stat_data['道具']?.[backpackCategory] || {};
 
-        // 创建新的背包分类对象
+        // สร้างออบเจ็กต์หมวดหมู่กระเป๋าใหม่
         const newBackpackCategory = { ...backpackItems };
 
-        // 检查是否已有该物品
+        // ตรวจสอบว่ามีไอเท็มนี้อยู่แล้วหรือไม่
         if (newBackpackCategory[clothingItem]) {
-          // 已有物品，增加数量
+          // มีไอเท็มอยู่แล้ว เพิ่มจำนวน
           const currentCount = newBackpackCategory[clothingItem]['数量']?.[0] || 0;
           newBackpackCategory[clothingItem] = {
             ...newBackpackCategory[clothingItem],
             数量: [currentCount + 1, newBackpackCategory[clothingItem]['数量']?.[1] || ''],
           };
-          console.log('[Status App] 已有物品，增加数量:', clothingItem, '新数量:', currentCount + 1);
+          console.log('[Status App] มีไอเท็มอยู่แล้ว เพิ่มจำนวน:', clothingItem, 'จำนวนใหม่:', currentCount + 1);
         } else {
-          // 新物品，创建数据
+          // ไอเท็มใหม่ สร้างข้อมูล
           newBackpackCategory[clothingItem] = {
             名称: [clothingItem, ''],
             数量: [1, ''],
             效果: [`${slot}装备`, ''],
             品质: ['普通', ''],
           };
-          console.log('[Status App] 新物品添加到背包:', clothingItem);
+          console.log('[Status App] เพิ่มไอเท็มใหม่ในกระเป๋า:', clothingItem);
         }
 
-        // 一次性设置整个分类
+        // ตั้งค่าทั้งหมวดหมู่ในครั้งเดียว
         await window.Mvu.setMvuVariable(mvuData, backpackPath, newBackpackCategory, {
-          reason: `${clothingItem}放入背包`,
+          reason: `${clothingItem}ใส่ในกระเป๋า`,
           is_recursive: false,
         });
 
-        // 3. 不再记录历史（由AI生成摘要代替）
-        // 脱装备操作将在AI回复的摘要中体现
+        // 3. ไม่บันทึกประวัติอีกต่อไป (ใช้สรุปที่ AI สร้างแทน)
+        // การถอดอุปกรณ์จะปรากฏในสรุปของการตอบกลับ AI
 
-        // 保存更新
+        // บันทึกการอัปเดต
         await window.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: targetMessageId });
 
-        console.log('[Status App] ✅ 脱下装备成功，已放入背包');
+        console.log('[Status App] ✅ ถอดอุปกรณ์สำเร็จ ใส่ในกระเป๋าแล้ว');
 
-        // 刷新显示（强制刷新UI）
+        // รีเฟรชการแสดงผล (บังคับรีเฟรช UI)
         setTimeout(() => {
           this.parseStatusFromContext();
-          // 如果状态app当前活动，强制刷新UI
+          // หากแอปสถานะกำลังใช้งานอยู่ บังคับรีเฟรช UI
           const appContent = document.getElementById('app-content');
           if (appContent && appContent.querySelector('.cd-status-app')) {
-            console.log('[Status App] 🔄 强制刷新状态应用UI（脱装备后）...');
+            console.log('[Status App] 🔄 บังคับรีเฟรช UI แอปสถานะ (หลังถอดอุปกรณ์)...');
             appContent.innerHTML = this.getAppContent();
             this.bindEvents();
           }
-          // 通知背包刷新
+          // แจ้งกระเป๋าให้รีเฟรช
           if (window.backpackApp && typeof window.backpackApp.refreshItemsData === 'function') {
             window.backpackApp.refreshItemsData();
           }
         }, 300);
       } catch (error) {
-        console.error('[Status App] 脱下装备失败:', error);
+        console.error('[Status App] ถอดอุปกรณ์ล้มเหลว:', error);
         alert('ถอดอุปกรณ์ล้มเหลว: ' + error.message);
       }
     }
 
-    // 映射装备部位到背包分类
+    // แมปตำแหน่งอุปกรณ์ไปยังหมวดหมู่กระเป๋า
     mapSlotToBackpackCategory(slot) {
       const mapping = {
         头部: '装备',
@@ -744,21 +749,21 @@ if (typeof window.StatusApp === 'undefined') {
       return mapping[slot] || '材料';
     }
 
-    // 切换视图
+    // สลับมุมมอง
     switchView(view) {
       this.currentView = view;
       this.updateAppContent();
     }
 
-    // 销毁应用
+    // ทำลายแอป
     destroy() {
-      console.log('[Status App] 销毁应用，清理资源');
+      console.log('[Status App] ทำลายแอป ล้างทรัพยากร');
 
       if (this.eventListenersSetup && this.messageReceivedHandler) {
         const eventSource = window['eventSource'];
         if (eventSource && eventSource.removeListener) {
           eventSource.removeListener('MESSAGE_RECEIVED', this.messageReceivedHandler);
-          console.log('[Status App] 🗑️ 已移除 MESSAGE_RECEIVED 事件监听');
+          console.log('[Status App] 🗑️ ลบ event listener MESSAGE_RECEIVED แล้ว');
         }
       }
 
@@ -768,44 +773,44 @@ if (typeof window.StatusApp === 'undefined') {
     }
   }
 
-  // 创建全局实例
+  // สร้าง instance ระดับ global
   window.StatusApp = StatusApp;
   window.statusApp = new StatusApp();
 }
 
-// 全局函数供mobile-phone.js调用
+// ฟังก์ชัน global สำหรับ mobile-phone.js เรียกใช้
 window.getStatusAppContent = function () {
-  console.log('[Status App] 获取状态应用内容');
+  console.log('[Status App] ดึงเนื้อหาแอปสถานะ');
 
   if (!window.statusApp) {
-    console.error('[Status App] statusApp实例不存在');
+    console.error('[Status App] instance statusApp ไม่มีอยู่');
     return '<div class="error-message">โหลดแอปสถานะล้มเหลว</div>';
   }
 
   try {
     return window.statusApp.getAppContent();
   } catch (error) {
-    console.error('[Status App] 获取应用内容失败:', error);
+    console.error('[Status App] ดึงเนื้อหาแอปล้มเหลว:', error);
     return '<div class="error-message">ดึงข้อมูลล้มเหลว</div>';
   }
 };
 
 window.bindStatusAppEvents = function () {
-  console.log('[Status App] 绑定状态应用事件');
+  console.log('[Status App] ผูก event แอปสถานะ');
 
   if (!window.statusApp) {
-    console.error('[Status App] statusApp实例不存在');
+    console.error('[Status App] instance statusApp ไม่มีอยู่');
     return;
   }
 
   try {
     window.statusApp.bindEvents();
   } catch (error) {
-    console.error('[Status App] 绑定事件失败:', error);
+    console.error('[Status App] ผูก event ล้มเหลว:', error);
   }
 };
 
-// 调试功能
+// ฟังก์ชันดีบัก
 window.statusAppRefresh = function () {
   if (window.statusApp) {
     window.statusApp.refreshStatusData();
@@ -815,24 +820,24 @@ window.statusAppRefresh = function () {
 window.statusAppDestroy = function () {
   if (window.statusApp) {
     window.statusApp.destroy();
-    console.log('[Status App] 应用已销毁');
+    console.log('[Status App] แอปถูกทำลายแล้ว');
   }
 };
 
 window.statusAppDebugInfo = function () {
   if (window.statusApp) {
-    console.log('[Status App Debug] ===== 调试信息 =====');
-    console.log('[Status App Debug] 当前视图:', window.statusApp.currentView);
-    console.log('[Status App Debug] 用户数据:', window.statusApp.userData);
-    console.log('[Status App Debug] NPC列表:', window.statusApp.npcList);
-    console.log('[Status App Debug] NPC数量:', window.statusApp.npcList.length);
+    console.log('[Status App Debug] ===== ข้อมูลดีบัก =====');
+    console.log('[Status App Debug] มุมมองปัจจุบัน:', window.statusApp.currentView);
+    console.log('[Status App Debug] ข้อมูลผู้ใช้:', window.statusApp.userData);
+    console.log('[Status App Debug] รายการ NPC:', window.statusApp.npcList);
+    console.log('[Status App Debug] จำนวน NPC:', window.statusApp.npcList.length);
 
-    // 测试变量获取
-    console.log('[Status App Debug] ===== 测试变量获取 =====');
-    console.log('[Status App Debug] Mvu 框架存在:', !!window.Mvu);
-    console.log('[Status App Debug] Mvu.getMvuData 函数存在:', typeof window.Mvu?.getMvuData === 'function');
-    console.log('[Status App Debug] getLastMessageId 函数存在:', typeof window.getLastMessageId === 'function');
-    console.log('[Status App Debug] getChatMessages 函数存在:', typeof window.getChatMessages === 'function');
+    // ทดสอบการดึงตัวแปร
+    console.log('[Status App Debug] ===== ทดสอบการดึงตัวแปร =====');
+    console.log('[Status App Debug] เฟรมเวิร์ก Mvu มีอยู่:', !!window.Mvu);
+    console.log('[Status App Debug] ฟังก์ชัน Mvu.getMvuData มีอยู่:', typeof window.Mvu?.getMvuData === 'function');
+    console.log('[Status App Debug] ฟังก์ชัน getLastMessageId มีอยู่:', typeof window.getLastMessageId === 'function');
+    console.log('[Status App Debug] ฟังก์ชัน getChatMessages มีอยู่:', typeof window.getChatMessages === 'function');
 
     if (window.Mvu && typeof window.Mvu.getMvuData === 'function') {
       try {
@@ -840,17 +845,20 @@ window.statusAppDebugInfo = function () {
 
         if (typeof window.getLastMessageId === 'function' && typeof window.getChatMessages === 'function') {
           let currentId = window.getLastMessageId();
-          console.log('[Status App Debug] 最新消息索引:', currentId);
+          console.log('[Status App Debug] ดัชนีข้อความล่าสุด:', currentId);
 
-          // 向上查找AI消息
+          // ค้นหาข้อความ AI ย้อนขึ้นไป
           let searchCount = 0;
           while (currentId >= 0 && searchCount < 20) {
             const message = window.getChatMessages(currentId).at(-1);
-            console.log(`[Status App Debug] 检查第 ${currentId} 层:`, message ? `role=${message.role}` : '无消息');
+            console.log(
+              `[Status App Debug] ตรวจสอบชั้นที่ ${currentId}:`,
+              message ? `role=${message.role}` : 'ไม่มีข้อความ',
+            );
 
             if (message && message.role !== 'user') {
               targetMessageId = currentId;
-              console.log(`[Status App Debug] ✅ 找到AI消息楼层: ${currentId} (向上查找 ${searchCount} 层)`);
+              console.log(`[Status App Debug] ✅ พบชั้นข้อความ AI: ${currentId} (ค้นหาย้อนขึ้น ${searchCount} ชั้น)`);
               break;
             }
 
@@ -859,61 +867,61 @@ window.statusAppDebugInfo = function () {
           }
 
           if (currentId < 0) {
-            console.warn('[Status App Debug] ⚠️ 向上查找所有楼层都是用户消息，使用 latest');
+            console.warn('[Status App Debug] ⚠️ ค้นหาย้อนขึ้นทุกชั้นเป็นข้อความผู้ใช้ ใช้ latest');
           }
         }
 
-        console.log('[Status App Debug] 使用消息ID:', targetMessageId);
+        console.log('[Status App Debug] ใช้ ID ข้อความ:', targetMessageId);
 
-        // 测试获取 Mvu 变量
+        // ทดสอบดึงตัวแปร Mvu
         const mvuData = window.Mvu.getMvuData({ type: 'message', message_id: targetMessageId });
-        console.log('[Status App Debug] Mvu 变量数据:', mvuData);
+        console.log('[Status App Debug] ข้อมูลตัวแปร Mvu:', mvuData);
 
         if (mvuData && mvuData.stat_data) {
-          console.log('[Status App Debug] stat_data 变量列表:', Object.keys(mvuData.stat_data));
+          console.log('[Status App Debug] รายการตัวแปร stat_data:', Object.keys(mvuData.stat_data));
 
           if (mvuData.stat_data['用户']) {
-            console.log('[Status App Debug] 用户数据:', mvuData.stat_data['用户']);
+            console.log('[Status App Debug] ข้อมูลผู้ใช้:', mvuData.stat_data['用户']);
           } else {
-            console.warn('[Status App Debug] ❌ 未找到用户数据');
+            console.warn('[Status App Debug] ❌ ไม่พบข้อมูลผู้ใช้');
           }
 
           if (mvuData.stat_data['NPC']) {
             const npcData = mvuData.stat_data['NPC'];
-            console.log('[Status App Debug] NPC数据:', npcData);
+            console.log('[Status App Debug] ข้อมูล NPC:', npcData);
             const npcKeys = Object.keys(npcData).filter(k => k !== '$meta');
-            console.log('[Status App Debug] NPC键列表:', npcKeys);
+            console.log('[Status App Debug] รายการคีย์ NPC:', npcKeys);
             npcKeys.forEach(key => {
               console.log(`[Status App Debug] - NPC ${key}:`, npcData[key]);
             });
           } else {
-            console.warn('[Status App Debug] ❌ 未找到NPC数据');
+            console.warn('[Status App Debug] ❌ ไม่พบข้อมูล NPC');
           }
         } else {
-          console.error('[Status App Debug] ❌ stat_data 为空或不存在');
+          console.error('[Status App Debug] ❌ stat_data ว่างเปล่าหรือไม่มีอยู่');
         }
       } catch (error) {
-        console.error('[Status App Debug] 获取 Mvu 变量失败:', error);
+        console.error('[Status App Debug] ดึงตัวแปร Mvu ล้มเหลว:', error);
       }
     } else {
-      console.warn('[Status App Debug] Mvu 框架未加载');
+      console.warn('[Status App Debug] เฟรมเวิร์ก Mvu ยังไม่ถูกโหลด');
     }
 
-    // 测试 SillyTavern context（备用方法）
+    // ทดสอบ SillyTavern context (วิธีสำรอง)
     if (window.SillyTavern) {
       const context = window.SillyTavern.getContext ? window.SillyTavern.getContext() : window.SillyTavern;
-      console.log('[Status App Debug] SillyTavern context 存在:', !!context);
+      console.log('[Status App Debug] SillyTavern context มีอยู่:', !!context);
       if (context && context.chatMetadata) {
-        console.log('[Status App Debug] chatMetadata 存在:', !!context.chatMetadata);
-        console.log('[Status App Debug] variables 存在:', !!context.chatMetadata.variables);
+        console.log('[Status App Debug] chatMetadata มีอยู่:', !!context.chatMetadata);
+        console.log('[Status App Debug] variables มีอยู่:', !!context.chatMetadata.variables);
         if (context.chatMetadata.variables) {
-          console.log('[Status App Debug] 变量列表:', Object.keys(context.chatMetadata.variables));
+          console.log('[Status App Debug] รายการตัวแปร:', Object.keys(context.chatMetadata.variables));
         }
       }
     }
   }
 };
 
-// 初始化
-console.log('[Status App] 状态应用模块加载完成 - 版本 2.0 (详细信息 + 穿脱功能)');
-console.log('[Status App] 💡 调试提示：在控制台运行 statusAppDebugInfo() 查看详细调试信息');
+// เริ่มต้น
+console.log('[Status App] โหลดโมดูลแอปสถานะเสร็จสมบูรณ์ - เวอร์ชัน 2.0 (ข้อมูลละเอียด + ฟังก์ชันสวม/ถอด)');
+console.log('[Status App] 💡 คำแนะนำดีบัก: รัน statusAppDebugInfo() ในคอนโซลเพื่อดูข้อมูลดีบักโดยละเอียด');

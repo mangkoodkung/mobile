@@ -398,7 +398,7 @@ if (typeof window.WeiboManager !== 'undefined') {
           console.log('[Weibo Manager] กำลังประมวลผลอยู่ ข้ามคำขอซ้ำ');
           this.updateStatus('กำลังประมวลผล กรุณารอสักครู่...', 'warning');
 
-          // 如果是强制模式，恢复auto-listener状态
+          // หากเป็นโหมดบังคับ คืนค่าสถานะ auto-listener
           if (force && window.weiboAutoListener) {
             window.weiboAutoListener.isProcessingRequest = false;
           }
@@ -1618,15 +1618,15 @@ if (typeof window.WeiboManager !== 'undefined') {
         const insertion = this.pendingInsertions.shift();
         try {
           await this.updateContextWithWeibo(insertion.content);
-          console.log(`[Weibo Manager] 队列项处理成功: ${insertion.type}`);
+          console.log(`[Weibo Manager] ประมวลผลรายการคิวสำเร็จ: ${insertion.type}`);
         } catch (error) {
-          console.error(`[Weibo Manager] 队列项处理失败: ${insertion.type}`, error);
+          console.error(`[Weibo Manager] ประมวลผลรายการคิวล้มเหลว: ${insertion.type}`, error);
         }
       }
     }
 
     /**
-     * 等待生成完成
+     * รอการสร้างเสร็จสมบูรณ์
      */
     async waitForGenerationComplete() {
       return new Promise(resolve => {
@@ -1637,7 +1637,7 @@ if (typeof window.WeiboManager !== 'undefined') {
           }
         }, 1000);
 
-        // 超时保护
+        // การป้องกันหมดเวลา
         setTimeout(() => {
           clearInterval(checkInterval);
           resolve();
@@ -1646,22 +1646,22 @@ if (typeof window.WeiboManager !== 'undefined') {
     }
 
     /**
-     * 发送用户博文到API
+     * ส่งโพสต์ผู้ใช้ไปยัง API
      */
     async sendPostToAPI(content) {
       try {
-        console.log('🚀 [微博API] ===== 开始发送用户博文 =====');
+        console.log('🚀 [Weibo API] ===== เริ่มส่งโพสต์ผู้ใช้ =====');
 
-        // 使用增强的API配置检查
+        // ใช้การตรวจสอบการตั้งค่า API แบบปรับปรุง
         if (!this.isAPIConfigValid()) {
-          throw new Error('请先配置API');
+          throw new Error('กรุณาตั้งค่า API ก่อน');
         }
 
-        // 构建上下文信息
+        // สร้างข้อมูลบริบท
         const chatData = await this.getCurrentChatData();
         const contextInfo = this.buildContextInfo(chatData);
 
-        // 获取风格提示词（用户发博）
+        // ดึง prompt สไตล์ (โพสต์ผู้ใช้)
         const stylePrompt = window.weiboStyles
           ? window.weiboStyles.getStylePrompt(
               'post',
@@ -1670,12 +1670,12 @@ if (typeof window.WeiboManager !== 'undefined') {
             )
           : '';
 
-        console.log('📋 [微博API] 系统提示词（用户发博）:');
+        console.log('📋 [Weibo API] System prompt (โพสต์ผู้ใช้):');
         console.log(stylePrompt);
-        console.log('\n📝 [微博API] 用户博文内容:');
+        console.log('\n📝 [Weibo API] เนื้อหาโพสต์ผู้ใช้:');
         console.log(content);
 
-        // 构建API请求
+        // สร้างคำขอ API
         const messages = [
           {
             role: 'system',
@@ -1687,57 +1687,57 @@ if (typeof window.WeiboManager !== 'undefined') {
           },
         ];
 
-        console.log('📡 [微博API] 完整API请求:');
+        console.log('📡 [Weibo API] คำขอ API ทั้งหมด:');
         console.log(JSON.stringify(messages, null, 2));
 
-        // 调用API
+        // เรียก API
         const response = await window.mobileCustomAPIConfig.callAPI(messages, {
           temperature: 0.8,
           max_tokens: 2000,
         });
 
-        console.log('📥 [微博API] 模型返回内容:');
+        console.log('📥 [Weibo API] เนื้อหาที่โมเดลส่งกลับ:');
         console.log(response);
 
         if (response && response.content) {
-          console.log('✅ [微博API] 用户博文生成成功:');
+          console.log('✅ [Weibo API] สร้างโพสต์ผู้ใช้สำเร็จ:');
           console.log(response.content);
 
-          // 更新上下文
+          // อัปเดตบริบท
           const success = await this.safeUpdateContextWithWeibo(response.content);
           if (success) {
-            console.log('✅ [微博API] 用户博文已添加到上下文');
+            console.log('✅ [Weibo API] เพิ่มโพสต์ผู้ใช้ลงในบริบทแล้ว');
           }
 
-          console.log('🏁 [微博API] ===== 用户博文发送完成 =====\n');
+          console.log('🏁 [Weibo API] ===== ส่งโพสต์ผู้ใช้เสร็จสมบูรณ์ =====\n');
           return response.content;
         } else {
-          throw new Error('API返回格式错误');
+          throw new Error('รูปแบบการตอบกลับ API ไม่ถูกต้อง');
         }
       } catch (error) {
-        console.error('❌ [微博API] 发送用户博文失败:', error);
-        console.log('🏁 [微博API] ===== 用户博文发送失败 =====\n');
+        console.error('❌ [Weibo API] ส่งโพสต์ผู้ใช้ล้มเหลว:', error);
+        console.log('🏁 [Weibo API] ===== ส่งโพสต์ผู้ใช้ล้มเหลว =====\n');
         throw error;
       }
     }
 
     /**
-     * 发送用户回复到API
+     * ส่งการตอบกลับผู้ใช้ไปยัง API
      */
     async sendReplyToAPI(replyContent) {
       try {
-        console.log('🚀 [微博API] ===== 开始发送用户回复 =====');
+        console.log('🚀 [Weibo API] ===== เริ่มส่งการตอบกลับผู้ใช้ =====');
 
-        // 使用增强的API配置检查
+        // ใช้การตรวจสอบการตั้งค่า API แบบปรับปรุง
         if (!this.isAPIConfigValid()) {
-          throw new Error('请先配置API');
+          throw new Error('กรุณาตั้งค่า API ก่อน');
         }
 
-        // 构建上下文信息
+        // สร้างข้อมูลบริบท
         const chatData = await this.getCurrentChatData();
         const contextInfo = this.buildContextInfo(chatData);
 
-        // 获取风格提示词（用户回复）
+        // ดึง prompt สไตล์ (การตอบกลับผู้ใช้)
         const stylePrompt = window.weiboStyles
           ? window.weiboStyles.getStylePrompt(
               'reply',
@@ -1746,12 +1746,12 @@ if (typeof window.WeiboManager !== 'undefined') {
             )
           : '';
 
-        console.log('📋 [微博API] 系统提示词（用户回复）:');
+        console.log('📋 [Weibo API] System prompt (การตอบกลับผู้ใช้):');
         console.log(stylePrompt);
-        console.log('\n📝 [微博API] 用户回复内容:');
+        console.log('\n📝 [Weibo API] เนื้อหาการตอบกลับผู้ใช้:');
         console.log(replyContent);
 
-        // 构建API请求
+        // สร้างคำขอ API
         const messages = [
           {
             role: 'system',
@@ -1763,52 +1763,52 @@ if (typeof window.WeiboManager !== 'undefined') {
           },
         ];
 
-        console.log('📡 [微博API] 完整API请求:');
+        console.log('📡 [Weibo API] คำขอ API ทั้งหมด:');
         console.log(JSON.stringify(messages, null, 2));
 
-        // 调用API
+        // เรียก API
         const response = await window.mobileCustomAPIConfig.callAPI(messages, {
           temperature: 0.8,
           max_tokens: 1500,
         });
 
-        console.log('📥 [微博API] 模型返回内容:');
+        console.log('📥 [Weibo API] เนื้อหาที่โมเดลส่งกลับ:');
         console.log(response);
 
         if (response && response.content) {
-          console.log('✅ [微博API] 用户回复生成成功:');
+          console.log('✅ [Weibo API] สร้างการตอบกลับผู้ใช้สำเร็จ:');
           console.log(response.content);
 
-          // 更新上下文
+          // อัปเดตบริบท
           const success = await this.safeUpdateContextWithWeibo(response.content);
           if (success) {
-            console.log('✅ [微博API] 用户回复已添加到上下文');
+            console.log('✅ [Weibo API] เพิ่มการตอบกลับผู้ใช้ลงในบริบทแล้ว');
           }
 
-          console.log('🏁 [微博API] ===== 用户回复发送完成 =====\n');
+          console.log('🏁 [Weibo API] ===== ส่งการตอบกลับผู้ใช้เสร็จสมบูรณ์ =====\n');
           return response.content;
         } else {
-          throw new Error('API返回格式错误');
+          throw new Error('รูปแบบการตอบกลับ API ไม่ถูกต้อง');
         }
       } catch (error) {
-        console.error('❌ [微博API] 发送用户回复失败:', error);
-        console.log('🏁 [微博API] ===== 用户回复发送失败 =====\n');
+        console.error('❌ [Weibo API] ส่งการตอบกลับผู้ใช้ล้มเหลว:', error);
+        console.log('🏁 [Weibo API] ===== ส่งการตอบกลับผู้ใช้ล้มเหลว =====\n');
         throw error;
       }
     }
 
     /**
-     * 检查是否需要自动生成微博内容
+     * ตรวจสอบว่าต้องสร้างเนื้อหา Weibo อัตโนมัติหรือไม่
      */
     async checkAutoGenerate() {
-      // 检查基本条件
+      // ตรวจสอบเงื่อนไขพื้นฐาน
       if (!this.currentSettings.autoUpdate || this.isProcessing) {
         return false;
       }
 
-      // 检查auto-listener是否正在处理
+      // ตรวจสอบว่า auto-listener กำลังประมวลผลอยู่หรือไม่
       if (window.weiboAutoListener && window.weiboAutoListener.isProcessingRequest) {
-        console.log('[Weibo Manager] Auto-listener正在处理，跳过检查');
+        console.log('[Weibo Manager] Auto-listener กำลังประมวลผล ข้ามการตรวจสอบ');
         return false;
       }
 
@@ -1822,104 +1822,106 @@ if (typeof window.WeiboManager !== 'undefined') {
         const increment = currentCount - this.lastProcessedCount;
 
         console.log(
-          `[Weibo Manager] 检查自动生成条件: 当前消息数=${currentCount}, 已处理=${this.lastProcessedCount}, 增量=${increment}, 阈值=${this.currentSettings.threshold}`,
+          `[Weibo Manager] ตรวจสอบเงื่อนไขสร้างอัตโนมัติ: จำนวนข้อความปัจจุบัน=${currentCount}, ประมวลผลแล้ว=${this.lastProcessedCount}, เพิ่มขึ้น=${increment}, เกณฑ์=${this.currentSettings.threshold}`,
         );
 
         if (increment >= this.currentSettings.threshold) {
-          console.log(`[Weibo Manager] 满足自动生成条件，开始生成微博内容`);
+          console.log(`[Weibo Manager] ตรงเงื่อนไขสร้างอัตโนมัติ เริ่มสร้างเนื้อหา Weibo`);
           return await this.generateWeiboContent(false);
         }
 
         return false;
       } catch (error) {
-        console.error('[Weibo Manager] 检查自动生成失败:', error);
+        console.error('[Weibo Manager] ตรวจสอบการสร้างอัตโนมัติล้มเหลว:', error);
         return false;
       }
     }
 
     /**
-     * 检查是否需要重试 - 已禁用自动重试
+     * ตรวจสอบว่าต้องลองใหม่หรือไม่ - ปิดใช้งานการลองใหม่อัตโนมัติแล้ว
      */
     shouldRetry(error) {
-      // 自动重试已被完全禁用，总是返回 false
-      console.log(`[Weibo Manager] ⏳ 自动重试已禁用，将等待下次楼层变化阈值达标后重新尝试。错误: ${error.message}`);
+      // การลองใหม่อัตโนมัติถูกปิดใช้งานทั้งหมด คืนค่า false เสมอ
+      console.log(
+        `[Weibo Manager] ⏳ การลองใหม่อัตโนมัติถูกปิดใช้งาน จะรอจนกว่าจำนวนข้อความถึงเกณฑ์ครั้งถัดไปแล้วลองใหม่ ข้อผิดพลาด: ${error.message}`,
+      );
       return false;
     }
 
     /**
-     * 安排延迟重试
+     * กำหนดเวลาลองใหม่แบบหน่วงเวลา
      */
     scheduleRetry(force = false) {
-      // 更新重试配置
+      // อัปเดตการตั้งค่าลองใหม่
       this.retryConfig.currentRetryCount++;
       this.retryConfig.lastFailTime = Date.now();
 
       console.log(
-        `[Weibo Manager] 🔄 安排第 ${this.retryConfig.currentRetryCount} 次重试，将在 ${this.retryConfig.retryDelay / 1000} 秒后执行`,
+        `[Weibo Manager] 🔄 กำหนดเวลาลองใหม่ครั้งที่ ${this.retryConfig.currentRetryCount} จะดำเนินการใน ${this.retryConfig.retryDelay / 1000} วินาที`,
       );
 
-      // 设置延迟重试
+      // ตั้งค่าลองใหม่แบบหน่วงเวลา
       setTimeout(async () => {
         try {
-          console.log(`[Weibo Manager] 🔄 开始第 ${this.retryConfig.currentRetryCount} 次重试`);
+          console.log(`[Weibo Manager] 🔄 เริ่มลองใหม่ครั้งที่ ${this.retryConfig.currentRetryCount}`);
           this.updateStatus(
-            `正在重试生成微博内容... (${this.retryConfig.currentRetryCount}/${this.retryConfig.maxRetries})`,
+            `กำลังลองสร้างเนื้อหา Weibo ใหม่... (${this.retryConfig.currentRetryCount}/${this.retryConfig.maxRetries})`,
             'info',
           );
 
           const success = await this.generateWeiboContent(force);
           if (success) {
-            console.log(`[Weibo Manager] ✅ 第 ${this.retryConfig.currentRetryCount} 次重试成功`);
+            console.log(`[Weibo Manager] ✅ ลองใหม่ครั้งที่ ${this.retryConfig.currentRetryCount} สำเร็จ`);
             this.resetRetryConfig();
           }
         } catch (error) {
-          console.error(`[Weibo Manager] ❌ 第 ${this.retryConfig.currentRetryCount} 次重试失败:`, error);
+          console.error(`[Weibo Manager] ❌ ลองใหม่ครั้งที่ ${this.retryConfig.currentRetryCount} ล้มเหลว:`, error);
         }
       }, this.retryConfig.retryDelay);
     }
 
     /**
-     * 重置重试配置
+     * รีเซ็ตการตั้งค่าลองใหม่
      */
     resetRetryConfig() {
       this.retryConfig.currentRetryCount = 0;
       this.retryConfig.lastFailTime = null;
-      console.log('[Weibo Manager] 🔄 重试配置已重置');
+      console.log('[Weibo Manager] 🔄 รีเซ็ตการตั้งค่าลองใหม่แล้ว');
     }
 
     /**
-     * 当API配置修复后，重新启用auto-listener
+     * เมื่อการตั้งค่า API ถูกแก้ไข เปิดใช้งาน auto-listener อีกครั้ง
      */
     enableAutoListenerIfConfigValid() {
       if (this.isAPIConfigValid() && window.weiboAutoListener && !window.weiboAutoListener.settings.enabled) {
-        console.log('[Weibo Manager] 🔄 API配置已修复，重新启用auto-listener');
+        console.log('[Weibo Manager] 🔄 การตั้งค่า API ถูกแก้ไขแล้ว เปิดใช้งาน auto-listener อีกครั้ง');
         window.weiboAutoListener.enable();
       }
     }
   }
 
-  // 创建全局实例 - 参考Forum-App的智能初始化
+  // สร้าง instance ระดับ global - อ้างอิงการเริ่มต้นอัจฉริยะของ Forum-App
   if (typeof window !== 'undefined') {
     window.WeiboManager = WeiboManager;
     window.weiboManager = new WeiboManager();
 
-    // 智能初始化：确保微博管理器在所有依赖模块加载完成后再初始化
+    // การเริ่มต้นอัจฉริยะ: ตรวจสอบให้ตัวจัดการ Weibo เริ่มต้นหลังจากโมดูลที่ต้องพึ่งพาทั้งหมดโหลดเสร็จ
     function initializeWeiboManager() {
       if (window.weiboManager && !window.weiboManager.isInitialized) {
-        console.log('[Weibo Manager] 开始初始化微博管理器...');
+        console.log('[Weibo Manager] เริ่มต้นตัวจัดการ Weibo...');
         window.weiboManager.initialize();
       }
     }
 
-    // 延迟初始化，等待其他模块加载完成
+    // เริ่มต้นแบบหน่วงเวลา รอโมดูลอื่นโหลดเสร็จ
     function delayedInitialization() {
-      // 检查关键依赖是否已加载
+      // ตรวจสอบว่า dependency สำคัญโหลดแล้วหรือไม่
       const contextEditorReady = window.mobileContextEditor !== undefined;
       const customAPIReady = window.mobileCustomAPIConfig !== undefined;
       const weiboStylesReady = window.weiboStyles !== undefined;
 
-      // 详细的依赖调试信息
-      console.log('[Weibo Manager] 🔍 详细依赖检查:', {
+      // ข้อมูลดีบัก dependency โดยละเอียด
+      console.log('[Weibo Manager] 🔍 ตรวจสอบ dependency โดยละเอียด:', {
         contextEditor: contextEditorReady,
         customAPI: customAPIReady,
         weiboStyles: weiboStylesReady,
@@ -1928,49 +1930,49 @@ if (typeof window.WeiboManager !== 'undefined') {
         allWeiboKeys: Object.keys(window).filter(key => key.toLowerCase().includes('weibo')),
       });
 
-      // 如果 weiboStyles 未定义，尝试检查是否有其他相关对象
+      // หาก weiboStyles ไม่ถูกกำหนด ลองตรวจสอบว่ามีออบเจ็กต์ที่เกี่ยวข้องอื่นหรือไม่
       if (!weiboStylesReady) {
-        console.log('[Weibo Manager] 🔍 weiboStyles 未定义，检查可能的原因:');
-        console.log('- window.WeiboStyles 类:', typeof window.WeiboStyles);
+        console.log('[Weibo Manager] 🔍 weiboStyles ไม่ถูกกำหนด ตรวจสอบสาเหตุที่เป็นไปได้:');
+        console.log('- คลาส window.WeiboStyles:', typeof window.WeiboStyles);
 
-        // 尝试手动创建实例
+        // ลองสร้าง instance ด้วยตนเอง
         if (typeof window.WeiboStyles !== 'undefined') {
-          console.log('[Weibo Manager] 🔧 尝试手动创建 weiboStyles 实例');
+          console.log('[Weibo Manager] 🔧 ลองสร้าง instance weiboStyles ด้วยตนเอง');
           try {
             window.weiboStyles = new window.WeiboStyles();
-            console.log('[Weibo Manager] ✅ 手动创建 weiboStyles 实例成功');
+            console.log('[Weibo Manager] ✅ สร้าง instance weiboStyles ด้วยตนเองสำเร็จ');
           } catch (error) {
-            console.error('[Weibo Manager] ❌ 手动创建 weiboStyles 实例失败:', error);
+            console.error('[Weibo Manager] ❌ สร้าง instance weiboStyles ด้วยตนเองล้มเหลว:', error);
           }
         }
       }
 
-      // 重新检查依赖状态
+      // ตรวจสอบสถานะ dependency อีกครั้ง
       const finalWeiboStylesReady = window.weiboStyles !== undefined;
 
       if (contextEditorReady && customAPIReady && finalWeiboStylesReady) {
-        // 所有依赖都已就绪，立即初始化
-        console.log('[Weibo Manager] ✅ 所有依赖已就绪，立即初始化');
+        // dependency ทั้งหมดพร้อมแล้ว เริ่มต้นทันที
+        console.log('[Weibo Manager] ✅ dependency ทั้งหมดพร้อมแล้ว เริ่มต้นทันที');
         initializeWeiboManager();
       } else {
-        // 依赖未就绪，延迟初始化（但不输出刷屏日志）
-        console.log('[Weibo Manager] ⏳ 依赖未完全就绪，延迟初始化');
-        setTimeout(initializeWeiboManager, 2000); // 2秒后初始化，让依赖等待逻辑处理
+        // dependency ยังไม่พร้อม เริ่มต้นแบบหน่วงเวลา (ไม่แสดง log ล้นหน้าจอ)
+        console.log('[Weibo Manager] ⏳ dependency ยังไม่พร้อมทั้งหมด เริ่มต้นแบบหน่วงเวลา');
+        setTimeout(initializeWeiboManager, 2000); // เริ่มต้นหลัง 2 วินาที ให้ logic รอ dependency จัดการ
       }
     }
 
-    // 如果DOM已经加载完成，延迟初始化；否则等待DOMContentLoaded
+    // หาก DOM โหลดเสร็จแล้ว เริ่มต้นแบบหน่วงเวลา มิฉะนั้นรอ DOMContentLoaded
     if (document.readyState === 'loading') {
-      console.log('[Weibo Manager] DOM正在加载，等待DOMContentLoaded事件');
+      console.log('[Weibo Manager] DOM กำลังโหลด รอ event DOMContentLoaded');
       document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(delayedInitialization, 1000); // DOM加载完成后1秒再检查依赖
+        setTimeout(delayedInitialization, 1000); // ตรวจสอบ dependency หลัง DOM โหลดเสร็จ 1 วินาที
       });
     } else {
-      console.log('[Weibo Manager] DOM已加载完成，延迟初始化');
-      // 使用setTimeout确保模块完全加载后再初始化
+      console.log('[Weibo Manager] DOM โหลดเสร็จแล้ว เริ่มต้นแบบหน่วงเวลา');
+      // ใช้ setTimeout เพื่อให้แน่ใจว่าโมดูลโหลดเสร็จสมบูรณ์ก่อนเริ่มต้น
       setTimeout(delayedInitialization, 1000);
     }
 
-    console.log('[Weibo Manager] ✅ 微博管理器已创建');
+    console.log('[Weibo Manager] ✅ สร้างตัวจัดการ Weibo แล้ว');
   }
-} // 结束防重复加载检查
+} // จบการตรวจสอบป้องกันการโหลดซ้ำ
