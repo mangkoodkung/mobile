@@ -1,6 +1,6 @@
 /**
- * 移动端跳转应用栈优化测试脚本
- * 用于验证优化后的跳转逻辑是否正常工作
+ * สคริปต์ทดสอบการเพิ่มประสิทธิภาพ app stack การเปลี่ยนหน้าบนมือถือ
+ * ใช้สำหรับตรวจสอบว่าลอจิกการเปลี่ยนหน้าที่ปรับปรุงแล้วทำงานได้ถูกต้อง
  */
 
 class MobilePhoneOptimizationTest {
@@ -9,183 +9,187 @@ class MobilePhoneOptimizationTest {
     this.mobilePhone = null;
   }
 
-  // 初始化测试环境
+  // เริ่มต้นสภาพแวดล้อมทดสอบ
   async init() {
-    console.log('=== 移动端跳转应用栈优化测试开始 ===');
-    
-    // 等待 MobilePhone 实例准备就绪
+    console.log('=== เริ่มทดสอบการเพิ่มประสิทธิภาพ app stack การเปลี่ยนหน้าบนมือถือ ===');
+
+    // รอให้ MobilePhone instance พร้อม
     await this.waitForMobilePhone();
-    
+
     if (!this.mobilePhone) {
-      console.error('❌ MobilePhone 实例未找到，测试终止');
+      console.error('❌ ไม่พบ MobilePhone instance ยกเลิกการทดสอบ');
       return false;
     }
 
-    console.log('✅ MobilePhone 实例已准备就绪');
+    console.log('✅ MobilePhone instance พร้อมแล้ว');
     return true;
   }
 
-  // 等待 MobilePhone 实例
+  // รอ MobilePhone instance
   async waitForMobilePhone() {
     let attempts = 0;
     const maxAttempts = 50;
-    
+
     while (attempts < maxAttempts) {
       if (window.mobilePhone && window.mobilePhone instanceof MobilePhone) {
         this.mobilePhone = window.mobilePhone;
         return;
       }
-      
+
       await new Promise(resolve => setTimeout(resolve, 100));
       attempts++;
     }
   }
 
-  // 运行所有测试
+  // รันการทดสอบทั้งหมด
   async runAllTests() {
     const initialized = await this.init();
     if (!initialized) return;
 
-    console.log('🧪 开始运行优化测试...');
+    console.log('🧪 เริ่มรันการทดสอบการเพิ่มประสิทธิภาพ...');
 
-    // 测试防抖机制
+    // ทดสอบกลไก debounce
     await this.testDebouncing();
-    
-    // 测试状态管理
+
+    // ทดสอบการจัดการสถานะ
     await this.testStateManagement();
-    
-    // 测试重复操作防护
+
+    // ทดสอบการป้องกันการทำงานซ้ำ
     await this.testDuplicateOperationPrevention();
 
-    // 输出测试结果
+    // แสดงผลการทดสอบ
     this.printTestResults();
   }
 
-  // 测试防抖机制
+  // ทดสอบกลไก debounce
   async testDebouncing() {
-    console.log('🔍 测试防抖机制...');
-    
+    console.log('🔍 ทดสอบกลไก debounce...');
+
     try {
-      // 模拟快速连续点击应用图标
+      // จำลองการคลิกไอคอนแอปอย่างรวดเร็วต่อเนื่อง
       const startTime = Date.now();
-      
-      // 连续调用 openApp 5次
+
+      // เรียก openApp ต่อเนื่อง 5 ครั้ง
       for (let i = 0; i < 5; i++) {
         this.mobilePhone.openApp('messages');
       }
-      
+
       const endTime = Date.now();
       const duration = endTime - startTime;
-      
-      // 检查是否有防抖标记
+
+      // ตรวจสอบว่ามี flag debounce หรือไม่
       const hasDebounceFlag = this.mobilePhone._openingApp !== null;
-      
-      this.addTestResult('防抖机制', hasDebounceFlag, 
-        `快速连续调用 openApp 5次，耗时 ${duration}ms，防抖标记: ${this.mobilePhone._openingApp}`);
-      
-      // 等待防抖标记清除
+
+      this.addTestResult(
+        'กลไก debounce',
+        hasDebounceFlag,
+        `เรียก openApp ต่อเนื่อง 5 ครั้ง ใช้เวลา ${duration}ms, flag debounce: ${this.mobilePhone._openingApp}`,
+      );
+
+      // รอให้ flag debounce ถูกล้าง
       await new Promise(resolve => setTimeout(resolve, 600));
-      
     } catch (error) {
-      this.addTestResult('防抖机制', false, `测试出错: ${error.message}`);
+      this.addTestResult('กลไก debounce', false, `ทดสอบผิดพลาด: ${error.message}`);
     }
   }
 
-  // 测试状态管理
+  // ทดสอบการจัดการสถานะ
   async testStateManagement() {
-    console.log('🔍 测试状态管理...');
-    
+    console.log('🔍 ทดสอบการจัดการสถานะ...');
+
     try {
-      // 清理状态
+      // ล้างสถานะ
       this.mobilePhone.goHome();
       await new Promise(resolve => setTimeout(resolve, 100));
-      
-      // 打开应用
+
+      // เปิดแอป
       this.mobilePhone.openApp('messages');
       await new Promise(resolve => setTimeout(resolve, 100));
-      
-      // 检查状态一致性
+
+      // ตรวจสอบความสอดคล้องของสถานะ
       const currentApp = this.mobilePhone.currentApp;
       const currentAppState = this.mobilePhone.currentAppState;
       const appStackLength = this.mobilePhone.appStack.length;
-      
-      const stateConsistent = currentApp === 'messages' && 
-                             currentAppState && 
-                             currentAppState.app === 'messages' &&
-                             appStackLength === 1;
-      
-      this.addTestResult('状态管理', stateConsistent, 
-        `currentApp: ${currentApp}, currentAppState.app: ${currentAppState?.app}, appStack长度: ${appStackLength}`);
-      
+
+      const stateConsistent =
+        currentApp === 'messages' && currentAppState && currentAppState.app === 'messages' && appStackLength === 1;
+
+      this.addTestResult(
+        'การจัดการสถานะ',
+        stateConsistent,
+        `currentApp: ${currentApp}, currentAppState.app: ${currentAppState?.app}, ความยาว appStack: ${appStackLength}`,
+      );
     } catch (error) {
-      this.addTestResult('状态管理', false, `测试出错: ${error.message}`);
+      this.addTestResult('การจัดการสถานะ', false, `ทดสอบผิดพลาด: ${error.message}`);
     }
   }
 
-  // 测试重复操作防护
+  // ทดสอบการป้องกันการทำงานซ้ำ
   async testDuplicateOperationPrevention() {
-    console.log('🔍 测试重复操作防护...');
-    
+    console.log('🔍 ทดสอบการป้องกันการทำงานซ้ำ...');
+
     try {
-      // 确保在消息应用主界面
+      // ตรวจสอบให้แน่ใจว่าอยู่ที่หน้าหลักของแอปข้อความ
       this.mobilePhone.openApp('messages');
       await new Promise(resolve => setTimeout(resolve, 200));
-      
+
       const initialStackLength = this.mobilePhone.appStack.length;
-      
-      // 尝试重复打开相同应用
+
+      // ลองเปิดแอปเดิมซ้ำ
       this.mobilePhone.openApp('messages');
       await new Promise(resolve => setTimeout(resolve, 100));
-      
+
       const finalStackLength = this.mobilePhone.appStack.length;
-      
-      // 应用栈长度不应该增加
+
+      // ความยาว app stack ไม่ควรเพิ่มขึ้น
       const preventedDuplicate = initialStackLength === finalStackLength;
-      
-      this.addTestResult('重复操作防护', preventedDuplicate, 
-        `初始栈长度: ${initialStackLength}, 最终栈长度: ${finalStackLength}`);
-      
+
+      this.addTestResult(
+        'การป้องกันการทำงานซ้ำ',
+        preventedDuplicate,
+        `ความยาว stack เริ่มต้น: ${initialStackLength}, ความยาว stack สุดท้าย: ${finalStackLength}`,
+      );
     } catch (error) {
-      this.addTestResult('重复操作防护', false, `测试出错: ${error.message}`);
+      this.addTestResult('การป้องกันการทำงานซ้ำ', false, `ทดสอบผิดพลาด: ${error.message}`);
     }
   }
 
-  // 添加测试结果
+  // เพิ่มผลการทดสอบ
   addTestResult(testName, passed, details) {
     this.testResults.push({
       name: testName,
       passed,
       details,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
-  // 打印测试结果
+  // แสดงผลการทดสอบ
   printTestResults() {
-    console.log('\n=== 测试结果汇总 ===');
-    
+    console.log('\n=== สรุปผลการทดสอบ ===');
+
     let passedCount = 0;
     let totalCount = this.testResults.length;
-    
+
     this.testResults.forEach(result => {
-      const status = result.passed ? '✅ 通过' : '❌ 失败';
+      const status = result.passed ? '✅ ผ่าน' : '❌ ไม่ผ่าน';
       console.log(`${status} ${result.name}: ${result.details}`);
-      
+
       if (result.passed) passedCount++;
     });
-    
-    console.log(`\n📊 总计: ${passedCount}/${totalCount} 个测试通过`);
-    
+
+    console.log(`\n📊 รวม: ${passedCount}/${totalCount} การทดสอบผ่าน`);
+
     if (passedCount === totalCount) {
-      console.log('🎉 所有测试通过！跳转应用栈优化成功！');
+      console.log('🎉 ทดสอบทั้งหมดผ่าน! การเพิ่มประสิทธิภาพ app stack การเปลี่ยนหน้าสำเร็จ!');
     } else {
-      console.log('⚠️ 部分测试失败，需要进一步优化');
+      console.log('⚠️ บางการทดสอบไม่ผ่าน ต้องปรับปรุงเพิ่มเติม');
     }
-    
-    console.log('=== 测试结束 ===\n');
+
+    console.log('=== จบการทดสอบ ===\n');
   }
 
-  // 手动触发测试
+  // เรียกใช้การทดสอบด้วยตนเอง
   static async runTest() {
     const tester = new MobilePhoneOptimizationTest();
     await tester.runAllTests();
@@ -193,18 +197,18 @@ class MobilePhoneOptimizationTest {
   }
 }
 
-// 导出到全局作用域
+// ส่งออกไปยัง global scope
 window.MobilePhoneOptimizationTest = MobilePhoneOptimizationTest;
 
-// 自动运行测试（如果在开发环境）
+// รันการทดสอบอัตโนมัติ (ถ้าอยู่ในสภาพแวดล้อมพัฒนา)
 if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-  // 延迟运行测试，确保所有组件都已加载
+  // หน่วงเวลาการรันทดสอบ เพื่อให้แน่ใจว่าคอมโพเนนต์ทั้งหมดโหลดแล้ว
   setTimeout(() => {
     if (window.mobilePhone) {
-      console.log('🚀 自动运行移动端跳转应用栈优化测试...');
+      console.log('🚀 รันการทดสอบการเพิ่มประสิทธิภาพ app stack การเปลี่ยนหน้าบนมือถืออัตโนมัติ...');
       MobilePhoneOptimizationTest.runTest();
     }
   }, 3000);
 }
 
-console.log('📱 移动端跳转应用栈优化测试脚本已加载');
+console.log('📱 โหลดสคริปต์ทดสอบการเพิ่มประสิทธิภาพ app stack การเปลี่ยนหน้าบนมือถือแล้ว');

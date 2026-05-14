@@ -1,119 +1,119 @@
 /**
- * 测试应用加载修复效果
- * 用于验证API/论坛/微博应用的加载状态管理和强制跳转修复
+ * ทดสอบผลการแก้ไขการโหลดแอป
+ * ใช้สำหรับตรวจสอบการจัดการสถานะการโหลดและการแก้ไขการบังคับเปลี่ยนหน้าของแอป API/ฟอรัม/เวยป๋อ
  */
 
-console.log('=== 应用加载修复测试 ===');
+console.log('=== ทดสอบการแก้ไขการโหลดแอป ===');
 
-// 测试用户导航意图管理
+// ทดสอบการจัดการเจตนาการนำทางของผู้ใช้
 function testUserNavigationIntent() {
-  console.log('\n1. 测试用户导航意图管理');
-  
+  console.log('\n1. ทดสอบการจัดการเจตนาการนำทางของผู้ใช้');
+
   if (!window.mobilePhone) {
-    console.error('移动端手机界面未初始化');
+    console.error('อินเทอร์เฟซมือถือยังไม่ได้เริ่มต้น');
     return;
   }
 
   const phone = window.mobilePhone;
-  
-  // 模拟用户点击论坛应用
-  console.log('模拟用户点击论坛应用...');
+
+  // จำลองผู้ใช้คลิกแอปฟอรัม
+  console.log('จำลองผู้ใช้คลิกแอปฟอรัม...');
   phone._userNavigationIntent = {
     targetApp: 'forum',
     timestamp: Date.now(),
-    fromApp: null
+    fromApp: null,
   };
-  
-  console.log('用户导航意图:', phone._userNavigationIntent);
-  
-  // 测试导航意图有效性检查
+
+  console.log('เจตนาการนำทางของผู้ใช้:', phone._userNavigationIntent);
+
+  // ทดสอบการตรวจสอบความถูกต้องของเจตนาการนำทาง
   setTimeout(() => {
     const isValid = phone.isUserNavigationIntentValid('forum');
-    console.log('导航意图是否有效:', isValid);
-    
-    // 模拟用户切换到其他应用
-    console.log('模拟用户切换到其他应用...');
+    console.log('เจตนาการนำทางถูกต้องหรือไม่:', isValid);
+
+    // จำลองผู้ใช้สลับไปแอปอื่น
+    console.log('จำลองผู้ใช้สลับไปแอปอื่น...');
     phone.currentApp = 'messages';
-    
+
     const isValidAfterSwitch = phone.isUserNavigationIntentValid('forum');
-    console.log('切换后导航意图是否有效:', isValidAfterSwitch);
+    console.log('เจตนาการนำทางหลังสลับถูกต้องหรือไม่:', isValidAfterSwitch);
   }, 1000);
 }
 
-// 测试加载状态管理
+// ทดสอบการจัดการสถานะการโหลด
 function testLoadingStateManagement() {
-  console.log('\n2. 测试加载状态管理');
-  
+  console.log('\n2. ทดสอบการจัดการสถานะการโหลด');
+
   if (!window.mobilePhone) {
-    console.error('移动端手机界面未初始化');
+    console.error('อินเทอร์เฟซมือถือยังไม่ได้เริ่มต้น');
     return;
   }
 
   const phone = window.mobilePhone;
-  
-  // 测试显示加载状态
-  console.log('测试显示加载状态...');
-  phone.showAppLoadingState('forum', '论坛');
-  
-  // 检查加载状态
-  console.log('正在加载的应用:', Array.from(phone._loadingApps));
-  
-  // 测试完成加载
+
+  // ทดสอบแสดงสถานะการโหลด
+  console.log('ทดสอบแสดงสถานะการโหลด...');
+  phone.showAppLoadingState('forum', '論壇');
+
+  // ตรวจสอบสถานะการโหลด
+  console.log('แอปที่กำลังโหลด:', Array.from(phone._loadingApps));
+
+  // ทดสอบโหลดเสร็จ
   setTimeout(() => {
-    console.log('测试完成加载...');
+    console.log('ทดสอบโหลดเสร็จ...');
     const canJump = phone.completeAppLoading('forum');
-    console.log('是否可以跳转:', canJump);
-    console.log('正在加载的应用:', Array.from(phone._loadingApps));
+    console.log('สามารถเปลี่ยนหน้าได้หรือไม่:', canJump);
+    console.log('แอปที่กำลังโหลด:', Array.from(phone._loadingApps));
   }, 2000);
 }
 
-// 测试返回按钮清除导航意图
+// ทดสอบปุ่มย้อนกลับล้างเจตนาการนำทาง
 function testBackButtonClearIntent() {
-  console.log('\n3. 测试返回按钮清除导航意图');
-  
+  console.log('\n3. ทดสอบปุ่มย้อนกลับล้างเจตนาการนำทาง');
+
   if (!window.mobilePhone) {
-    console.error('移动端手机界面未初始化');
+    console.error('อินเทอร์เฟซมือถือยังไม่ได้เริ่มต้น');
     return;
   }
 
   const phone = window.mobilePhone;
-  
-  // 设置导航意图
+
+  // ตั้งค่าเจตนาการนำทาง
   phone._userNavigationIntent = {
     targetApp: 'weibo',
     timestamp: Date.now(),
-    fromApp: null
+    fromApp: null,
   };
-  
-  console.log('设置导航意图:', phone._userNavigationIntent);
-  
-  // 模拟返回按钮点击
-  console.log('模拟返回按钮点击...');
+
+  console.log('ตั้งค่าเจตนาการนำทาง:', phone._userNavigationIntent);
+
+  // จำลองคลิกปุ่มย้อนกลับ
+  console.log('จำลองคลิกปุ่มย้อนกลับ...');
   phone.handleBackButton();
-  
-  console.log('返回后导航意图:', phone._userNavigationIntent);
+
+  console.log('เจตนาการนำทางหลังกดย้อนกลับ:', phone._userNavigationIntent);
 }
 
-// 运行测试
+// รันการทดสอบ
 function runTests() {
-  console.log('开始运行测试...');
-  
-  // 等待移动端界面初始化
+  console.log('เริ่มรันการทดสอบ...');
+
+  // รอให้อินเทอร์เฟซมือถือเริ่มต้น
   if (window.mobilePhone) {
     testUserNavigationIntent();
     setTimeout(testLoadingStateManagement, 3000);
     setTimeout(testBackButtonClearIntent, 6000);
   } else {
-    console.log('等待移动端界面初始化...');
+    console.log('รอให้อินเทอร์เฟซมือถือเริ่มต้น...');
     setTimeout(runTests, 1000);
   }
 }
 
-// 页面加载完成后运行测试
+// รันการทดสอบหลังจากหน้าเว็บโหลดเสร็จ
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', runTests);
 } else {
   runTests();
 }
 
-console.log('测试脚本已加载，等待执行...');
+console.log('โหลดสคริปต์ทดสอบแล้ว รอดำเนินการ...');

@@ -1,196 +1,194 @@
 /**
- * Mobile Init - 移动端初始化脚本
- * 确保所有移动端模块按正确顺序加载
+ * Mobile Init - สคริปต์เริ่มต้นระบบมือถือ
+ * ตรวจสอบให้แน่ใจว่าโมดูลมือถือทั้งหมดโหลดตามลำดับที่ถูกต้อง
  */
 
-(function() {
-    'use strict';
+(function () {
+  'use strict';
 
-    console.log('[Mobile Init] 🚀 开始移动端初始化...');
+  console.log('[Mobile Init] 🚀 เริ่มต้นระบบมือถือ...');
 
-    // 移动端模块配置
-    const MOBILE_MODULES = [
-        {
-            name: 'real-time-sync',
-            path: 'scripts/extensions/third-party/mobile/app/real-time-sync.js',
-            dependencies: []
-        }
-    ];
+  // การตั้งค่าโมดูลมือถือ
+  const MOBILE_MODULES = [
+    {
+      name: 'real-time-sync',
+      path: 'scripts/extensions/third-party/mobile/app/real-time-sync.js',
+      dependencies: [],
+    },
+  ];
 
-    // 已加载的模块
-    const loadedModules = new Set();
-    const loadingModules = new Set();
+  // โมดูลที่โหลดแล้ว
+  const loadedModules = new Set();
+  const loadingModules = new Set();
 
-    // 加载脚本
-    function loadScript(src) {
-        return new Promise((resolve, reject) => {
-            console.log(`[Mobile Init] 📦 加载脚本: ${src}`);
+  // โหลดสคริปต์
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      console.log(`[Mobile Init] 📦 กำลังโหลดสคริปต์: ${src}`);
 
-            // 检查是否已经存在
-            const existingScript = document.querySelector(`script[src="${src}"]`);
-            if (existingScript) {
-                console.log(`[Mobile Init] ✅ 脚本已存在: ${src}`);
-                resolve();
-                return;
-            }
+      // ตรวจสอบว่ามีอยู่แล้วหรือไม่
+      const existingScript = document.querySelector(`script[src="${src}"]`);
+      if (existingScript) {
+        console.log(`[Mobile Init] ✅ สคริปต์มีอยู่แล้ว: ${src}`);
+        resolve();
+        return;
+      }
 
-            const script = document.createElement('script');
-            script.src = src;
-            script.onload = () => {
-                console.log(`[Mobile Init] ✅ 脚本加载完成: ${src}`);
-                resolve();
-            };
-            script.onerror = (error) => {
-                console.error(`[Mobile Init] ❌ 脚本加载失败: ${src}`, error);
-                reject(error);
-            };
+      const script = document.createElement('script');
+      script.src = src;
+      script.onload = () => {
+        console.log(`[Mobile Init] ✅ โหลดสคริปต์สำเร็จ: ${src}`);
+        resolve();
+      };
+      script.onerror = error => {
+        console.error(`[Mobile Init] ❌ โหลดสคริปต์ล้มเหลว: ${src}`, error);
+        reject(error);
+      };
 
-            document.head.appendChild(script);
-        });
+      document.head.appendChild(script);
+    });
+  }
+
+  // โหลดโมดูล
+  async function loadModule(module) {
+    if (loadedModules.has(module.name)) {
+      return true;
     }
 
-    // 加载模块
-    async function loadModule(module) {
-        if (loadedModules.has(module.name)) {
-            return true;
-        }
-
-        if (loadingModules.has(module.name)) {
-            // 等待其他地方加载完成
-            while (loadingModules.has(module.name)) {
-                await new Promise(resolve => setTimeout(resolve, 100));
-            }
-            return loadedModules.has(module.name);
-        }
-
-        loadingModules.add(module.name);
-
-        try {
-            // 加载依赖
-            for (const depName of module.dependencies) {
-                const dep = MOBILE_MODULES.find(m => m.name === depName);
-                if (dep && !loadedModules.has(depName)) {
-                    await loadModule(dep);
-                }
-            }
-
-            // 加载当前模块
-            await loadScript(module.path);
-            loadedModules.add(module.name);
-            console.log(`[Mobile Init] ✅ 模块加载完成: ${module.name}`);
-            return true;
-
-        } catch (error) {
-            console.error(`[Mobile Init] ❌ 模块加载失败: ${module.name}`, error);
-            return false;
-        } finally {
-            loadingModules.delete(module.name);
-        }
+    if (loadingModules.has(module.name)) {
+      // รอให้โหลดเสร็จจากที่อื่น
+      while (loadingModules.has(module.name)) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+      return loadedModules.has(module.name);
     }
 
-    // 检查是否在移动端环境
-    function isMobileEnvironment() {
-        const hasDataApp = document.querySelector('[data-app]') !== null;
-        const hasPathMobile = window.location.pathname.includes('mobile');
-        const hasMobilePhone = typeof window.mobilePhone !== 'undefined';
+    loadingModules.add(module.name);
 
-        console.log('[Mobile Init] 🔍 环境检测:', {
-            hasDataApp,
-            hasPathMobile,
-            hasMobilePhone,
-            pathname: window.location.pathname,
-            dataAppElement: document.querySelector('[data-app]')
-        });
-
-        // 强制启用移动端模块，便于调试
-        const isMobile = hasDataApp || hasPathMobile || hasMobilePhone || true;
-        console.log('[Mobile Init] 🎯 移动端环境检测结果:', isMobile);
-
-        return isMobile;
-    }
-
-    // 初始化移动端模块
-    async function initMobileModules() {
-        try {
-            if (!isMobileEnvironment()) {
-                console.log('[Mobile Init] 非移动端环境，跳过初始化');
-                return;
-            }
-
-            console.log('[Mobile Init] 🎯 检测到移动端环境，开始加载模块...');
-
-            // 加载所有模块
-            for (const module of MOBILE_MODULES) {
-                await loadModule(module);
-            }
-
-            // 等待一下确保模块初始化完成
-            setTimeout(() => {
-                initRealTimeSync();
-            }, 1000);
-
-            console.log('[Mobile Init] ✅ 所有移动端模块加载完成');
-
-        } catch (error) {
-            console.error('[Mobile Init] ❌ 移动端模块初始化失败:', error);
+    try {
+      // โหลด dependencies
+      for (const depName of module.dependencies) {
+        const dep = MOBILE_MODULES.find(m => m.name === depName);
+        if (dep && !loadedModules.has(depName)) {
+          await loadModule(dep);
         }
+      }
+
+      // โหลดโมดูลปัจจุบัน
+      await loadScript(module.path);
+      loadedModules.add(module.name);
+      console.log(`[Mobile Init] ✅ โหลดโมดูลสำเร็จ: ${module.name}`);
+      return true;
+    } catch (error) {
+      console.error(`[Mobile Init] ❌ โหลดโมดูลล้มเหลว: ${module.name}`, error);
+      return false;
+    } finally {
+      loadingModules.delete(module.name);
     }
+  }
 
-    // 初始化实时同步器
-    function initRealTimeSync() {
-        try {
-            console.log('[Mobile Init] 🔄 初始化实时同步器...');
+  // ตรวจสอบว่าอยู่ในสภาพแวดล้อมมือถือหรือไม่
+  function isMobileEnvironment() {
+    const hasDataApp = document.querySelector('[data-app]') !== null;
+    const hasPathMobile = window.location.pathname.includes('mobile');
+    const hasMobilePhone = typeof window.mobilePhone !== 'undefined';
 
-            // 检查实时同步器是否可用
-            if (typeof window.realTimeSync !== 'undefined') {
-                console.log('[Mobile Init] ✅ 实时同步器可用，启动中...');
+    console.log('[Mobile Init] 🔍 ตรวจสอบสภาพแวดล้อม:', {
+      hasDataApp,
+      hasPathMobile,
+      hasMobilePhone,
+      pathname: window.location.pathname,
+      dataAppElement: document.querySelector('[data-app]'),
+    });
 
-                if (!window.realTimeSync.isRunning) {
-                    window.realTimeSync.start();
-                }
-            } else {
-                console.warn('[Mobile Init] ⚠️ 实时同步器不可用');
-            }
-        } catch (error) {
-            console.error('[Mobile Init] ❌ 实时同步器初始化失败:', error);
+    // บังคับเปิดใช้งานโมดูลมือถือ เพื่อการดีบัก
+    const isMobile = hasDataApp || hasPathMobile || hasMobilePhone || true;
+    console.log('[Mobile Init] 🎯 ผลการตรวจสอบสภาพแวดล้อมมือถือ:', isMobile);
+
+    return isMobile;
+  }
+
+  // เริ่มต้นโมดูลมือถือ
+  async function initMobileModules() {
+    try {
+      if (!isMobileEnvironment()) {
+        console.log('[Mobile Init] ไม่ใช่สภาพแวดล้อมมือถือ ข้ามการเริ่มต้น');
+        return;
+      }
+
+      console.log('[Mobile Init] 🎯 ตรวจพบสภาพแวดล้อมมือถือ เริ่มโหลดโมดูล...');
+
+      // โหลดโมดูลทั้งหมด
+      for (const module of MOBILE_MODULES) {
+        await loadModule(module);
+      }
+
+      // รอสักครู่เพื่อให้แน่ใจว่าโมดูลเริ่มต้นเสร็จสมบูรณ์
+      setTimeout(() => {
+        initRealTimeSync();
+      }, 1000);
+
+      console.log('[Mobile Init] ✅ โหลดโมดูลมือถือทั้งหมดสำเร็จ');
+    } catch (error) {
+      console.error('[Mobile Init] ❌ เริ่มต้นโมดูลมือถือล้มเหลว:', error);
+    }
+  }
+
+  // เริ่มต้นตัวซิงค์แบบเรียลไทม์
+  function initRealTimeSync() {
+    try {
+      console.log('[Mobile Init] 🔄 กำลังเริ่มต้นตัวซิงค์แบบเรียลไทม์...');
+
+      // ตรวจสอบว่าตัวซิงค์แบบเรียลไทม์พร้อมใช้งานหรือไม่
+      if (typeof window.realTimeSync !== 'undefined') {
+        console.log('[Mobile Init] ✅ ตัวซิงค์แบบเรียลไทม์พร้อมใช้งาน กำลังเริ่ม...');
+
+        if (!window.realTimeSync.isRunning) {
+          window.realTimeSync.start();
         }
+      } else {
+        console.warn('[Mobile Init] ⚠️ ตัวซิงค์แบบเรียลไทม์ไม่พร้อมใช้งาน');
+      }
+    } catch (error) {
+      console.error('[Mobile Init] ❌ เริ่มต้นตัวซิงค์แบบเรียลไทม์ล้มเหลว:', error);
     }
+  }
 
-    // 创建全局调试函数
-    window.mobileDebug = {
-        loadedModules: () => Array.from(loadedModules),
-        loadingModules: () => Array.from(loadingModules),
-        reloadModule: async (moduleName) => {
-            const module = MOBILE_MODULES.find(m => m.name === moduleName);
-            if (module) {
-                loadedModules.delete(moduleName);
-                return await loadModule(module);
-            }
-            return false;
-        },
-        initRealTimeSync,
-        checkRealTimeSync: () => {
-            return {
-                exists: typeof window.realTimeSync !== 'undefined',
-                isRunning: window.realTimeSync?.isRunning || false,
-                status: window.realTimeSync?.getSyncStatus?.() || null
-            };
-        }
-    };
+  // สร้างฟังก์ชันดีบักแบบ global
+  window.mobileDebug = {
+    loadedModules: () => Array.from(loadedModules),
+    loadingModules: () => Array.from(loadingModules),
+    reloadModule: async moduleName => {
+      const module = MOBILE_MODULES.find(m => m.name === moduleName);
+      if (module) {
+        loadedModules.delete(moduleName);
+        return await loadModule(module);
+      }
+      return false;
+    },
+    initRealTimeSync,
+    checkRealTimeSync: () => {
+      return {
+        exists: typeof window.realTimeSync !== 'undefined',
+        isRunning: window.realTimeSync?.isRunning || false,
+        status: window.realTimeSync?.getSyncStatus?.() || null,
+      };
+    },
+  };
 
-    // 延迟启动，确保DOM准备就绪
-    console.log('[Mobile Init] 当前DOM状态:', document.readyState);
+  // เริ่มทำงานแบบหน่วงเวลา เพื่อให้แน่ใจว่า DOM พร้อม
+  console.log('[Mobile Init] สถานะ DOM ปัจจุบัน:', document.readyState);
 
-    if (document.readyState === 'loading') {
-        console.log('[Mobile Init] DOM正在加载，等待DOMContentLoaded事件...');
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log('[Mobile Init] DOMContentLoaded事件触发');
-            setTimeout(initMobileModules, 1000);
-        });
-    } else {
-        console.log('[Mobile Init] DOM已准备就绪，立即启动...');
-        setTimeout(initMobileModules, 1000);
-    }
+  if (document.readyState === 'loading') {
+    console.log('[Mobile Init] DOM กำลังโหลด รอ event DOMContentLoaded...');
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('[Mobile Init] event DOMContentLoaded ถูกเรียก');
+      setTimeout(initMobileModules, 1000);
+    });
+  } else {
+    console.log('[Mobile Init] DOM พร้อมแล้ว เริ่มทำงานทันที...');
+    setTimeout(initMobileModules, 1000);
+  }
 
-    console.log('[Mobile Init] 移动端初始化脚本加载完成');
+  console.log('[Mobile Init] โหลดสคริปต์เริ่มต้นระบบมือถือสำเร็จ');
 })();
