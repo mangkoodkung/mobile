@@ -1,6 +1,6 @@
 /**
- * 论坛UI管理器
- * 负责论坛界面的显示和数据处理
+ * ตัวจัดการ UI ฟอรัม
+ * รับผิดชอบการแสดงผลหน้าฟอรัมและการประมวลผลข้อมูล
  */
 class ForumUI {
   constructor() {
@@ -8,14 +8,14 @@ class ForumUI {
     this.clickHandler = null;
     this.subReplyEventsbound = false;
     this.likeClickHandler = null;
-    // 点赞数据存储 - 格式: { threadId: { likes: number, isLiked: boolean }, ... }
+    // ที่เก็บข้อมูลการกดถูกใจ - รูปแบบ: { threadId: { likes: number, isLiked: boolean }, ... }
     this.likesData = {};
-    // 回复点赞数据存储 - 格式: { replyId: { likes: number, isLiked: boolean }, ... }
+    // ที่เก็บข้อมูลการกดถูกใจของการตอบกลับ - รูปแบบ: { replyId: { likes: number, isLiked: boolean }, ... }
     this.replyLikesData = {};
 
-    // 头像颜色数组
+    // อาร์เรย์สีอวตาร
     this.avatarColors = [
-      'var(--avatar-gradient-1)', // 原有粉色渐变
+      'var(--avatar-gradient-1)', // ไล่ระดับสีชมพูเดิม
       'var(--avatar-color-1)', // #b28cb9
       'var(--avatar-color-2)', // #e2b3d4
       'var(--avatar-color-3)', // #f7d1e6
@@ -42,11 +42,11 @@ class ForumUI {
   }
 
   init() {
-    console.log('[Forum UI] 论坛UI管理器初始化');
+    console.log('[Forum UI] เริ่มต้นตัวจัดการ UI ฟอรัม');
   }
 
   /**
-   * 基于用户名生成稳定的哈希值
+   * สร้างค่าแฮชที่เสถียรจากชื่อผู้ใช้
    */
   hashUsername(username) {
     let hash = 0;
@@ -55,14 +55,14 @@ class ForumUI {
     for (let i = 0; i < username.length; i++) {
       const char = username.charCodeAt(i);
       hash = (hash << 5) - hash + char;
-      hash = hash & hash; // 转换为32位整数
+      hash = hash & hash; // แปลงเป็นจำนวนเต็ม 32 บิต
     }
 
     return Math.abs(hash);
   }
 
   /**
-   * 根据用户名获取头像颜色
+   * รับสีอวตารตามชื่อผู้ใช้
    */
   getAvatarColor(username) {
     const hash = this.hashUsername(username);
@@ -71,7 +71,7 @@ class ForumUI {
   }
 
   /**
-   * 生成带颜色的头像HTML
+   * สร้าง HTML อวตารพร้อมสี
    */
   generateAvatarHTML(username, size = '') {
     const color = this.getAvatarColor(username);
@@ -82,15 +82,15 @@ class ForumUI {
   }
 
   /**
-   * 从消息中实时解析论坛内容
+   * แยกเนื้อหาฟอรัมจากข้อความแบบเรียลไทม์
    */
   parseForumContent(content) {
-    // 提取论坛标记之间的内容
+    // ดึงเนื้อหาระหว่างเครื่องหมายฟอรัม
     const forumRegex = /<!-- FORUM_CONTENT_START -->([\s\S]*?)<!-- FORUM_CONTENT_END -->/;
     const match = content.match(forumRegex);
 
     if (!match) {
-      console.log('[Forum UI] 未找到论坛内容');
+      console.log('[Forum UI] ไม่พบเนื้อหาฟอรัม');
       return { threads: [], replies: {} };
     }
 
@@ -98,18 +98,18 @@ class ForumUI {
     const threads = [];
     const replies = {};
 
-    // 解析标题格式: [标题|发帖人昵称|帖子id|标题内容|帖子详情]
+    // แยกรูปแบบหัวข้อ: [标题|ชื่อเล่นผู้โพสต์|ID กระทู้|เนื้อหาหัวข้อ|รายละเอียดกระทู้]
     const titleRegex = /\[标题\|([^|]+)\|([^|]+)\|([^|]+)\|([^\]]+)\]/g;
-    // 解析回复格式: [回复|回帖人昵称|帖子id|回复内容]
+    // แยกรูปแบบการตอบกลับ: [回复|ชื่อเล่นผู้ตอบกลับ|ID กระทู้|เนื้อหาตอบกลับ]
     const replyRegex = /\[回复\|([^|]+)\|([^|]+)\|([^\]]+)\]/g;
-    // 解析楼中楼格式: [楼中楼|回帖人昵称|帖子id|父楼层|回复内容]
+    // แยกรูปแบบการตอบกลับซ้อน: [楼中楼|ชื่อเล่นผู้ตอบกลับ|ID กระทู้|ชั้นหลัก|เนื้อหาตอบกลับ]
     const subReplyRegex = /\[楼中楼\|([^|]+)\|([^|]+)\|([^|]+)\|([^\]]+)\]/g;
 
     let match_title;
     let match_reply;
     let match_subreply;
 
-    // 解析标题
+    // แยกหัวข้อ
     while ((match_title = titleRegex.exec(forumContent)) !== null) {
       const thread = {
         id: match_title[2],
@@ -124,7 +124,7 @@ class ForumUI {
       replies[thread.id] = [];
     }
 
-    // 解析普通回复
+    // แยกการตอบกลับทั่วไป
     while ((match_reply = replyRegex.exec(forumContent)) !== null) {
       const reply = {
         id: `reply_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -142,7 +142,7 @@ class ForumUI {
       replies[reply.threadId].push(reply);
     }
 
-    // 解析楼中楼
+    // แยกการตอบกลับซ้อน
     while ((match_subreply = subReplyRegex.exec(forumContent)) !== null) {
       const subReply = {
         id: `subreply_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -158,7 +158,7 @@ class ForumUI {
         replies[subReply.threadId] = [];
       }
 
-      // 找到对应的父楼层并添加到其subReplies中
+      // หาชั้นหลักที่ตรงกันและเพิ่มเข้าไปใน subReplies
       const parentReply = replies[subReply.threadId].find(
         r =>
           r.author === subReply.parentFloor ||
@@ -172,36 +172,36 @@ class ForumUI {
         }
         parentReply.subReplies.push(subReply);
       } else {
-        // 如果找不到父楼层，作为普通回复处理
+        // หากไม่พบชั้นหลัก ให้ถือเป็นการตอบกลับทั่วไป
         subReply.type = 'reply';
         subReply.subReplies = [];
         replies[subReply.threadId].push(subReply);
       }
     }
 
-    // 更新对应帖子的回复数
+    // อัปเดตจำนวนการตอบกลับของกระทู้ที่เกี่ยวข้อง
     threads.forEach(thread => {
       if (replies[thread.id]) {
         thread.replies = replies[thread.id];
       }
     });
 
-    console.log('[Forum UI] 解析完成，帖子数:', threads.length);
+    console.log('[Forum UI] แยกข้อมูลเสร็จสิ้น จำนวนกระทู้:', threads.length);
     return { threads, replies };
   }
 
   /**
-   * 获取论坛主界面HTML
+   * รับ HTML หน้าหลักของฟอรัม
    */
   getForumMainHTML() {
     return `
             <div class="forum-app">
-                <!-- 论坛内容 -->
+                <!-- เนื้อหาฟอรัม -->
                 <div class="forum-content" id="forum-content">
                     ${this.getThreadListHTML()}
                 </div>
 
-                <!-- 发帖对话框 -->
+                <!-- กล่องโต้ตอบโพสต์กระทู้ -->
                 <div class="post-dialog" id="post-dialog" style="display: none;">
                     <div class="dialog-overlay" id="dialog-overlay"></div>
                     <div class="dialog-content">
@@ -224,10 +224,10 @@ class ForumUI {
   }
 
   /**
-   * 获取帖子列表HTML
+   * รับ HTML รายการกระทู้
    */
   getThreadListHTML() {
-    // 实时从消息中提取论坛数据
+    // ดึงข้อมูลฟอรัมจากข้อความแบบเรียลไทม์
     const forumData = this.getCurrentForumData();
 
     if (forumData.threads.length === 0) {
@@ -240,9 +240,9 @@ class ForumUI {
             `;
     }
 
-    // 按最新活动时间排序帖子（最新活动的在前）
+    // เรียงกระทู้ตามเวลากิจกรรมล่าสุด (ล่าสุดอยู่ด้านบน)
     const sortedThreads = forumData.threads.slice().sort((a, b) => {
-      // 计算每个帖子的最新活动时间
+      // คำนวณเวลากิจกรรมล่าสุดของแต่ละกระทู้
       const getLatestActivityTime = thread => {
         let latestTime = new Date(thread.timestamp || Date.now());
 
@@ -253,7 +253,7 @@ class ForumUI {
               latestTime = replyTime;
             }
 
-            // 检查楼中楼回复
+            // ตรวจสอบการตอบกลับซ้อน
             if (reply.subReplies && reply.subReplies.length > 0) {
               reply.subReplies.forEach(subReply => {
                 const subReplyTime = new Date(subReply.timestamp || Date.now());
@@ -271,7 +271,7 @@ class ForumUI {
       const aLatest = getLatestActivityTime(a);
       const bLatest = getLatestActivityTime(b);
 
-      return bLatest - aLatest; // 降序排列，最新的在前
+      return bLatest - aLatest; // เรียงจากมากไปน้อย ล่าสุดอยู่ด้านบน
     });
 
     return sortedThreads
@@ -305,14 +305,14 @@ class ForumUI {
   }
 
   /**
-   * 从消息中获取当前论坛数据
+   * รับข้อมูลฟอรัมปัจจุบันจากข้อความ
    */
   getCurrentForumData() {
     try {
       if (window.mobileContextEditor) {
         const chatData = window.mobileContextEditor.getCurrentChatData();
         if (chatData && chatData.messages && chatData.messages.length > 0) {
-          // 检查第一条消息是否包含论坛内容
+          // ตรวจสอบว่าข้อความแรกมีเนื้อหาฟอรัมหรือไม่
           const firstMessage = chatData.messages[0];
           if (firstMessage && firstMessage.mes) {
             return this.parseForumContent(firstMessage.mes);
@@ -320,17 +320,17 @@ class ForumUI {
         }
       }
     } catch (error) {
-      console.warn('[Forum UI] 获取论坛数据失败:', error);
+      console.warn('[Forum UI] ดึงข้อมูลฟอรัมล้มเหลว:', error);
     }
 
     return { threads: [], replies: {} };
   }
 
   /**
-   * 获取帖子详情HTML
+   * รับ HTML รายละเอียดกระทู้
    */
   getThreadDetailHTML(threadId) {
-    // 实时从消息中提取论坛数据
+    // ดึงข้อมูลฟอรัมจากข้อความแบบเรียลไทม์
     const forumData = this.getCurrentForumData();
     const thread = forumData.threads.find(t => t.id === threadId);
     if (!thread) return '<div class="error">ไม่พบกระทู้</div>';
@@ -339,7 +339,7 @@ class ForumUI {
 
     return `
             <div class="thread-detail">
-                <!-- 主帖 -->
+                <!-- กระทู้หลัก -->
                 <div class="main-post">
                     <div class="post-header">
                         ${this.generateAvatarHTML(thread.author, 'large')}
@@ -360,7 +360,7 @@ class ForumUI {
                     </div>
                 </div>
 
-                <!-- 回复列表 -->
+                <!-- รายการตอบกลับ -->
                 <div class="reply-list">
                     <div class="reply-header">
                         <h4>การตอบกลับทั้งหมด (${replies.length})</h4>
@@ -368,7 +368,7 @@ class ForumUI {
                     ${this.getRepliesHTML(replies)}
                 </div>
 
-                <!-- 回复输入框 -->
+                <!-- กล่องป้อนการตอบกลับ -->
                 <div class="comment-input-bar">
                     <input type="text" class="reply-input" id="reply-input" placeholder="แสดงความคิดเห็นของคุณ">
                     <button class="action-btn submit-reply-btn" id="submit-reply-btn" style="color: var(--accent-pink); font-size: 16px;"><i class="fas fa-paper-plane"></i></button>
@@ -378,7 +378,7 @@ class ForumUI {
   }
 
   /**
-   * 获取回复列表HTML
+   * รับ HTML รายการตอบกลับ
    */
   getRepliesHTML(replies) {
     if (replies.length === 0) {
@@ -421,10 +421,10 @@ class ForumUI {
                         }"><i class="fas fa-reply"></i> ตอบกลับ</button>
                     </div>
 
-                    <!-- 楼中楼回复 -->
+                    <!-- การตอบกลับซ้อน -->
                     ${this.getSubRepliesHTML(reply.subReplies || [], floorNumber)}
 
-                    <!-- 楼中楼回复输入框 -->
+                    <!-- กล่องป้อนการตอบกลับซ้อน -->
                     <div class="sub-reply-input-container" id="sub-reply-input-${reply.id}" style="display: none;">
                         <div class="sub-reply-input-box">
                             <div class="sub-reply-target">ตอบกลับ ${reply.author}:</div>
@@ -444,7 +444,7 @@ class ForumUI {
   }
 
   /**
-   * 获取楼中楼回复HTML
+   * รับ HTML การตอบกลับซ้อน
    */
   getSubRepliesHTML(subReplies, parentFloor) {
     if (!subReplies || subReplies.length === 0) {
@@ -483,39 +483,39 @@ class ForumUI {
   }
 
   /**
-   * 格式化内容（处理表情包等）
+   * จัดรูปแบบเนื้อหา (จัดการสติกเกอร์ ฯลฯ)
    */
   formatContent(content) {
-    // 处理表情包标记
+    // จัดการเครื่องหมายสติกเกอร์
     let formatted = content.replace(/表情:\s*([^,\s]+)/g, '<span class="emoji-placeholder">[$1]</span>');
 
-    // 处理@用户（如果有）
+    // จัดการการ @ ผู้ใช้ (หากมี)
     formatted = formatted.replace(/@([^\s]+)/g, '<span class="mention">@$1</span>');
 
-    // 处理换行
+    // จัดการการขึ้นบรรทัดใหม่
     formatted = formatted.replace(/\n/g, '<br>');
 
     return formatted;
   }
 
   /**
-   * 绑定事件
+   * ผูกอีเวนต์
    */
   bindEvents() {
-    // 移除之前的事件监听器（如果存在）
+    // ลบ event listener ก่อนหน้า (หากมี)
     if (this.clickHandler) {
       document.removeEventListener('click', this.clickHandler);
     }
 
-    // 帖子点击事件
+    // อีเวนต์คลิกกระทู้
     this.clickHandler = e => {
-      // 只处理论坛内容区域的点击事件
+      // จัดการเฉพาะอีเวนต์คลิกในพื้นที่เนื้อหาฟอรัม
       const forumContent = document.getElementById('forum-content');
       if (!forumContent || !forumContent.contains(e.target)) {
         return;
       }
 
-      // 处理删除按钮点击
+      // จัดการการคลิกปุ่มลบ
       if (e.target.closest('.forum-delete-btn')) {
         e.preventDefault();
         e.stopPropagation();
@@ -536,48 +536,48 @@ class ForumUI {
 
     document.addEventListener('click', this.clickHandler);
 
-    // 发帖按钮
+    // ปุ่มโพสต์กระทู้
     const newPostBtn = document.getElementById('new-post-btn');
     if (newPostBtn) {
       newPostBtn.addEventListener('click', () => this.showPostDialog());
     }
 
-    // 刷新按钮
+    // ปุ่มรีเฟรช
     const refreshBtn = document.getElementById('refresh-forum-btn');
     if (refreshBtn) {
       refreshBtn.addEventListener('click', () => this.refreshForum());
     }
 
-    // 论坛设置按钮
+    // ปุ่มตั้งค่าฟอรัม
     const forumControlBtn = document.getElementById('forum-control-btn');
     if (forumControlBtn) {
       forumControlBtn.addEventListener('click', () => this.showForumControl());
     }
 
-    // 生成演示内容按钮
+    // ปุ่มสร้างเนื้อหาตัวอย่าง
     const generateBtn = document.getElementById('generate-demo-btn');
     if (generateBtn) {
       generateBtn.addEventListener('click', () => this.generateDemoContent());
     }
 
-    // 对话框相关事件
+    // อีเวนต์เกี่ยวกับกล่องโต้ตอบ
     this.bindDialogEvents();
 
-    // 楼中楼相关事件
+    // อีเวนต์เกี่ยวกับการตอบกลับซ้อน
     this.bindSubReplyEvents();
 
-    // 主回复按钮事件
+    // อีเวนต์ปุ่มตอบกลับหลัก
     this.bindMainReplyEvents();
 
-    // 点赞按钮事件
+    // อีเวนต์ปุ่มถูกใจ
     this.bindLikeEvents();
   }
 
   /**
-   * 绑定对话框事件
+   * ผูกอีเวนต์ของกล่องโต้ตอบ
    */
   bindDialogEvents() {
-    // 关闭对话框
+    // ปิดกล่องโต้ตอบ
     const closeBtn = document.getElementById('close-dialog-btn');
     const cancelBtn = document.getElementById('cancel-post-btn');
     const overlay = document.getElementById('dialog-overlay');
@@ -588,7 +588,7 @@ class ForumUI {
       }
     });
 
-    // 提交发帖
+    // ส่งโพสต์
     const submitBtn = document.getElementById('submit-post-btn');
     if (submitBtn) {
       submitBtn.addEventListener('click', () => this.submitNewPost());
@@ -596,12 +596,12 @@ class ForumUI {
   }
 
   /**
-   * 显示帖子详情
+   * แสดงรายละเอียดกระทู้
    */
   showThreadDetail(threadId) {
     this.currentThreadId = threadId;
 
-    // 推送新状态到应用栈（只在状态发生变化时推送）
+    // พุชสถานะใหม่ลงในสแต็กแอป (พุชเฉพาะเมื่อสถานะเปลี่ยนแปลง)
     if (window.mobilePhone) {
       const currentState = window.mobilePhone.currentAppState;
       const shouldPushState =
@@ -613,48 +613,48 @@ class ForumUI {
       if (shouldPushState) {
         const state = {
           app: 'forum',
-          title: '帖子详情',
+          title: 'รายละเอียดกระทู้',
           view: 'threadDetail',
           threadId: threadId,
         };
         window.mobilePhone.pushAppState(state);
-        console.log('[Forum UI] 推送帖子详情状态:', state);
+        console.log('[Forum UI] พุชสถานะรายละเอียดกระทู้:', state);
       }
     }
 
-    // 更新内容
+    // อัปเดตเนื้อหา
     const forumContent = document.getElementById('forum-content');
     if (forumContent) {
       forumContent.innerHTML = this.getThreadDetailHTML(threadId);
     } else {
-      console.error('[Forum UI] 找不到forum-content元素');
+      console.error('[Forum UI] ไม่พบ element forum-content');
     }
 
-    // 绑定回复事件
+    // ผูกอีเวนต์การตอบกลับ
     this.bindReplyEvents();
   }
 
   /**
-   * 绑定回复事件
+   * ผูกอีเวนต์การตอบกลับ
    */
   bindReplyEvents() {
-    // 移除这里的事件绑定，避免与 bindMainReplyEvents() 冲突
-    // submit-reply-btn 的事件已在 bindMainReplyEvents() 中处理
-    // 楼中楼事件已在 bindEvents() 中绑定，无需重复绑定
+    // ลบการผูกอีเวนต์ตรงนี้ออก เพื่อไม่ให้ขัดแย้งกับ bindMainReplyEvents()
+    // อีเวนต์ของ submit-reply-btn ถูกจัดการใน bindMainReplyEvents() แล้ว
+    // อีเวนต์การตอบกลับซ้อนถูกผูกใน bindEvents() แล้ว ไม่จำเป็นต้องผูกซ้ำ
     // this.bindSubReplyEvents();
   }
 
   /**
-   * 绑定点赞事件
+   * ผูกอีเวนต์การกดถูกใจ
    */
   bindLikeEvents() {
-    // 移除之前的事件监听器（如果存在）
+    // ลบ event listener ก่อนหน้า (หากมี)
     if (this.likeClickHandler) {
       document.removeEventListener('click', this.likeClickHandler);
     }
 
     this.likeClickHandler = e => {
-      // 处理帖子点赞按钮点击
+      // จัดการการคลิกปุ่มถูกใจกระทู้
       if (e.target.closest('.like-btn[data-thread-id]')) {
         e.preventDefault();
         e.stopPropagation();
@@ -667,7 +667,7 @@ class ForumUI {
         }
       }
 
-      // 处理回复点赞按钮点击
+      // จัดการการคลิกปุ่มถูกใจการตอบกลับ
       if (e.target.closest('.like-reply[data-reply-id]')) {
         e.preventDefault();
         e.stopPropagation();
@@ -685,23 +685,23 @@ class ForumUI {
   }
 
   /**
-   * 绑定主回复事件
+   * ผูกอีเวนต์การตอบกลับหลัก
    */
   bindMainReplyEvents() {
-    // 移除之前的事件监听器（如果存在）
+    // ลบ event listener ก่อนหน้า (หากมี)
     if (this.mainReplyClickHandler) {
       document.removeEventListener('click', this.mainReplyClickHandler);
     }
 
     this.mainReplyClickHandler = e => {
-      // 处理主回复按钮点击
+      // จัดการการคลิกปุ่มตอบกลับหลัก
       if (e.target.closest('.action-btn') && e.target.closest('.action-btn').querySelector('i.fa-comment-dots')) {
         e.preventDefault();
         e.stopPropagation();
         this.toggleCommentInput();
       }
 
-      // 处理回复提交按钮
+      // จัดการปุ่มส่งการตอบกลับ
       if (e.target.closest('#submit-reply-btn')) {
         e.preventDefault();
         e.stopPropagation();
@@ -713,14 +713,14 @@ class ForumUI {
   }
 
   /**
-   * 切换评论输入框显示状态
+   * สลับสถานะการแสดงผลของกล่องป้อนความคิดเห็น
    */
   toggleCommentInput() {
     const inputBar = document.querySelector('.comment-input-bar');
     if (inputBar) {
       inputBar.classList.toggle('show');
       if (inputBar.classList.contains('show')) {
-        // 聚焦到输入框
+        // โฟกัสไปที่กล่องป้อน
         const input = inputBar.querySelector('input');
         if (input) {
           setTimeout(() => input.focus(), 100);
@@ -730,7 +730,7 @@ class ForumUI {
   }
 
   /**
-   * 提交主回复
+   * ส่งการตอบกลับหลัก
    */
   submitMainReply() {
     const input = document.querySelector('.comment-input-bar input');
@@ -742,7 +742,7 @@ class ForumUI {
       return;
     }
 
-    // 获取当前帖子信息
+    // ดึงข้อมูลกระทู้ปัจจุบัน
     const forumData = this.getCurrentForumData();
     const currentThread = forumData.threads.find(t => t.id === this.currentThreadId);
 
@@ -751,46 +751,46 @@ class ForumUI {
       return;
     }
 
-    // 构建回复前缀：我回复帖子'作者|帖子id|帖子标题'
+    // สร้างคำนำหน้าการตอบกลับ: 我回复帖子'ผู้เขียน|ID กระทู้|หัวข้อกระทู้'
     const threadPrefix = `我回复帖子'${currentThread.author}|${currentThread.id}|${currentThread.title}'`;
 
-    // 构建回复格式
+    // สร้างรูปแบบการตอบกลับ
     const replyFormat = `[回复|我|${this.currentThreadId}|${content}]`;
 
-    // 直接发送回复，无需确认
-    // 清空输入框并隐藏
+    // ส่งการตอบกลับโดยตรง ไม่ต้องยืนยัน
+    // ล้างกล่องป้อนและซ่อน
     input.value = '';
     const inputBar = document.querySelector('.comment-input-bar');
     if (inputBar) {
       inputBar.classList.remove('show');
     }
 
-    // 显示发送成功提示
+    // แสดงการแจ้งเตือนส่งสำเร็จ
     if (window.showMobileToast) {
       window.showMobileToast('📤 ส่งการตอบกลับแล้ว', 'success');
     } else {
-      // 如果没有toast功能，使用简单的alert
+      // หากไม่มีฟังก์ชัน toast ให้ใช้ alert แบบง่าย
       setTimeout(() => {
         alert('ส่งการตอบกลับแล้ว');
       }, 100);
     }
 
-    // 直接发送回复给AI
+    // ส่งการตอบกลับไปยัง AI โดยตรง
     if (window.forumManager.sendReplyToAPI) {
       const fullReply = `${threadPrefix}\n${replyFormat}`;
-      console.log('[Forum UI] 发送主回复给AI:', fullReply);
+      console.log('[Forum UI] ส่งการตอบกลับหลักไปยัง AI:', fullReply);
 
       window.forumManager
         .sendReplyToAPI(fullReply)
         .then(() => {
-          console.log('[Forum UI] 回复已通过API发送给模型，论坛内容已更新');
-          // 刷新论坛内容
+          console.log('[Forum UI] การตอบกลับถูกส่งไปยังโมเดลผ่าน API แล้ว เนื้อหาฟอรัมได้รับการอัปเดต');
+          // รีเฟรชเนื้อหาฟอรัม
           setTimeout(() => {
             this.refreshThreadList();
           }, 500);
         })
         .catch(error => {
-          console.error('[Forum UI] API发送回复失败:', error);
+          console.error('[Forum UI] ส่งการตอบกลับผ่าน API ล้มเหลว:', error);
           if (window.showMobileToast) {
             window.showMobileToast('❌ ส่งการตอบกลับล้มเหลว กรุณาลองใหม่', 'error');
           } else {
@@ -807,16 +807,16 @@ class ForumUI {
   }
 
   /**
-   * 绑定楼中楼回复事件
+   * ผูกอีเวนต์การตอบกลับซ้อน
    */
   bindSubReplyEvents() {
-    // 避免重复绑定事件监听器
+    // หลีกเลี่ยงการผูก event listener ซ้ำ
     if (this.subReplyEventsbound) {
       return;
     }
     this.subReplyEventsbound = true;
 
-    // 回复按钮点击事件
+    // อีเวนต์คลิกปุ่มตอบกลับ
     this.subReplyClickHandler = e => {
       if (e.target.classList.contains('reply-to-reply')) {
         const replyId = e.target.dataset.replyId;
@@ -840,19 +840,19 @@ class ForumUI {
   }
 
   /**
-   * 显示楼中楼回复输入框
+   * แสดงกล่องป้อนการตอบกลับซ้อน
    */
   showSubReplyInput(replyId) {
-    // 隐藏所有其他的回复输入框
+    // ซ่อนกล่องป้อนการตอบกลับอื่นๆ ทั้งหมด
     document.querySelectorAll('.sub-reply-input-container').forEach(container => {
       container.style.display = 'none';
     });
 
-    // 显示当前的回复输入框
+    // แสดงกล่องป้อนการตอบกลับปัจจุบัน
     const container = document.getElementById(`sub-reply-input-${replyId}`);
     if (container) {
       container.style.display = 'block';
-      // 聚焦到输入框
+      // โฟกัสไปที่กล่องป้อน
       const textarea = container.querySelector('.sub-reply-input');
       if (textarea) {
         textarea.focus();
@@ -861,13 +861,13 @@ class ForumUI {
   }
 
   /**
-   * 隐藏楼中楼回复输入框
+   * ซ่อนกล่องป้อนการตอบกลับซ้อน
    */
   hideSubReplyInput(replyId) {
     const container = document.getElementById(`sub-reply-input-${replyId}`);
     if (container) {
       container.style.display = 'none';
-      // 清空输入框
+      // ล้างกล่องป้อน
       const textarea = container.querySelector('.sub-reply-input');
       if (textarea) {
         textarea.value = '';
@@ -876,7 +876,7 @@ class ForumUI {
   }
 
   /**
-   * 提交楼中楼回复
+   * ส่งการตอบกลับซ้อน
    */
   submitSubReply(replyId, parentFloor, parentAuthor) {
     const container = document.getElementById(`sub-reply-input-${replyId}`);
@@ -891,11 +891,11 @@ class ForumUI {
       return;
     }
 
-    // 获取当前论坛数据，找到被回复的评论信息
+    // ดึงข้อมูลฟอรัมปัจจุบัน หาข้อมูลความคิดเห็นที่ถูกตอบกลับ
     const forumData = this.getCurrentForumData();
     const currentReplies = forumData.replies[this.currentThreadId] || [];
 
-    // 查找被回复的评论
+    // ค้นหาความคิดเห็นที่ถูกตอบกลับ
     let parentReply = null;
     for (const reply of currentReplies) {
       if (reply.id === replyId || reply.author === parentAuthor) {
@@ -909,10 +909,10 @@ class ForumUI {
       return;
     }
 
-    // 构建评论前缀：我回复评论'作者|帖子id|评论内容'
+    // สร้างคำนำหน้าความคิดเห็น: 我回复评论'ผู้เขียน|ID กระทู้|เนื้อหาความคิดเห็น'
     const commentPrefix = `我回复评论'${parentReply.author}|${this.currentThreadId}|${parentReply.content}'`;
 
-    // 构建楼中楼回复格式：[回复|我|帖子id|回复作者：回复内容]
+    // สร้างรูปแบบการตอบกลับซ้อน: [回复|我|ID กระทู้|回复ผู้เขียน:เนื้อหาตอบกลับ]
     const replyFormat = `[回复|我|${this.currentThreadId}|回复${parentReply.author}：${content}]`;
 
     const subReplyData = {
@@ -925,28 +925,28 @@ class ForumUI {
       replyFormat: replyFormat,
     };
 
-    // 调用论坛管理器发送楼中楼回复
+    // เรียกตัวจัดการฟอรัมเพื่อส่งการตอบกลับซ้อน
     this.sendReplyToForum(subReplyData);
 
-    // 隐藏输入框
+    // ซ่อนกล่องป้อน
     this.hideSubReplyInput(replyId);
   }
 
   /**
-   * 显示发帖对话框
+   * แสดงกล่องโต้ตอบโพสต์กระทู้
    */
   showPostDialog() {
     const dialog = document.getElementById('post-dialog');
     if (dialog) {
       dialog.style.display = 'flex';
-      // 清空输入框
+      // ล้างกล่องป้อน
       document.getElementById('post-title').value = '';
       document.getElementById('post-content').value = '';
     }
   }
 
   /**
-   * 隐藏发帖对话框
+   * ซ่อนกล่องโต้ตอบโพสต์กระทู้
    */
   hidePostDialog() {
     const dialog = document.getElementById('post-dialog');
@@ -956,7 +956,7 @@ class ForumUI {
   }
 
   /**
-   * 提交新帖
+   * ส่งกระทู้ใหม่
    */
   submitNewPost() {
     const title = document.getElementById('post-title').value.trim();
@@ -967,7 +967,7 @@ class ForumUI {
       return;
     }
 
-    // 隐藏对话框
+    // ซ่อนกล่องโต้ตอบ
     this.hidePostDialog();
 
     if (!window.forumManager) {
@@ -975,36 +975,36 @@ class ForumUI {
       return;
     }
 
-    // 构建发帖格式：[标题|我|帖子id|标题内容|帖子详情]
-    // 帖子id固定为四个字，让模型自己编
+    // สร้างรูปแบบโพสต์: [标题|我|ID กระทู้|เนื้อหาหัวข้อ|รายละเอียดกระทู้]
+    // ID กระทู้กำหนดเป็นสี่ตัวอักษร ให้โมเดลคิดเอง
     const postFormat = `[标题|我|帖子|${title}|${content}]`;
 
-    console.log('[Forum UI] 用户发帖:', { title, content, postFormat });
+    console.log('[Forum UI] ผู้ใช้โพสต์กระทู้:', { title, content, postFormat });
 
-    // 直接发布帖子，无需确认
-    // 显示发布成功提示
+    // โพสต์กระทู้โดยตรง ไม่ต้องยืนยัน
+    // แสดงการแจ้งเตือนโพสต์สำเร็จ
     if (window.showMobileToast) {
       window.showMobileToast('📝 โพสต์กระทู้แล้ว', 'success');
     } else {
-      // 如果没有toast功能，使用简单的alert
+      // หากไม่มีฟังก์ชัน toast ให้ใช้ alert แบบง่าย
       setTimeout(() => {
         alert('โพสต์กระทู้แล้ว');
       }, 100);
     }
 
-    // 调用论坛管理器的发帖API
+    // เรียก API โพสต์กระทู้ของตัวจัดการฟอรัม
     if (window.forumManager.sendPostToAPI) {
       window.forumManager
         .sendPostToAPI(postFormat)
         .then(() => {
-          console.log('[Forum UI] 帖子已发布');
-          // 刷新论坛内容
+          console.log('[Forum UI] โพสต์กระทู้แล้ว');
+          // รีเฟรชเนื้อหาฟอรัม
           setTimeout(() => {
             this.refreshThreadList();
           }, 1000);
         })
         .catch(error => {
-          console.error('[Forum UI] 发帖失败:', error);
+          console.error('[Forum UI] โพสต์กระทู้ล้มเหลว:', error);
           if (window.showMobileToast) {
             window.showMobileToast('❌ โพสต์ล้มเหลว กรุณาลองใหม่', 'error');
           } else {
@@ -1017,12 +1017,12 @@ class ForumUI {
       } else {
         alert('ฟังก์ชันโพสต์ใช้งานไม่ได้ กรุณาตรวจสอบการตั้งค่าตัวจัดการฟอรัม');
       }
-      console.error('[Forum UI] sendPostToAPI方法不存在');
+      console.error('[Forum UI] ไม่พบเมธอด sendPostToAPI');
     }
   }
 
   /**
-   * 提交回复
+   * ส่งการตอบกลับ
    */
   submitReply() {
     if (!this.currentThreadId) return;
@@ -1033,10 +1033,10 @@ class ForumUI {
       return;
     }
 
-    // 清空输入框
+    // ล้างกล่องป้อน
     document.getElementById('reply-input').value = '';
 
-    // 获取当前帖子信息
+    // ดึงข้อมูลกระทู้ปัจจุบัน
     const forumData = this.getCurrentForumData();
     const currentThread = forumData.threads.find(t => t.id === this.currentThreadId);
 
@@ -1045,10 +1045,10 @@ class ForumUI {
       return;
     }
 
-    // 构建回复前缀：我回复帖子'作者|帖子id|帖子标题和内容'
+    // สร้างคำนำหน้าการตอบกลับ: 我回复帖子'ผู้เขียน|ID กระทู้|หัวข้อและเนื้อหากระทู้'
     const threadPrefix = `我回复帖子'${currentThread.author}|${currentThread.id}|${currentThread.title}'`;
 
-    // 构建普通回复格式：[回复|我|帖子id|回复内容]
+    // สร้างรูปแบบการตอบกลับทั่วไป: [回复|我|ID กระทู้|เนื้อหาตอบกลับ]
     const replyFormat = `[回复|我|${this.currentThreadId}|${content}]`;
 
     const replyData = {
@@ -1059,12 +1059,12 @@ class ForumUI {
       replyFormat: replyFormat,
     };
 
-    // 调用论坛管理器发送回复
+    // เรียกตัวจัดการฟอรัมเพื่อส่งการตอบกลับ
     this.sendReplyToForum(replyData);
   }
 
   /**
-   * 发送回复到论坛管理器
+   * ส่งการตอบกลับไปยังตัวจัดการฟอรัม
    */
   sendReplyToForum(replyData) {
     if (!window.forumManager) {
@@ -1072,36 +1072,36 @@ class ForumUI {
       return;
     }
 
-    console.log('[Forum UI] 发送回复到论坛管理器:', replyData);
+    console.log('[Forum UI] ส่งการตอบกลับไปยังตัวจัดการฟอรัม:', replyData);
 
-    // 直接发送回复，无需确认
-    // 显示发送成功提示
+    // ส่งการตอบกลับโดยตรง ไม่ต้องยืนยัน
+    // แสดงการแจ้งเตือนส่งสำเร็จ
     if (window.showMobileToast) {
       window.showMobileToast('📤 ส่งการตอบกลับแล้ว', 'success');
     } else {
-      // 如果没有toast功能，使用简单的alert
+      // หากไม่มีฟังก์ชัน toast ให้ใช้ alert แบบง่าย
       setTimeout(() => {
         alert('ส่งการตอบกลับแล้ว');
       }, 100);
     }
 
-    // 直接通过API发送回复给模型，让AI生成包含用户回复的完整论坛内容
+    // ส่งการตอบกลับไปยังโมเดลผ่าน API โดยตรง ให้ AI สร้างเนื้อหาฟอรัมที่สมบูรณ์ซึ่งรวมการตอบกลับของผู้ใช้
     if (window.forumManager.sendReplyToAPI) {
       const fullReply = `${replyData.prefix}\n${replyData.replyFormat}`;
-      console.log('[Forum UI] 发送回复给AI生成完整论坛内容:', fullReply);
+      console.log('[Forum UI] ส่งการตอบกลับให้ AI สร้างเนื้อหาฟอรัมที่สมบูรณ์:', fullReply);
 
       window.forumManager
         .sendReplyToAPI(fullReply)
         .then(() => {
-          console.log('[Forum UI] 回复已通过API发送给模型，论坛内容已更新');
+          console.log('[Forum UI] การตอบกลับถูกส่งไปยังโมเดลผ่าน API แล้ว เนื้อหาฟอรัมได้รับการอัปเดต');
 
-          // 刷新论坛内容
+          // รีเฟรชเนื้อหาฟอรัม
           setTimeout(() => {
             this.refreshThreadList();
           }, 500);
         })
         .catch(error => {
-          console.error('[Forum UI] API发送回复失败:', error);
+          console.error('[Forum UI] ส่งการตอบกลับผ่าน API ล้มเหลว:', error);
           if (window.showMobileToast) {
             window.showMobileToast('❌ ส่งการตอบกลับล้มเหลว กรุณาลองใหม่', 'error');
           } else {
@@ -1109,20 +1109,20 @@ class ForumUI {
           }
         });
     } else {
-      // 如果API功能不可用，回退到插入模式
-      console.warn('[Forum UI] API发送功能不可用，回退到直接插入模式');
+      // หากฟังก์ชัน API ไม่พร้อมใช้งาน ให้ย้อนกลับไปใช้โหมดแทรก
+      console.warn('[Forum UI] ฟังก์ชันส่งผ่าน API ไม่พร้อมใช้งาน ย้อนกลับไปใช้โหมดแทรกโดยตรง');
       if (window.forumManager.insertReplyToFirstLayer) {
         window.forumManager
           .insertReplyToFirstLayer(replyData.prefix, replyData.replyFormat)
           .then(() => {
-            console.log('[Forum UI] 回复已插入到第一层');
-            // 刷新论坛内容
+            console.log('[Forum UI] การตอบกลับถูกแทรกในชั้นแรกแล้ว');
+            // รีเฟรชเนื้อหาฟอรัม
             setTimeout(() => {
               this.refreshThreadList();
             }, 500);
           })
           .catch(error => {
-            console.error('[Forum UI] 插入回复失败:', error);
+            console.error('[Forum UI] แทรกการตอบกลับล้มเหลว:', error);
             if (window.showMobileToast) {
               window.showMobileToast('❌ ส่งการตอบกลับล้มเหลว กรุณาลองใหม่', 'error');
             } else {
@@ -1135,21 +1135,21 @@ class ForumUI {
         } else {
           alert('ฟังก์ชันตอบกลับต้องสร้างเนื้อหาฟอรัมใหม่ผ่านตัวจัดการฟอรัม กรุณาใช้ฟังก์ชันของตัวจัดการฟอรัม');
         }
-        console.log('[Forum UI] 用户尝试回复:', replyData);
+        console.log('[Forum UI] ผู้ใช้พยายามตอบกลับ:', replyData);
       }
     }
   }
 
   /**
-   * 刷新论坛
+   * รีเฟรชฟอรัม
    */
   refreshForum() {
-    console.log('[Forum UI] 刷新论坛内容');
+    console.log('[Forum UI] รีเฟรชเนื้อหาฟอรัม');
     this.refreshThreadList();
   }
 
   /**
-   * 刷新帖子列表
+   * รีเฟรชรายการกระทู้
    */
   refreshThreadList() {
     const content = document.getElementById('forum-content');
@@ -1159,49 +1159,49 @@ class ForumUI {
   }
 
   /**
-   * 生成演示内容
+   * สร้างเนื้อหาตัวอย่าง
    */
   generateDemoContent() {
     if (window.forumManager) {
-      console.log('[Forum UI] 调用论坛管理器生成内容');
+      console.log('[Forum UI] เรียกตัวจัดการฟอรัมเพื่อสร้างเนื้อหา');
       window.forumManager.generateForumContent().then(() => {
-        // 生成完成后刷新界面
+        // หลังจากสร้างเสร็จให้รีเฟรชหน้าจอ
         setTimeout(() => {
           this.refreshThreadList();
         }, 1000);
       });
     } else {
-      console.warn('[Forum UI] 论坛管理器未找到');
+      console.warn('[Forum UI] ไม่พบตัวจัดการฟอรัม');
       alert('ตัวจัดการฟอรัมยังไม่พร้อมใช้งาน กรุณาลองใหม่ภายหลัง');
     }
   }
 
   /**
-   * 返回主列表
+   * กลับไปยังรายการหลัก
    */
   showMainList() {
     this.currentThreadId = null;
 
-    // 更新状态到论坛主列表
+    // อัปเดตสถานะไปยังรายการหลักของฟอรัม
     if (window.mobilePhone) {
       const currentState = window.mobilePhone.currentAppState;
       if (currentState && currentState.app === 'forum' && currentState.view !== 'main') {
         const mainState = {
           app: 'forum',
-          title: '论坛',
+          title: 'ฟอรัม',
           view: 'main',
         };
-        // 替换当前状态而不是推送新状态
+        // แทนที่สถานะปัจจุบันแทนที่จะพุชสถานะใหม่
         window.mobilePhone.currentAppState = mainState;
         window.mobilePhone.updateAppHeader(mainState);
-        console.log('[Forum UI] 更新状态到论坛主列表:', mainState);
+        console.log('[Forum UI] อัปเดตสถานะไปยังรายการหลักของฟอรัม:', mainState);
       }
     }
 
     const forumContent = document.getElementById('forum-content');
     if (forumContent) {
       forumContent.innerHTML = this.getThreadListHTML();
-      // 重新绑定主列表事件
+      // ผูกอีเวนต์รายการหลักใหม่
       if (window.bindForumEvents) {
         window.bindForumEvents();
       }
@@ -1209,32 +1209,32 @@ class ForumUI {
   }
 
   /**
-   * 显示论坛控制面板
+   * แสดงแผงควบคุมฟอรัม
    */
   showForumControl() {
-    // 推送新状态到应用栈，切换到论坛控制页面
+    // พุชสถานะใหม่ลงในสแต็กแอป สลับไปยังหน้าควบคุมฟอรัม
     if (window.mobilePhone) {
       const state = {
         app: 'forum',
-        title: '论坛设置',
+        title: 'ตั้งค่าฟอรัม',
         view: 'forumControl',
       };
       window.mobilePhone.pushAppState(state);
     }
 
-    // 如果没有手机框架，回退到原有的弹出面板
+    // หากไม่มีเฟรมเวิร์กมือถือ ให้ย้อนกลับไปใช้แผงป๊อปอัปเดิม
     if (!window.mobilePhone && window.forumManager) {
       window.forumManager.showForumPanel();
     }
   }
 
-  // 重置论坛UI状态
+  // รีเซ็ตสถานะ UI ฟอรัม
   resetState() {
-    console.log('[Forum UI] 重置论坛UI状态');
+    console.log('[Forum UI] รีเซ็ตสถานะ UI ฟอรัม');
     this.currentThreadId = null;
     this.currentView = 'main';
 
-    // 清理事件监听器
+    // ล้าง event listener
     if (this.clickHandler) {
       document.removeEventListener('click', this.clickHandler);
       this.clickHandler = null;
@@ -1248,38 +1248,38 @@ class ForumUI {
       this.mainReplyClickHandler = null;
     }
 
-    // 重置到主列表视图
+    // รีเซ็ตไปยังมุมมองรายการหลัก
     this.showMainList();
 
-    console.log('[Forum UI] 论坛UI状态重置完成');
+    console.log('[Forum UI] รีเซ็ตสถานะ UI ฟอรัมเสร็จสิ้น');
   }
 
   /**
-   * 初始化帖子点赞数据
+   * เริ่มต้นข้อมูลการกดถูกใจกระทู้
    */
   initThreadLikeData(threadId) {
     if (!this.likesData[threadId]) {
       this.likesData[threadId] = {
-        likes: Math.floor(Math.random() * 50) + 10, // 随机初始点赞数
+        likes: Math.floor(Math.random() * 50) + 10, // จำนวนการกดถูกใจเริ่มต้นแบบสุ่ม
         isLiked: false,
       };
     }
   }
 
   /**
-   * 初始化回复点赞数据
+   * เริ่มต้นข้อมูลการกดถูกใจการตอบกลับ
    */
   initReplyLikeData(replyId) {
     if (!this.replyLikesData[replyId]) {
       this.replyLikesData[replyId] = {
-        likes: Math.floor(Math.random() * 10) + 1, // 随机初始点赞数
+        likes: Math.floor(Math.random() * 10) + 1, // จำนวนการกดถูกใจเริ่มต้นแบบสุ่ม
         isLiked: false,
       };
     }
   }
 
   /**
-   * 获取帖子点赞数
+   * รับจำนวนการกดถูกใจกระทู้
    */
   getLikeCount(threadId) {
     this.initThreadLikeData(threadId);
@@ -1287,7 +1287,7 @@ class ForumUI {
   }
 
   /**
-   * 获取帖子点赞图标类名
+   * รับชื่อคลาสไอคอนการกดถูกใจกระทู้
    */
   getLikeIconClass(threadId) {
     this.initThreadLikeData(threadId);
@@ -1295,7 +1295,7 @@ class ForumUI {
   }
 
   /**
-   * 获取回复点赞数
+   * รับจำนวนการกดถูกใจการตอบกลับ
    */
   getReplyLikeCount(replyId) {
     this.initReplyLikeData(replyId);
@@ -1303,7 +1303,7 @@ class ForumUI {
   }
 
   /**
-   * 获取回复点赞图标类名
+   * รับชื่อคลาสไอคอนการกดถูกใจการตอบกลับ
    */
   getReplyLikeIconClass(replyId) {
     this.initReplyLikeData(replyId);
@@ -1311,53 +1311,53 @@ class ForumUI {
   }
 
   /**
-   * 切换帖子点赞状态
+   * สลับสถานะการกดถูกใจกระทู้
    */
   toggleThreadLike(threadId) {
     this.initThreadLikeData(threadId);
     const likeData = this.likesData[threadId];
 
     if (likeData.isLiked) {
-      // 取消点赞
+      // ยกเลิกการกดถูกใจ
       likeData.likes--;
       likeData.isLiked = false;
     } else {
-      // 点赞
+      // กดถูกใจ
       likeData.likes++;
       likeData.isLiked = true;
     }
 
-    // 更新所有相关的点赞按钮
+    // อัปเดตปุ่มถูกใจที่เกี่ยวข้องทั้งหมด
     this.updateAllThreadLikeButtons(threadId);
 
     return likeData;
   }
 
   /**
-   * 切换回复点赞状态
+   * สลับสถานะการกดถูกใจการตอบกลับ
    */
   toggleReplyLike(replyId) {
     this.initReplyLikeData(replyId);
     const likeData = this.replyLikesData[replyId];
 
     if (likeData.isLiked) {
-      // 取消点赞
+      // ยกเลิกการกดถูกใจ
       likeData.likes--;
       likeData.isLiked = false;
     } else {
-      // 点赞
+      // กดถูกใจ
       likeData.likes++;
       likeData.isLiked = true;
     }
 
-    // 更新所有相关的点赞按钮
+    // อัปเดตปุ่มถูกใจที่เกี่ยวข้องทั้งหมด
     this.updateAllReplyLikeButtons(replyId);
 
     return likeData;
   }
 
   /**
-   * 更新所有帖子点赞按钮
+   * อัปเดตปุ่มถูกใจกระทู้ทั้งหมด
    */
   updateAllThreadLikeButtons(threadId) {
     const buttons = document.querySelectorAll(`.like-btn[data-thread-id="${threadId}"]`);
@@ -1376,7 +1376,7 @@ class ForumUI {
         textNode.textContent = ` ${likeData.likes}`;
       }
 
-      // 添加点赞动画效果
+      // เพิ่มเอฟเฟกต์อนิเมชันการกดถูกใจ
       if (likeData.isLiked) {
         button.classList.add('liked');
         this.addLikeAnimation(button);
@@ -1387,7 +1387,7 @@ class ForumUI {
   }
 
   /**
-   * 更新所有回复点赞按钮
+   * อัปเดตปุ่มถูกใจการตอบกลับทั้งหมด
    */
   updateAllReplyLikeButtons(replyId) {
     const buttons = document.querySelectorAll(`.like-reply[data-reply-id="${replyId}"]`);
@@ -1406,7 +1406,7 @@ class ForumUI {
         textNode.textContent = ` ${likeData.likes}`;
       }
 
-      // 添加点赞动画效果
+      // เพิ่มเอฟเฟกต์อนิเมชันการกดถูกใจ
       if (likeData.isLiked) {
         button.classList.add('liked');
         this.addLikeAnimation(button);
@@ -1417,10 +1417,10 @@ class ForumUI {
   }
 
   /**
-   * 添加点赞动画效果
+   * เพิ่มเอฟเฟกต์อนิเมชันการกดถูกใจ
    */
   addLikeAnimation(button) {
-    // 添加缩放动画
+    // เพิ่มอนิเมชันย่อขยาย
     button.style.transform = 'scale(1.2)';
     button.style.transition = 'transform 0.2s ease';
 
@@ -1428,7 +1428,7 @@ class ForumUI {
       button.style.transform = 'scale(1)';
     }, 200);
 
-    // 创建飘心动画
+    // สร้างอนิเมชันหัวใจลอย
     const heart = document.createElement('div');
     heart.innerHTML = '❤️';
     heart.style.cssText = `
@@ -1439,7 +1439,7 @@ class ForumUI {
       animation: heartFloat 1s ease-out forwards;
     `;
 
-    // 获取按钮位置
+    // รับตำแหน่งปุ่ม
     const rect = button.getBoundingClientRect();
     const phoneContainer = document.querySelector('.mobile-phone-container');
     const phoneRect = phoneContainer ? phoneContainer.getBoundingClientRect() : { left: 0, top: 0 };
@@ -1447,14 +1447,14 @@ class ForumUI {
     heart.style.left = rect.left - phoneRect.left + rect.width / 2 + 'px';
     heart.style.top = rect.top - phoneRect.top + 'px';
 
-    // 添加到手机容器而不是body
+    // เพิ่มลงในคอนเทนเนอร์มือถือแทน body
     if (phoneContainer) {
       phoneContainer.appendChild(heart);
     } else {
       document.body.appendChild(heart);
     }
 
-    // 移除动画元素
+    // ลบ element อนิเมชัน
     setTimeout(() => {
       if (heart.parentNode) {
         heart.parentNode.removeChild(heart);
@@ -1463,13 +1463,13 @@ class ForumUI {
   }
 
   /**
-   * 删除论坛帖子及其所有回复
+   * ลบกระทู้ฟอรัมและการตอบกลับทั้งหมด
    */
   async deleteThread(threadId) {
-    console.log('[Forum UI] 开始删除帖子:', threadId);
+    console.log('[Forum UI] เริ่มลบกระทู้:', threadId);
 
     try {
-      // 显示确认对话框
+      // แสดงกล่องโต้ตอบยืนยัน
       if (
         !confirm(
           `คุณแน่ใจหรือไม่ว่าต้องการลบกระทู้ ID: t${threadId} พร้อมการตอบกลับทั้งหมด? การกระทำนี้ไม่สามารถย้อนกลับได้`,
@@ -1478,74 +1478,74 @@ class ForumUI {
         return;
       }
 
-      // 获取当前聊天数据
+      // ดึงข้อมูลแชทปัจจุบัน
       if (!window.mobileContextEditor) {
-        throw new Error('上下文编辑器未就绪');
+        throw new Error('ตัวแก้ไขบริบทยังไม่พร้อม');
       }
 
       const chatData = window.mobileContextEditor.getCurrentChatData();
       if (!chatData || !chatData.messages || chatData.messages.length === 0) {
-        throw new Error('无聊天数据');
+        throw new Error('ไม่มีข้อมูลแชท');
       }
 
-      // 获取第一条消息（包含论坛内容）
+      // ดึงข้อความแรก (ที่มีเนื้อหาฟอรัม)
       const firstMessage = chatData.messages[0];
       if (!firstMessage || !firstMessage.mes) {
-        throw new Error('无法找到论坛内容');
+        throw new Error('ไม่พบเนื้อหาฟอรัม');
       }
 
       let content = firstMessage.mes;
 
-      // 提取论坛标记之间的内容
+      // ดึงเนื้อหาระหว่างเครื่องหมายฟอรัม
       const forumRegex = /<!-- FORUM_CONTENT_START -->([\s\S]*?)<!-- FORUM_CONTENT_END -->/;
       const match = content.match(forumRegex);
 
       if (!match) {
-        throw new Error('未找到论坛内容标记');
+        throw new Error('ไม่พบเครื่องหมายเนื้อหาฟอรัม');
       }
 
       let forumContent = match[1];
 
-      // 删除包含指定帖子ID的所有格式
-      // 删除主帖: [标题|发帖人昵称|帖子id|标题内容|帖子详情]
+      // ลบทุกรูปแบบที่มี ID กระทู้ที่ระบุ
+      // ลบกระทู้หลัก: [标题|ชื่อเล่นผู้โพสต์|ID กระทู้|เนื้อหาหัวข้อ|รายละเอียดกระทู้]
       const titleRegex = new RegExp(`\\[标题\\|[^|]+\\|${threadId}\\|[^|]+\\|[^\\]]+\\]`, 'g');
       forumContent = forumContent.replace(titleRegex, '');
 
-      // 删除普通回复: [回复|回帖人昵称|帖子id|回复内容]
+      // ลบการตอบกลับทั่วไป: [回复|ชื่อเล่นผู้ตอบกลับ|ID กระทู้|เนื้อหาตอบกลับ]
       const replyRegex = new RegExp(`\\[回复\\|[^|]+\\|${threadId}\\|[^\\]]+\\]`, 'g');
       forumContent = forumContent.replace(replyRegex, '');
 
-      // 删除楼中楼回复: [楼中楼|回帖人昵称|帖子id|父楼层|回复内容]
+      // ลบการตอบกลับซ้อน: [楼中楼|ชื่อเล่นผู้ตอบกลับ|ID กระทู้|ชั้นหลัก|เนื้อหาตอบกลับ]
       const subReplyRegex = new RegExp(`\\[楼中楼\\|[^|]+\\|${threadId}\\|[^|]+\\|[^\\]]+\\]`, 'g');
       forumContent = forumContent.replace(subReplyRegex, '');
 
-      // 清理多余的空行
+      // ล้างบรรทัดว่างที่เกินมา
       forumContent = forumContent.replace(/\n{3,}/g, '\n\n');
 
-      // 重新构建消息内容
+      // สร้างเนื้อหาข้อความใหม่
       const newContent = content.replace(
         /<!-- FORUM_CONTENT_START -->[\s\S]*?<!-- FORUM_CONTENT_END -->/,
         `<!-- FORUM_CONTENT_START -->${forumContent}<!-- FORUM_CONTENT_END -->`,
       );
 
-      // 更新消息内容
+      // อัปเดตเนื้อหาข้อความ
       await window.mobileContextEditor.modifyMessage(0, newContent);
 
-      console.log('[Forum UI] ✅ 帖子删除成功:', threadId);
+      console.log('[Forum UI] ✅ ลบกระทู้สำเร็จ:', threadId);
 
-      // 显示成功提示
+      // แสดงการแจ้งเตือนสำเร็จ
       if (window.showMobileToast) {
         window.showMobileToast('🗑️ ลบกระทู้แล้ว', 'success');
       } else {
         alert('ลบกระทู้แล้ว');
       }
 
-      // 刷新论坛内容
+      // รีเฟรชเนื้อหาฟอรัม
       setTimeout(() => {
         this.refreshThreadList();
       }, 500);
     } catch (error) {
-      console.error('[Forum UI] 删除帖子失败:', error);
+      console.error('[Forum UI] ลบกระทู้ล้มเหลว:', error);
       if (window.showMobileToast) {
         window.showMobileToast('❌ ลบล้มเหลว: ' + error.message, 'error');
       } else {
@@ -1555,21 +1555,21 @@ class ForumUI {
   }
 }
 
-// 创建全局实例
+// สร้างอินสแตนซ์ส่วนกลาง
 window.ForumUI = ForumUI;
 window.forumUI = new ForumUI();
 
-// 获取论坛应用内容的全局函数
+// ฟังก์ชันส่วนกลางเพื่อรับเนื้อหาแอปฟอรัม
 window.getForumAppContent = function () {
   return window.forumUI.getForumMainHTML();
 };
 
-// 绑定论坛应用事件的全局函数
+// ฟังก์ชันส่วนกลางเพื่อผูกอีเวนต์แอปฟอรัม
 window.bindForumEvents = function () {
   if (window.forumUI) {
     window.forumUI.bindEvents();
-    console.log('[Forum UI] 事件绑定完成');
+    console.log('[Forum UI] ผูกอีเวนต์เสร็จสิ้น');
   }
 };
 
-console.log('[Forum UI] 论坛UI模块加载完成');
+console.log('[Forum UI] โหลดโมดูล UI ฟอรัมเสร็จสิ้น');

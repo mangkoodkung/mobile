@@ -1,21 +1,21 @@
 /**
- * 微博UI管理器
- * 负责微博界面的显示和数据处理
+ * ตัวจัดการ UI Weibo
+ * รับผิดชอบการแสดงผลและการประมวลผลข้อมูลของอินเทอร์เฟซ Weibo
  */
 class WeiboUI {
   constructor() {
-    this.currentPage = 'hot'; // 当前页面：hot, ranking, user
+    this.currentPage = 'hot'; // หน้าปัจจุบัน: hot, ranking, user
     this.currentPostId = null;
     this.clickHandler = null;
     this.likeClickHandler = null;
-    // 点赞数据存储 - 格式: { postId: { likes: number, isLiked: boolean }, ... }
+    // เก็บข้อมูลการกดถูกใจ - รูปแบบ: { postId: { likes: number, isLiked: boolean }, ... }
     this.likesData = {};
-    // 评论点赞数据存储 - 格式: { commentId: { likes: number, isLiked: boolean }, ... }
+    // เก็บข้อมูลการกดถูกใจของความคิดเห็น - รูปแบบ: { commentId: { likes: number, isLiked: boolean }, ... }
     this.commentLikesData = {};
 
-    // 头像颜色数组
+    // อาร์เรย์สีของอวาตาร์
     this.avatarColors = [
-      'var(--avatar-gradient-1)', // 原有粉色渐变
+      'var(--avatar-gradient-1)', // gradient สีชมพูเดิม
       'var(--avatar-color-1)', // #b28cb9
       'var(--avatar-color-2)', // #e2b3d4
       'var(--avatar-color-3)', // #f7d1e6
@@ -38,7 +38,7 @@ class WeiboUI {
       'var(--avatar-color-20)', // #a3b4e2
     ];
 
-    // 优化版方案5：数据变化检测和增量替换
+    // เวอร์ชันปรับปรุง โซลูชันที่ 5: ตรวจจับการเปลี่ยนแปลงข้อมูลและการแทนที่แบบเพิ่ม
     this.lastDataFingerprints = {
       hotSearches: null,
       rankings: null,
@@ -49,7 +49,7 @@ class WeiboUI {
     this.persistentData = {
       hotSearches: [],
       rankings: [],
-      rankingPosts: [], // 榜单博文独立存储
+      rankingPosts: [], // เก็บโพสต์ของอันดับแยกต่างหาก
       userStats: null,
     };
 
@@ -57,22 +57,22 @@ class WeiboUI {
   }
 
   init() {
-    console.log('[Weibo UI] 微博UI管理器初始化');
+    console.log('[Weibo UI] เริ่มต้นตัวจัดการ UI Weibo');
 
-    // 🔥 新增：启动评论布局监控
+    // 🔥 เพิ่มใหม่: เริ่มการตรวจสอบเลย์เอาต์ของความคิดเห็น
     this.startCommentLayoutMonitor();
   }
 
   /**
-   * 🔥 评论布局监控器 - 防止CSS被覆盖导致的布局错乱
+   * 🔥 ตัวตรวจสอบเลย์เอาต์ของความคิดเห็น - ป้องกันเลย์เอาต์ผิดพลาดจาก CSS ถูกเขียนทับ
    */
   startCommentLayoutMonitor() {
-    // 创建一个MutationObserver来监控DOM变化
+    // สร้าง MutationObserver เพื่อตรวจสอบการเปลี่ยนแปลง DOM
     const observer = new MutationObserver(mutations => {
       let needsLayoutFix = false;
 
       mutations.forEach(mutation => {
-        // 检查是否有新的评论元素被添加
+        // ตรวจสอบว่ามี element ความคิดเห็นใหม่ถูกเพิ่มหรือไม่
         if (mutation.type === 'childList') {
           mutation.addedNodes.forEach(node => {
             if (node.nodeType === Node.ELEMENT_NODE) {
@@ -83,7 +83,7 @@ class WeiboUI {
           });
         }
 
-        // 检查是否有样式属性被修改
+        // ตรวจสอบว่า attribute สไตล์ถูกแก้ไขหรือไม่
         if (
           mutation.type === 'attributes' &&
           (mutation.attributeName === 'style' || mutation.attributeName === 'class')
@@ -96,7 +96,7 @@ class WeiboUI {
       });
 
       if (needsLayoutFix) {
-        // 延迟执行修复，避免频繁操作
+        // หน่วงเวลาในการแก้ไข เพื่อหลีกเลี่ยงการทำงานบ่อยเกินไป
         clearTimeout(this.layoutFixTimeout);
         this.layoutFixTimeout = setTimeout(() => {
           this.fixCommentLayout();
@@ -104,7 +104,7 @@ class WeiboUI {
       }
     });
 
-    // 开始观察整个微博应用容器
+    // เริ่มสังเกต container ของแอป Weibo ทั้งหมด
     const weiboApp = document.querySelector('.weibo-app');
     if (weiboApp) {
       observer.observe(weiboApp, {
@@ -114,15 +114,15 @@ class WeiboUI {
         attributeFilter: ['style', 'class'],
       });
 
-      console.log('[Weibo UI] 🔥 评论布局监控器已启动');
+      console.log('[Weibo UI] 🔥 เริ่มตัวตรวจสอบเลย์เอาต์ของความคิดเห็นแล้ว');
     }
 
-    // 立即执行一次布局修复
+    // ดำเนินการแก้ไขเลย์เอาต์ทันทีหนึ่งครั้ง
     this.fixCommentLayout();
   }
 
   /**
-   * 🔥 修复评论布局 - 强制应用正确的CSS样式
+   * 🔥 แก้ไขเลย์เอาต์ของความคิดเห็น - บังคับใช้สไตล์ CSS ที่ถูกต้อง
    */
   fixCommentLayout() {
     const commentItems = document.querySelectorAll('.weibo-app .comment-item');
@@ -135,7 +135,7 @@ class WeiboUI {
       const commentActions = commentItem.querySelector('.comment-actions');
 
       if (commentAuthor) {
-        // 强制设置评论作者区域为水平布局
+        // บังคับให้ส่วนผู้เขียนความคิดเห็นเป็นเลย์เอาต์แนวนอน
         const authorStyle = commentAuthor.style;
         const authorComputed = window.getComputedStyle(commentAuthor);
 
@@ -150,7 +150,7 @@ class WeiboUI {
       }
 
       if (commentInfo) {
-        // 强制设置评论信息区域为垂直布局
+        // บังคับให้ส่วนข้อมูลความคิดเห็นเป็นเลย์เอาต์แนวตั้ง
         const infoStyle = commentInfo.style;
         const infoComputed = window.getComputedStyle(commentInfo);
 
@@ -164,7 +164,7 @@ class WeiboUI {
       }
 
       if (commentContent) {
-        // 确保评论内容正确显示
+        // ตรวจสอบให้แน่ใจว่าเนื้อหาความคิดเห็นแสดงผลถูกต้อง
         const contentStyle = commentContent.style;
         contentStyle.setProperty('display', 'block', 'important');
         contentStyle.setProperty('width', '100%', 'important');
@@ -172,7 +172,7 @@ class WeiboUI {
       }
 
       if (commentActions) {
-        // 确保评论操作按钮正确布局
+        // ตรวจสอบให้แน่ใจว่าปุ่มดำเนินการของความคิดเห็นมีเลย์เอาต์ถูกต้อง
         const actionsStyle = commentActions.style;
         const actionsComputed = window.getComputedStyle(commentActions);
 
@@ -187,40 +187,40 @@ class WeiboUI {
     });
 
     if (fixedCount > 0) {
-      console.log(`[Weibo UI] 🔧 修复了 ${fixedCount} 个评论布局问题`);
+      console.log(`[Weibo UI] 🔧 แก้ไข ${fixedCount} ปัญหาเลย์เอาต์ของความคิดเห็นแล้ว`);
     }
   }
 
   /**
-   * 🔥 手动修复评论布局 - 提供给用户的控制台命令
+   * 🔥 แก้ไขเลย์เอาต์ของความคิดเห็นด้วยตนเอง - คำสั่งคอนโซลที่จัดเตรียมให้ผู้ใช้
    */
   static manualFixCommentLayout() {
-    console.log('[Weibo UI] 🔧 手动修复评论布局...');
+    console.log('[Weibo UI] 🔧 แก้ไขเลย์เอาต์ของความคิดเห็นด้วยตนเอง...');
 
     const commentItems = document.querySelectorAll('.weibo-app .comment-item');
     let fixedCount = 0;
 
     commentItems.forEach((commentItem, index) => {
-      console.log(`[Weibo UI] 检查评论 ${index + 1}/${commentItems.length}`);
+      console.log(`[Weibo UI] ตรวจสอบความคิดเห็น ${index + 1}/${commentItems.length}`);
 
       const commentAuthor = commentItem.querySelector('.comment-author');
       const commentInfo = commentItem.querySelector('.comment-info');
       const commentContent = commentItem.querySelector('.comment-content');
       const commentActions = commentItem.querySelector('.comment-actions');
 
-      // 强制重置评论项的布局
+      // บังคับรีเซ็ตเลย์เอาต์ของรายการความคิดเห็น
       commentItem.style.setProperty('display', 'block', 'important');
       commentItem.style.setProperty('width', '100%', 'important');
 
       if (commentAuthor) {
-        console.log(`[Weibo UI] 修复评论作者布局 ${index + 1}`);
+        console.log(`[Weibo UI] แก้ไขเลย์เอาต์ผู้เขียนความคิดเห็น ${index + 1}`);
         const authorStyle = commentAuthor.style;
 
-        // 清除可能的冲突样式
+        // ลบสไตล์ที่อาจขัดแย้ง
         authorStyle.removeProperty('flex-direction');
         authorStyle.removeProperty('display');
 
-        // 重新应用正确样式
+        // ใช้สไตล์ที่ถูกต้องอีกครั้ง
         authorStyle.setProperty('display', 'flex', 'important');
         authorStyle.setProperty('flex-direction', 'row', 'important');
         authorStyle.setProperty('align-items', 'center', 'important');
@@ -232,14 +232,14 @@ class WeiboUI {
       }
 
       if (commentInfo) {
-        console.log(`[Weibo UI] 修复评论信息布局 ${index + 1}`);
+        console.log(`[Weibo UI] แก้ไขเลย์เอาต์ข้อมูลความคิดเห็น ${index + 1}`);
         const infoStyle = commentInfo.style;
 
-        // 清除可能的冲突样式
+        // ลบสไตล์ที่อาจขัดแย้ง
         infoStyle.removeProperty('flex-direction');
         infoStyle.removeProperty('display');
 
-        // 重新应用正确样式
+        // ใช้สไตล์ที่ถูกต้องอีกครั้ง
         infoStyle.setProperty('display', 'flex', 'important');
         infoStyle.setProperty('flex-direction', 'column', 'important');
         infoStyle.setProperty('flex', '1', 'important');
@@ -267,12 +267,14 @@ class WeiboUI {
       }
     });
 
-    console.log(`[Weibo UI] ✅ 手动修复完成，处理了 ${commentItems.length} 个评论项，修复了 ${fixedCount} 个布局问题`);
+    console.log(
+      `[Weibo UI] ✅ การแก้ไขด้วยตนเองเสร็จสมบูรณ์ ประมวลผล ${commentItems.length} รายการความคิดเห็น แก้ไข ${fixedCount} ปัญหาเลย์เอาต์`,
+    );
     return { total: commentItems.length, fixed: fixedCount };
   }
 
   /**
-   * 计算数据指纹（轻量级哈希）
+   * คำนวณลายนิ้วมือข้อมูล (แฮชแบบเบา)
    */
   calculateDataFingerprint(data, type) {
     if (!data) return null;
@@ -302,18 +304,18 @@ class WeiboUI {
         content = JSON.stringify(data);
     }
 
-    // 简单哈希算法（轻量级）
+    // อัลกอริทึมแฮชแบบง่าย (เบา)
     let hash = 0;
     for (let i = 0; i < content.length; i++) {
       const char = content.charCodeAt(i);
       hash = (hash << 5) - hash + char;
-      hash = hash & hash; // 转换为32位整数
+      hash = hash & hash; // แปลงเป็นจำนวนเต็ม 32 บิต
     }
     return hash.toString();
   }
 
   /**
-   * 检测数据是否有变化
+   * ตรวจจับว่าข้อมูลมีการเปลี่ยนแปลงหรือไม่
    */
   detectDataChanges(newContent) {
     const currentTime = Date.now();
@@ -325,45 +327,45 @@ class WeiboUI {
       hasAnyChange: false,
     };
 
-    // 检测各种数据格式是否存在
+    // ตรวจจับว่ามีรูปแบบข้อมูลต่าง ๆ อยู่หรือไม่
     const hasHotSearchPattern = /\[热搜\|/.test(newContent);
     const hasRankingPattern = /\[榜单\|/.test(newContent) || /\[榜单项\|/.test(newContent);
-    const hasRankingPostPattern = /\[博文\|[^|]+\|r\d+\|/.test(newContent); // 榜单博文ID以r开头
+    const hasRankingPostPattern = /\[博文\|[^|]+\|r\d+\|/.test(newContent); // ID ของโพสต์อันดับขึ้นต้นด้วย r
     const hasUserStatsPattern = /\[粉丝数\|/.test(newContent);
 
-    console.log('[Weibo UI] 🔍 数据格式检测:', {
+    console.log('[Weibo UI] 🔍 ตรวจจับรูปแบบข้อมูล:', {
       hasHotSearchPattern,
       hasRankingPattern,
       hasRankingPostPattern,
       hasUserStatsPattern,
     });
 
-    // 只有当检测到对应格式时，才标记为需要更新
+    // ทำเครื่องหมายว่าต้องอัปเดตเฉพาะเมื่อพบรูปแบบที่สอดคล้องเท่านั้น
     if (hasHotSearchPattern) {
       changes.hotSearches = true;
       changes.hasAnyChange = true;
-      console.log('[Weibo UI] ✅ 检测到热搜数据更新');
+      console.log('[Weibo UI] ✅ ตรวจพบการอัปเดตข้อมูลยอดนิยม');
     }
 
     if (hasRankingPattern) {
       changes.rankings = true;
       changes.hasAnyChange = true;
-      console.log('[Weibo UI] ✅ 检测到榜单数据更新');
+      console.log('[Weibo UI] ✅ ตรวจพบการอัปเดตข้อมูลอันดับ');
     }
 
     if (hasRankingPostPattern) {
       changes.rankingPosts = true;
       changes.hasAnyChange = true;
-      console.log('[Weibo UI] ✅ 检测到榜单博文更新');
+      console.log('[Weibo UI] ✅ ตรวจพบการอัปเดตโพสต์อันดับ');
     }
 
     if (hasUserStatsPattern) {
       changes.userStats = true;
       changes.hasAnyChange = true;
-      console.log('[Weibo UI] ✅ 检测到粉丝数据更新');
+      console.log('[Weibo UI] ✅ ตรวจพบการอัปเดตข้อมูลแฟน');
     }
 
-    // 更新最后检测时间
+    // อัปเดตเวลาตรวจจับล่าสุด
     if (changes.hasAnyChange) {
       this.lastDataFingerprints.lastUpdateTime = currentTime;
     }
@@ -372,7 +374,7 @@ class WeiboUI {
   }
 
   /**
-   * 基于用户名生成稳定的哈希值
+   * สร้างค่าแฮชเสถียรจากชื่อผู้ใช้
    */
   hashUsername(username) {
     let hash = 0;
@@ -381,41 +383,41 @@ class WeiboUI {
     for (let i = 0; i < username.length; i++) {
       const char = username.charCodeAt(i);
       hash = (hash << 5) - hash + char;
-      hash = hash & hash; // 转换为32位整数
+      hash = hash & hash; // แปลงเป็นจำนวนเต็ม 32 บิต
     }
 
     return Math.abs(hash);
   }
 
   /**
-   * 根据用户名获取头像颜色
+   * ดึงสีของอวาตาร์ตามชื่อผู้ใช้
    */
   getAvatarColor(username) {
-    // 检查是否是当前用户（大号或小号）
+    // ตรวจสอบว่าเป็นผู้ใช้ปัจจุบันหรือไม่ (บัญชีหลักหรือบัญชีรอง)
     let currentUsername = this.getCurrentUsername();
     if (currentUsername === '{{user}}') {
       currentUsername = this.getRealUsername();
     }
     const isMainAccount = window.weiboManager ? window.weiboManager.currentAccount.isMainAccount : true;
 
-    // 检查是否是当前用户（支持多种用户名格式）
+    // ตรวจสอบว่าเป็นผู้ใช้ปัจจุบันหรือไม่ (รองรับชื่อผู้ใช้หลายรูปแบบ)
     if (
       username === currentUsername ||
       username === '{{user}}' ||
       (username === 'User' && currentUsername === 'User')
     ) {
-      // 如果是当前用户，根据账户类型返回特定颜色
+      // หากเป็นผู้ใช้ปัจจุบัน ส่งคืนสีเฉพาะตามประเภทบัญชี
       return isMainAccount ? '#C4B7D6' : '#A37070';
     }
 
-    // 其他用户使用原有的颜色系统
+    // ผู้ใช้อื่นใช้ระบบสีเดิม
     const hash = this.hashUsername(username);
     const colorIndex = hash % this.avatarColors.length;
     return this.avatarColors[colorIndex];
   }
 
   /**
-   * 生成带颜色的头像HTML
+   * สร้าง HTML ของอวาตาร์ที่มีสี
    */
   generateAvatarHTML(username, size = '') {
     const color = this.getAvatarColor(username);
@@ -426,15 +428,15 @@ class WeiboUI {
   }
 
   /**
-   * 从消息中实时解析微博内容（优化版方案5：增量替换）
+   * แยกวิเคราะห์เนื้อหา Weibo จากข้อความแบบเรียลไทม์ (เวอร์ชันปรับปรุง โซลูชันที่ 5: การแทนที่แบบเพิ่ม)
    */
   parseWeiboContent(content) {
-    // 提取微博标记之间的内容
+    // ดึงเนื้อหาระหว่างเครื่องหมาย Weibo
     const weiboRegex = /<!-- WEIBO_CONTENT_START -->([\s\S]*?)<!-- WEIBO_CONTENT_END -->/;
     const match = content.match(weiboRegex);
 
     if (!match) {
-      console.log('[Weibo UI] 未找到微博内容');
+      console.log('[Weibo UI] ไม่พบเนื้อหา Weibo');
       return {
         posts: [],
         comments: {},
@@ -446,23 +448,23 @@ class WeiboUI {
     }
 
     const weiboContent = match[1];
-    console.log('[Weibo UI] 🔍 开始解析微博内容，启用增量替换机制');
+    console.log('[Weibo UI] 🔍 เริ่มแยกวิเคราะห์เนื้อหา Weibo เปิดใช้งานกลไกการแทนที่แบบเพิ่ม');
 
-    // 检测数据变化
+    // ตรวจจับการเปลี่ยนแปลงข้อมูล
     const changes = this.detectDataChanges(weiboContent);
 
-    // 初始化解析结果
+    // เริ่มต้นผลลัพธ์การแยกวิเคราะห์
     const posts = [];
     const comments = {};
-    let hotSearches = this.persistentData.hotSearches; // 默认使用持久化数据
+    let hotSearches = this.persistentData.hotSearches; // ใช้ข้อมูลคงทนเป็นค่าเริ่มต้น
     let rankings = this.persistentData.rankings;
     let rankingPosts = this.persistentData.rankingPosts;
     let userStats = this.persistentData.userStats;
 
-    // 解析博文格式: [博文|发博人昵称|博文id|博文内容]
+    // แยกวิเคราะห์รูปแบบโพสต์: [博文|ชื่อผู้โพสต์|รหัสโพสต์|เนื้อหาโพสต์]
     const postRegex = /\[博文\|([^|]+)\|([^|]+)\|([^\]]+)\]/g;
     let postMatch;
-    const newRankingPosts = []; // 临时存储新的榜单博文
+    const newRankingPosts = []; // เก็บโพสต์อันดับใหม่ชั่วคราว
 
     while ((postMatch = postRegex.exec(weiboContent)) !== null) {
       const postId = postMatch[2];
@@ -471,31 +473,31 @@ class WeiboUI {
         author: postMatch[1],
         content: postMatch[3],
         timestamp: new Date().toLocaleString(),
-        likes: Math.floor(Math.random() * 1000) + 10, // 随机点赞数
-        comments: Math.floor(Math.random() * 100) + 5, // 随机评论数
-        shares: Math.floor(Math.random() * 50) + 1, // 随机转发数
-        // 根据ID前缀确定类型
+        likes: Math.floor(Math.random() * 1000) + 10, // จำนวนถูกใจสุ่ม
+        comments: Math.floor(Math.random() * 100) + 5, // จำนวนความคิดเห็นสุ่ม
+        shares: Math.floor(Math.random() * 50) + 1, // จำนวนการแชร์สุ่ม
+        // ระบุประเภทตามคำนำหน้าของ ID
         type: postId.startsWith('h') ? 'hot' : postId.startsWith('r') ? 'ranking' : 'user',
       };
 
-      // 榜单博文单独处理
+      // จัดการโพสต์อันดับแยกต่างหาก
       if (postId.startsWith('r')) {
         newRankingPosts.push(post);
-        console.log('[Weibo UI] 📊 发现榜单博文:', postId);
+        console.log('[Weibo UI] 📊 พบโพสต์อันดับ:', postId);
       } else {
         posts.push(post);
       }
       comments[post.id] = [];
     }
 
-    // 如果检测到榜单博文更新，替换旧数据
+    // หากตรวจพบการอัปเดตโพสต์อันดับ ให้แทนที่ข้อมูลเก่า
     if (changes.rankingPosts && newRankingPosts.length > 0) {
       rankingPosts = newRankingPosts;
       this.persistentData.rankingPosts = rankingPosts;
-      console.log('[Weibo UI] ✅ 榜单博文已更新，替换旧数据:', rankingPosts.length, '条');
+      console.log('[Weibo UI] ✅ อัปเดตโพสต์อันดับแล้ว แทนที่ข้อมูลเก่า:', rankingPosts.length, 'รายการ');
     }
 
-    // 解析评论格式: [评论|评论人昵称|博文id|评论内容]
+    // แยกวิเคราะห์รูปแบบความคิดเห็น: [评论|ชื่อผู้แสดงความคิดเห็น|รหัสโพสต์|เนื้อหาความคิดเห็น]
     const commentRegex = /\[评论\|([^|]+)\|([^|]+)\|([^\]]+)\]/g;
     let commentMatch;
     while ((commentMatch = commentRegex.exec(weiboContent)) !== null) {
@@ -513,7 +515,7 @@ class WeiboUI {
       }
     }
 
-    // 解析回复格式: [回复|回复人昵称|博文id|回复内容]
+    // แยกวิเคราะห์รูปแบบการตอบกลับ: [回复|ชื่อผู้ตอบ|รหัสโพสต์|เนื้อหาการตอบ]
     const replyRegex = /\[回复\|([^|]+)\|([^|]+)\|([^\]]+)\]/g;
     let replyMatch;
     while ((replyMatch = replyRegex.exec(weiboContent)) !== null) {
@@ -532,7 +534,7 @@ class WeiboUI {
       }
     }
 
-    // 解析热搜格式: [热搜|排名|热搜标题|热度值] - 增量替换
+    // แยกวิเคราะห์รูปแบบยอดนิยม: [热搜|อันดับ|หัวข้อยอดนิยม|ค่าความนิยม] - แทนที่แบบเพิ่ม
     if (changes.hotSearches) {
       const newHotSearches = [];
       const hotSearchRegex = /\[热搜\|([^|]+)\|([^|]+)\|([^\]]+)\]/g;
@@ -550,11 +552,11 @@ class WeiboUI {
       if (newHotSearches.length > 0) {
         hotSearches = newHotSearches;
         this.persistentData.hotSearches = hotSearches;
-        console.log('[Weibo UI] ✅ 热搜数据已更新，替换旧数据:', hotSearches.length, '条');
+        console.log('[Weibo UI] ✅ อัปเดตข้อมูลยอดนิยมแล้ว แทนที่ข้อมูลเก่า:', hotSearches.length, 'รายการ');
       }
     }
 
-    // 解析榜单格式: [榜单|榜单名称|榜单类型] 和 [榜单项|排名|名称|热度值] - 增量替换
+    // แยกวิเคราะห์รูปแบบอันดับ: [榜单|ชื่ออันดับ|ประเภทอันดับ] และ [榜单项|อันดับ|ชื่อ|ค่าความนิยม] - แทนที่แบบเพิ่ม
     if (changes.rankings) {
       const newRankings = [];
       const rankingTitleRegex = /\[榜单\|([^|]+)\|([^\]]+)\]/g;
@@ -577,7 +579,7 @@ class WeiboUI {
           heat: rankingItemMatch[3],
         };
 
-        // 添加到最后一个榜单
+        // เพิ่มไปยังอันดับสุดท้าย
         if (newRankings.length > 0) {
           newRankings[newRankings.length - 1].items.push(item);
         }
@@ -586,41 +588,43 @@ class WeiboUI {
       if (newRankings.length > 0) {
         rankings = newRankings;
         this.persistentData.rankings = rankings;
-        console.log('[Weibo UI] ✅ 榜单数据已更新，替换旧数据:', rankings.length, '个榜单');
+        console.log('[Weibo UI] ✅ อัปเดตข้อมูลอันดับแล้ว แทนที่ข้อมูลเก่า:', rankings.length, 'อันดับ');
       }
     }
 
-    // 解析粉丝数格式: [粉丝数|大号粉丝数|小号粉丝数] - 增量替换
+    // แยกวิเคราะห์รูปแบบจำนวนแฟน: [粉丝数|จำนวนแฟนบัญชีหลัก|จำนวนแฟนบัญชีรอง] - แทนที่แบบเพิ่ม
     if (changes.userStats) {
       const fansRegex = /\[粉丝数\|([^|]+)\|([^\]]+)\]/g;
       let fansMatch;
       while ((fansMatch = fansRegex.exec(weiboContent)) !== null) {
         const newUserStats = {
-          mainAccountFans: fansMatch[1], // 大号粉丝数
-          aliasAccountFans: fansMatch[2], // 小号粉丝数
-          following: '100', // 固定关注数
+          mainAccountFans: fansMatch[1], // จำนวนแฟนบัญชีหลัก
+          aliasAccountFans: fansMatch[2], // จำนวนแฟนบัญชีรอง
+          following: '100', // จำนวนการติดตามคงที่
           posts: posts.filter(p => p.author === this.getCurrentUsername()).length,
         };
 
         userStats = newUserStats;
         this.persistentData.userStats = userStats;
         console.log(
-          '[Weibo UI] ✅ 粉丝数据已更新 - 大号:',
+          '[Weibo UI] ✅ อัปเดตข้อมูลแฟนแล้ว - บัญชีหลัก:',
           userStats.mainAccountFans,
-          '小号:',
+          'บัญชีรอง:',
           userStats.aliasAccountFans,
         );
-        break; // 只取第一个匹配的粉丝数
+        break; // เอาเฉพาะจำนวนแฟนที่จับคู่ครั้งแรก
       }
     }
 
-    console.log('[Weibo UI] 📊 解析完成（增量替换）:', {
+    console.log('[Weibo UI] 📊 แยกวิเคราะห์เสร็จสมบูรณ์ (แทนที่แบบเพิ่ม):', {
       posts: posts.length,
       comments: Object.keys(comments).length,
       hotSearches: hotSearches.length,
       rankings: rankings.length,
       rankingPosts: rankingPosts.length,
-      userStats: userStats ? `大号粉丝${userStats.mainAccountFans} 小号粉丝${userStats.aliasAccountFans}` : '无',
+      userStats: userStats
+        ? `แฟนบัญชีหลัก${userStats.mainAccountFans} แฟนบัญชีรอง${userStats.aliasAccountFans}`
+        : 'ไม่มี',
       changes: changes,
     });
 
@@ -628,7 +632,7 @@ class WeiboUI {
   }
 
   /**
-   * 获取热搜图标
+   * ดึงไอคอนยอดนิยม
    */
   getHotSearchIcon(rank) {
     if (rank <= 3) {
@@ -641,12 +645,12 @@ class WeiboUI {
   }
 
   /**
-   * 获取当前用户名
+   * ดึงชื่อผู้ใช้ปัจจุบัน
    */
   getCurrentUsername() {
     if (window.weiboManager && window.weiboManager.getCurrentUsername) {
       const username = window.weiboManager.getCurrentUsername();
-      // 如果是{{user}}，尝试从SillyTavern获取真实用户名
+      // หากเป็น {{user}} ลองดึงชื่อผู้ใช้จริงจาก SillyTavern
       if (username === '{{user}}') {
         return this.getRealUsername();
       }
@@ -656,92 +660,92 @@ class WeiboUI {
   }
 
   /**
-   * 获取真实用户名（从SillyTavern）
+   * ดึงชื่อผู้ใช้จริง (จาก SillyTavern)
    */
   getRealUsername() {
     try {
-      console.log('[Weibo UI] 开始获取真实用户名...');
+      console.log('[Weibo UI] เริ่มดึงชื่อผู้ใช้จริง...');
 
-      // 方法1: 从SillyTavern的全局变量获取
+      // วิธี 1: ดึงจากตัวแปร global ของ SillyTavern
       if (typeof window.name1 !== 'undefined' && window.name1 && window.name1.trim() && window.name1 !== '{{user}}') {
-        console.log('[Weibo UI] 从name1获取用户名:', window.name1);
+        console.log('[Weibo UI] ดึงชื่อผู้ใช้จาก name1:', window.name1);
         return window.name1.trim();
       }
 
-      // 方法2: 从power_user获取
+      // วิธี 2: ดึงจาก power_user
       if (
         window.power_user &&
         window.power_user.name &&
         window.power_user.name.trim() &&
         window.power_user.name !== '{{user}}'
       ) {
-        console.log('[Weibo UI] 从power_user获取用户名:', window.power_user.name);
+        console.log('[Weibo UI] ดึงชื่อผู้ใช้จาก power_user:', window.power_user.name);
         return window.power_user.name.trim();
       }
 
-      // 方法3: 从getContext获取
+      // วิธี 3: ดึงจาก getContext
       if (window.getContext) {
         const context = window.getContext();
         if (context && context.name1 && context.name1.trim() && context.name1 !== '{{user}}') {
-          console.log('[Weibo UI] 从context获取用户名:', context.name1);
+          console.log('[Weibo UI] ดึงชื่อผู้ใช้จาก context:', context.name1);
           return context.name1.trim();
         }
       }
 
-      // 方法4: 从localStorage获取
+      // วิธี 4: ดึงจาก localStorage
       const storedName = localStorage.getItem('name1');
       if (storedName && storedName.trim() && storedName !== '{{user}}') {
-        console.log('[Weibo UI] 从localStorage获取用户名:', storedName);
+        console.log('[Weibo UI] ดึงชื่อผู้ใช้จาก localStorage:', storedName);
         return storedName.trim();
       }
 
-      // 方法5: 尝试从SillyTavern的其他全局变量获取
+      // วิธี 5: ลองดึงจากตัวแปร global อื่นของ SillyTavern
       if (
         typeof window.user_name !== 'undefined' &&
         window.user_name &&
         window.user_name.trim() &&
         window.user_name !== '{{user}}'
       ) {
-        console.log('[Weibo UI] 从user_name获取用户名:', window.user_name);
+        console.log('[Weibo UI] ดึงชื่อผู้ใช้จาก user_name:', window.user_name);
         return window.user_name.trim();
       }
 
-      // 方法6: 从聊天数据中获取最新的用户消息作者
+      // วิธี 6: ดึงผู้เขียนข้อความผู้ใช้ล่าสุดจากข้อมูลแชท
       if (window.mobileContextEditor) {
         const chatData = window.mobileContextEditor.getCurrentChatData();
         if (chatData && chatData.messages) {
-          // 找到最后一条用户消息
+          // ค้นหาข้อความผู้ใช้ล่าสุด
           for (let i = chatData.messages.length - 1; i >= 0; i--) {
             const msg = chatData.messages[i];
             if (msg.is_user && msg.name && msg.name.trim() && msg.name !== '{{user}}' && msg.name !== 'User') {
-              console.log('[Weibo UI] 从聊天记录获取用户名:', msg.name);
+              console.log('[Weibo UI] ดึงชื่อผู้ใช้จากบันทึกแชท:', msg.name);
               return msg.name.trim();
             }
           }
         }
       }
 
-      // 方法7: 尝试从DOM中的用户输入框获取
+      // วิธี 7: ลองดึงจากช่องป้อนชื่อผู้ใช้ใน DOM
       const userNameInput = document.querySelector('#user_name, input[name="user_name"], .user-name-input');
       if (userNameInput && userNameInput.value && userNameInput.value.trim() && userNameInput.value !== '{{user}}') {
-        console.log('[Weibo UI] 从用户名输入框获取用户名:', userNameInput.value);
+        console.log('[Weibo UI] ดึงชื่อผู้ใช้จากช่องป้อนชื่อผู้ใช้:', userNameInput.value);
         return userNameInput.value.trim();
       }
 
-      console.log('[Weibo UI] 所有方法都未能获取到有效用户名，检查可用的全局变量...');
+      console.log('[Weibo UI] ไม่สามารถดึงชื่อผู้ใช้ที่ใช้ได้จากทุกวิธี กำลังตรวจสอบตัวแปร global ที่มี...');
       console.log('[Weibo UI] window.name1:', window.name1);
       console.log('[Weibo UI] window.power_user:', window.power_user);
       console.log('[Weibo UI] window.user_name:', window.user_name);
     } catch (error) {
-      console.warn('[Weibo UI] 获取用户名失败:', error);
+      console.warn('[Weibo UI] ดึงชื่อผู้ใช้ล้มเหลว:', error);
     }
 
-    console.log('[Weibo UI] 使用默认用户名: User');
+    console.log('[Weibo UI] ใช้ชื่อผู้ใช้เริ่มต้น: User');
     return 'User';
   }
 
   /**
-   * 获取当前账户类型
+   * ดึงประเภทบัญชีปัจจุบัน
    */
   getCurrentAccountType() {
     if (window.weiboManager && window.weiboManager.currentAccount) {
@@ -751,16 +755,16 @@ class WeiboUI {
   }
 
   /**
-   * 渲染热搜页面
+   * เรนเดอร์หน้ายอดนิยม
    */
   renderHotPage(data) {
     const { posts, comments, hotSearches } = data;
-    // 只显示热搜相关的博文（ID以h开头）
+    // แสดงเฉพาะโพสต์ที่เกี่ยวข้องกับยอดนิยม (ID ขึ้นต้นด้วย h)
     const hotPosts = posts.filter(post => post.type === 'hot');
 
     let html = `
       <div class="weibo-page hot-page">
-        <!-- 热搜列表 -->
+        <!-- รายการยอดนิยม -->
         <div class="hot-search-section">
           <div class="section-header">
             <i class="fas fa-fire"></i>
@@ -769,7 +773,7 @@ class WeiboUI {
           <div class="hot-search-list">
     `;
 
-    // 渲染热搜条目
+    // เรนเดอร์รายการยอดนิยม
     hotSearches.forEach(search => {
       html += `
         <div class="hot-search-item" data-rank="${search.rank}">
@@ -787,7 +791,7 @@ class WeiboUI {
           </div>
         </div>
 
-        <!-- 热搜博文 -->
+        <!-- โพสต์ยอดนิยม -->
         <div class="posts-section">
           <div class="section-header">
             <i class="fas fa-comments"></i>
@@ -796,13 +800,13 @@ class WeiboUI {
           <div class="posts-list">
     `;
 
-    // 按时间排序博文（新的在前）
+    // เรียงลำดับโพสต์ตามเวลา (ใหม่ก่อน)
     hotPosts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-    // 渲染博文
+    // เรนเดอร์โพสต์
     hotPosts.forEach(post => {
       const postComments = comments[post.id] || [];
-      html += this.renderPost(post, postComments, true); // 热搜页面的博文可以回复
+      html += this.renderPost(post, postComments, true); // โพสต์ในหน้ายอดนิยมสามารถตอบกลับได้
     });
 
     html += `
@@ -815,21 +819,21 @@ class WeiboUI {
   }
 
   /**
-   * 渲染榜单页面
+   * เรนเดอร์หน้าอันดับ
    */
   renderRankingPage(data) {
     const { posts, comments, rankings, rankingPosts } = data;
-    // 使用独立的榜单博文数据（优化版方案5）
+    // ใช้ข้อมูลโพสต์อันดับแยกต่างหาก (เวอร์ชันปรับปรุง โซลูชันที่ 5)
     const actualRankingPosts = rankingPosts || posts.filter(post => post.type === 'ranking');
-    console.log('[Weibo UI] 📊 榜单页面使用博文数据:', actualRankingPosts.length, '条');
+    console.log('[Weibo UI] 📊 หน้าอันดับใช้ข้อมูลโพสต์:', actualRankingPosts.length, 'รายการ');
 
     let html = `
       <div class="weibo-page ranking-page">
-        <!-- 榜单列表 -->
+        <!-- รายการอันดับ -->
         <div class="ranking-section">
     `;
 
-    // 渲染榜单
+    // เรนเดอร์อันดับ
     rankings.forEach(ranking => {
       html += `
         <div class="ranking-container">
@@ -841,7 +845,7 @@ class WeiboUI {
           <div class="ranking-list">
       `;
 
-      // 渲染榜单项目
+      // เรนเดอร์รายการในอันดับ
       ranking.items.forEach(item => {
         const rankClass = item.rank <= 3 ? 'top-rank' : '';
         html += `
@@ -864,7 +868,7 @@ class WeiboUI {
     html += `
         </div>
 
-        <!-- 榜单相关博文 -->
+        <!-- โพสต์ที่เกี่ยวข้องกับอันดับ -->
         <div class="posts-section">
           <div class="section-header">
             <i class="fas fa-comments"></i>
@@ -873,13 +877,13 @@ class WeiboUI {
           <div class="posts-list">
     `;
 
-    // 按时间排序博文（新的在前）
+    // เรียงลำดับโพสต์ตามเวลา (ใหม่ก่อน)
     actualRankingPosts.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
-    // 渲染博文（榜单页面的博文可以点赞但不能回复）
+    // เรนเดอร์โพสต์ (โพสต์ในหน้าอันดับสามารถกดถูกใจได้แต่ตอบกลับไม่ได้)
     actualRankingPosts.forEach(post => {
       const postComments = comments[post.id] || [];
-      html += this.renderPost(post, postComments, false); // 榜单页面的博文不能回复
+      html += this.renderPost(post, postComments, false); // โพสต์ในหน้าอันดับตอบกลับไม่ได้
     });
 
     html += `
@@ -892,26 +896,26 @@ class WeiboUI {
   }
 
   /**
-   * 渲染用户页面
+   * เรนเดอร์หน้าผู้ใช้
    */
   renderUserPage(data) {
     const { posts, comments, userStats } = data;
-    // 优先从微博管理器获取当前账户的用户名，确保账户切换后显示正确
+    // ดึงชื่อผู้ใช้ของบัญชีปัจจุบันจากตัวจัดการ Weibo เป็นอันดับแรก เพื่อให้แสดงผลถูกต้องหลังสลับบัญชี
     let currentUsername = this.getCurrentUsername();
-    console.log('[Weibo UI] 用户页面使用的用户名:', currentUsername);
+    console.log('[Weibo UI] ชื่อผู้ใช้ที่ใช้ในหน้าผู้ใช้:', currentUsername);
 
-    // 如果获取到的用户名是 'User' 或无效，尝试从其他地方获取
+    // หากชื่อผู้ใช้ที่ได้คือ 'User' หรือไม่ถูกต้อง ลองดึงจากที่อื่น
     if (!currentUsername || currentUsername === 'User' || currentUsername === '{{user}}') {
-      console.log('[Weibo UI] 检测到无效用户名，尝试从其他来源获取...');
+      console.log('[Weibo UI] ตรวจพบชื่อผู้ใช้ไม่ถูกต้อง กำลังลองดึงจากแหล่งอื่น...');
 
-      // 尝试从SillyTavern获取真实用户名
+      // ลองดึงชื่อผู้ใช้จริงจาก SillyTavern
       const realUsername = this.getRealUsername();
       if (realUsername && realUsername !== 'User' && realUsername !== '{{user}}') {
         currentUsername = realUsername;
-        console.log('[Weibo UI] 从SillyTavern获取到用户名:', currentUsername);
+        console.log('[Weibo UI] ดึงชื่อผู้ใช้จาก SillyTavern ได้:', currentUsername);
       }
 
-      // 如果还是无效，尝试从DOM中获取已设置的用户名
+      // หากยังไม่ถูกต้อง ลองดึงชื่อผู้ใช้ที่ตั้งไว้จาก DOM
       if (!currentUsername || currentUsername === 'User' || currentUsername === '{{user}}') {
         const profileNameElement = document.querySelector('.profile-name');
         if (
@@ -921,27 +925,27 @@ class WeiboUI {
           profileNameElement.textContent !== '{{user}}'
         ) {
           currentUsername = profileNameElement.textContent;
-          console.log('[Weibo UI] 从DOM获取到用户名:', currentUsername);
+          console.log('[Weibo UI] ดึงชื่อผู้ใช้จาก DOM ได้:', currentUsername);
         }
       }
     }
 
     const accountType = this.getCurrentAccountType();
-    // 只显示用户相关的博文（ID以u开头）
+    // แสดงเฉพาะโพสต์ที่เกี่ยวข้องกับผู้ใช้ (ID ขึ้นต้นด้วย u)
     const userPosts = posts.filter(post => post.type === 'user');
 
-    // 根据当前账户获取对应的粉丝数
+    // ดึงจำนวนแฟนที่สอดคล้องตามบัญชีปัจจุบัน
     const isMainAccount = this.getCurrentAccountType() === '大号';
     const currentFans = userStats ? (isMainAccount ? userStats.mainAccountFans : userStats.aliasAccountFans) : '0';
 
-    // 如果没有用户统计数据，使用默认值
+    // หากไม่มีข้อมูลสถิติของผู้ใช้ ให้ใช้ค่าเริ่มต้น
     const stats = {
       fans: currentFans || '0',
       following: '100',
       posts: posts.filter(p => p.author === currentUsername).length,
     };
 
-    console.log('[Weibo UI] 用户页面统计信息:', {
+    console.log('[Weibo UI] ข้อมูลสถิติของหน้าผู้ใช้:', {
       isMainAccount,
       currentFans,
       userStats: userStats
@@ -954,7 +958,7 @@ class WeiboUI {
 
     let html = `
       <div class="weibo-page user-page">
-        <!-- 用户信息 -->
+        <!-- ข้อมูลผู้ใช้ -->
         <div class="user-info-section">
           <div class="user-header">
             <div class="user-avatar-large">
@@ -971,7 +975,7 @@ class WeiboUI {
             </div>
           </div>
 
-          <!-- 统计信息 -->
+          <!-- ข้อมูลสถิติ -->
           <div class="user-stats">
             <div class="stat-item">
               <div class="stat-number">${stats.posts}</div>
@@ -988,7 +992,7 @@ class WeiboUI {
           </div>
         </div>
 
-        <!-- 用户博文 -->
+        <!-- โพสต์ของผู้ใช้ -->
         <div class="posts-section">
           <div class="section-header">
             <i class="fas fa-user"></i>
@@ -997,42 +1001,42 @@ class WeiboUI {
           <div class="posts-list">
     `;
 
-    // 渲染用户的博文（按时间排序，最新的在前）
-    // 获取可能的用户名列表进行匹配
+    // เรนเดอร์โพสต์ของผู้ใช้ (เรียงตามเวลา ใหม่ก่อน)
+    // ดึงรายชื่อผู้ใช้ที่เป็นไปได้สำหรับการจับคู่
     const possibleUsernames = [currentUsername, this.getRealUsername(), '{{user}}', 'User'].filter(
       name => name && name.trim(),
-    ); // 过滤空值
+    ); // กรองค่าว่างออก
 
-    // 从用户博文中过滤出当前用户的博文
-    console.log('[Weibo UI] 用户名匹配调试:', {
+    // กรองโพสต์ของผู้ใช้ปัจจุบันออกจากโพสต์ของผู้ใช้ทั้งหมด
+    console.log('[Weibo UI] ดีบักการจับคู่ชื่อผู้ใช้:', {
       possibleUsernames,
       userPostsAuthors: userPosts.map(p => p.author),
       userPostsCount: userPosts.length,
     });
 
     const currentUserPosts = userPosts.filter(post => {
-      // 检查博文作者是否匹配任何可能的用户名
+      // ตรวจสอบว่าผู้เขียนโพสต์ตรงกับชื่อผู้ใช้ที่เป็นไปได้หรือไม่
       const isMatch = possibleUsernames.some(
         username => post.author === username || post.author.toLowerCase() === username.toLowerCase(),
       );
       if (isMatch) {
-        console.log('[Weibo UI] 找到匹配的用户博文:', post.author, post.content);
+        console.log('[Weibo UI] พบโพสต์ผู้ใช้ที่จับคู่:', post.author, post.content);
       }
       return isMatch;
     });
 
-    // 如果没有匹配的博文，显示所有用户类型的博文（兜底逻辑）
+    // หากไม่มีโพสต์ที่จับคู่ ให้แสดงโพสต์ของผู้ใช้ทั้งหมด (ลอจิกสำรอง)
     const postsToShow = currentUserPosts.length > 0 ? currentUserPosts : userPosts;
 
-    // 按时间排序博文（新的在前）
+    // เรียงลำดับโพสต์ตามเวลา (ใหม่ก่อน)
     postsToShow.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
     postsToShow.forEach(post => {
       const postComments = comments[post.id] || [];
-      html += this.renderPost(post, postComments, true); // 用户页面的博文可以回复
+      html += this.renderPost(post, postComments, true); // โพสต์ในหน้าผู้ใช้สามารถตอบกลับได้
     });
 
-    // 如果没有博文，显示提示
+    // หากไม่มีโพสต์ ให้แสดงคำแนะนำ
     if (userPosts.length === 0) {
       html += `
         <div class="empty-posts">
@@ -1053,7 +1057,7 @@ class WeiboUI {
   }
 
   /**
-   * 渲染单个博文
+   * เรนเดอร์โพสต์เดียว
    */
   renderPost(post, postComments, canReply = true) {
     const likeData = this.likesData[post.id] || { likes: post.likes, isLiked: false };
@@ -1103,7 +1107,7 @@ class WeiboUI {
         </div>
     `;
 
-    // 渲染评论
+    // เรนเดอร์ความคิดเห็น
     if (postComments.length > 0) {
       html += `
         <div class="post-comments">
@@ -1139,7 +1143,7 @@ class WeiboUI {
                   ? `
               <button class="action-btn reply-btn" data-comment-id="${comment.id}" data-post-id="${post.id}">
                 <i class="fas fa-reply"></i>
-                回复
+                ตอบกลับ
               </button>
               `
                   : ''
@@ -1155,7 +1159,7 @@ class WeiboUI {
       `;
     }
 
-    // 如果可以回复，添加回复输入框
+    // หากตอบกลับได้ ให้เพิ่มช่องตอบกลับ
     if (canReply) {
       html += `
         <div class="reply-input-container" style="display: none;">
@@ -1178,60 +1182,60 @@ class WeiboUI {
   }
 
   /**
-   * 格式化博文内容
+   * จัดรูปแบบเนื้อหาโพสต์
    */
   formatPostContent(content) {
-    // 处理话题标签
+    // ประมวลผลแท็กหัวข้อ
     content = content.replace(/#([^#\s]+)#/g, '<span class="topic-tag">#$1#</span>');
 
-    // 处理@用户
+    // ประมวลผลการกล่าวถึง @ผู้ใช้
     content = content.replace(/@([^\s@]+)/g, '<span class="mention-user">@$1</span>');
 
-    // 处理换行
+    // ประมวลผลการขึ้นบรรทัดใหม่
     content = content.replace(/\n/g, '<br>');
 
     return content;
   }
 
   /**
-   * 格式化评论内容
+   * จัดรูปแบบเนื้อหาความคิดเห็น
    */
   formatCommentContent(content) {
-    // 处理回复格式：回复张三：内容
+    // ประมวลผลรูปแบบการตอบกลับ: 回复张三：เนื้อหา
     content = content.replace(/回复([^：]+)：/g, '<span class="reply-to">回复$1：</span>');
 
-    // 处理话题标签
+    // ประมวลผลแท็กหัวข้อ
     content = content.replace(/#([^#\s]+)#/g, '<span class="topic-tag">#$1#</span>');
 
-    // 处理@用户
+    // ประมวลผลการกล่าวถึง @ผู้ใช้
     content = content.replace(/@([^\s@]+)/g, '<span class="mention-user">@$1</span>');
 
-    // 处理换行
+    // ประมวลผลการขึ้นบรรทัดใหม่
     content = content.replace(/\n/g, '<br>');
 
     return content;
   }
 
   /**
-   * 刷新微博列表
+   * รีเฟรชรายการ Weibo
    */
   async refreshWeiboList() {
     try {
-      console.log('[Weibo UI] 开始刷新微博列表...');
+      console.log('[Weibo UI] เริ่มรีเฟรชรายการ Weibo...');
 
-      // 获取当前聊天数据
+      // ดึงข้อมูลแชทปัจจุบัน
       const chatData = await this.getCurrentChatData();
       if (!chatData || !chatData.messages || chatData.messages.length === 0) {
-        console.log('[Weibo UI] 无聊天数据，显示空状态');
+        console.log('[Weibo UI] ไม่มีข้อมูลแชท แสดงสถานะว่างเปล่า');
         this.showEmptyState();
         return;
       }
 
-      // 解析微博内容
+      // แยกวิเคราะห์เนื้อหา Weibo
       const firstMessage = chatData.messages[0];
       const weiboData = this.parseWeiboContent(firstMessage.mes || '');
 
-      // 根据当前页面渲染内容
+      // เรนเดอร์เนื้อหาตามหน้าปัจจุบัน
       let content = '';
       switch (this.currentPage) {
         case 'hot':
@@ -1247,25 +1251,25 @@ class WeiboUI {
           content = this.renderHotPage(weiboData);
       }
 
-      // 更新页面内容
+      // อัปเดตเนื้อหาหน้า
       const contentContainer = document.getElementById('weibo-content');
       if (contentContainer) {
         contentContainer.innerHTML = content;
         this.bindPostEvents();
 
-        // 自动滚动到页面顶部，方便用户查看最新内容
+        // เลื่อนกลับไปด้านบนของหน้าโดยอัตโนมัติเพื่อให้ผู้ใช้ดูเนื้อหาล่าสุดได้สะดวก
         this.scrollToTop();
 
-        console.log('[Weibo UI] ✅ 微博列表刷新完成');
+        console.log('[Weibo UI] ✅ รีเฟรชรายการ Weibo เสร็จสมบูรณ์');
       }
     } catch (error) {
-      console.error('[Weibo UI] 刷新微博列表失败:', error);
+      console.error('[Weibo UI] รีเฟรชรายการ Weibo ล้มเหลว:', error);
       this.showErrorState(error.message);
     }
   }
 
   /**
-   * 滚动到页面顶部
+   * เลื่อนกลับไปด้านบนของหน้า
    */
   scrollToTop() {
     try {
@@ -1273,17 +1277,17 @@ class WeiboUI {
       if (contentContainer) {
         contentContainer.scrollTo({
           top: 0,
-          behavior: 'smooth', // 平滑滚动
+          behavior: 'smooth', // เลื่อนแบบนุ่มนวล
         });
-        console.log('[Weibo UI] 📜 已自动滚动到页面顶部');
+        console.log('[Weibo UI] 📜 เลื่อนกลับไปด้านบนของหน้าโดยอัตโนมัติแล้ว');
       }
     } catch (error) {
-      console.warn('[Weibo UI] 滚动到顶部失败:', error);
+      console.warn('[Weibo UI] เลื่อนกลับไปด้านบนล้มเหลว:', error);
     }
   }
 
   /**
-   * 获取当前聊天数据
+   * ดึงข้อมูลแชทปัจจุบัน
    */
   async getCurrentChatData() {
     if (window.mobileContextEditor) {
@@ -1291,12 +1295,12 @@ class WeiboUI {
     } else if (window.MobileContext) {
       return await window.MobileContext.loadChatToEditor();
     } else {
-      throw new Error('上下文编辑器未就绪');
+      throw new Error('ตัวแก้ไขบริบทยังไม่พร้อม');
     }
   }
 
   /**
-   * 显示空状态
+   * แสดงสถานะว่างเปล่า
    */
   showEmptyState() {
     const contentContainer = document.getElementById('weibo-content');
@@ -1312,7 +1316,7 @@ class WeiboUI {
   }
 
   /**
-   * 显示错误状态
+   * แสดงสถานะข้อผิดพลาด
    */
   showErrorState(message) {
     const contentContainer = document.getElementById('weibo-content');
@@ -1329,10 +1333,10 @@ class WeiboUI {
   }
 
   /**
-   * 绑定博文事件
+   * ผูกอีเวนต์ของโพสต์
    */
   bindPostEvents() {
-    // 绑定删除按钮事件
+    // ผูกอีเวนต์ปุ่มลบ
     document.querySelectorAll('.weibo-delete-btn').forEach(btn => {
       btn.addEventListener('click', e => {
         e.preventDefault();
@@ -1344,7 +1348,7 @@ class WeiboUI {
       });
     });
 
-    // 绑定点赞事件
+    // ผูกอีเวนต์การกดถูกใจ
     document.querySelectorAll('.like-btn').forEach(btn => {
       btn.addEventListener('click', e => {
         e.preventDefault();
@@ -1353,7 +1357,7 @@ class WeiboUI {
       });
     });
 
-    // 绑定评论点赞事件
+    // ผูกอีเวนต์การกดถูกใจของความคิดเห็น
     document.querySelectorAll('.comment-like-btn').forEach(btn => {
       btn.addEventListener('click', e => {
         e.preventDefault();
@@ -1362,7 +1366,7 @@ class WeiboUI {
       });
     });
 
-    // 绑定评论按钮事件
+    // ผูกอีเวนต์ปุ่มความคิดเห็น
     document.querySelectorAll('.comment-btn').forEach(btn => {
       btn.addEventListener('click', e => {
         e.preventDefault();
@@ -1371,7 +1375,7 @@ class WeiboUI {
       });
     });
 
-    // 绑定回复按钮事件
+    // ผูกอีเวนต์ปุ่มตอบกลับ
     document.querySelectorAll('.reply-btn').forEach(btn => {
       btn.addEventListener('click', e => {
         e.preventDefault();
@@ -1381,7 +1385,7 @@ class WeiboUI {
       });
     });
 
-    // 绑定发送回复事件
+    // ผูกอีเวนต์ส่งการตอบกลับ
     document.querySelectorAll('.send-reply-btn').forEach(btn => {
       btn.addEventListener('click', e => {
         e.preventDefault();
@@ -1389,7 +1393,7 @@ class WeiboUI {
       });
     });
 
-    // 绑定取消回复事件
+    // ผูกอีเวนต์ยกเลิกการตอบกลับ
     document.querySelectorAll('.cancel-reply-btn').forEach(btn => {
       btn.addEventListener('click', e => {
         e.preventDefault();
@@ -1397,7 +1401,7 @@ class WeiboUI {
       });
     });
 
-    // 绑定编辑用户名事件
+    // ผูกอีเวนต์แก้ไขชื่อผู้ใช้
     document.querySelectorAll('.edit-name-btn').forEach(btn => {
       btn.addEventListener('click', e => {
         e.preventDefault();
@@ -1407,10 +1411,10 @@ class WeiboUI {
   }
 
   /**
-   * 切换博文点赞
+   * สลับการกดถูกใจของโพสต์
    */
   togglePostLike(postId) {
-    // 如果没有点赞数据，从UI中获取原始点赞数
+    // หากไม่มีข้อมูลการกดถูกใจ ให้ดึงจำนวนถูกใจดั้งเดิมจาก UI
     if (!this.likesData[postId]) {
       const likeBtn = document.querySelector(`.like-btn[data-post-id="${postId}"]`);
       const originalLikes = likeBtn ? parseInt(likeBtn.querySelector('span').textContent) || 0 : 0;
@@ -1427,21 +1431,21 @@ class WeiboUI {
       likeData.isLiked = true;
     }
 
-    // 更新UI
+    // อัปเดต UI
     const likeBtn = document.querySelector(`.like-btn[data-post-id="${postId}"]`);
     if (likeBtn) {
       likeBtn.classList.toggle('liked', likeData.isLiked);
       likeBtn.querySelector('span').textContent = likeData.likes;
     }
 
-    console.log(`[Weibo UI] 博文 ${postId} 点赞状态: ${likeData.isLiked}, 点赞数: ${likeData.likes}`);
+    console.log(`[Weibo UI] โพสต์ ${postId} สถานะถูกใจ: ${likeData.isLiked}, จำนวนถูกใจ: ${likeData.likes}`);
   }
 
   /**
-   * 切换评论点赞
+   * สลับการกดถูกใจของความคิดเห็น
    */
   toggleCommentLike(commentId) {
-    // 如果没有点赞数据，从UI中获取原始点赞数
+    // หากไม่มีข้อมูลการกดถูกใจ ให้ดึงจำนวนถูกใจดั้งเดิมจาก UI
     if (!this.commentLikesData[commentId]) {
       const likeBtn = document.querySelector(`.comment-like-btn[data-comment-id="${commentId}"]`);
       const originalLikes = likeBtn ? parseInt(likeBtn.querySelector('span').textContent) || 0 : 0;
@@ -1458,26 +1462,26 @@ class WeiboUI {
       likeData.isLiked = true;
     }
 
-    // 更新UI
+    // อัปเดต UI
     const likeBtn = document.querySelector(`.comment-like-btn[data-comment-id="${commentId}"]`);
     if (likeBtn) {
       likeBtn.classList.toggle('liked', likeData.isLiked);
       likeBtn.querySelector('span').textContent = likeData.likes;
     }
 
-    console.log(`[Weibo UI] 评论 ${commentId} 点赞状态: ${likeData.isLiked}, 点赞数: ${likeData.likes}`);
+    console.log(`[Weibo UI] ความคิดเห็น ${commentId} สถานะถูกใจ: ${likeData.isLiked}, จำนวนถูกใจ: ${likeData.likes}`);
   }
 
   /**
-   * 显示回复输入框
+   * แสดงช่องตอบกลับ
    */
   showReplyInput(postId, commentId = null) {
-    // 隐藏其他回复输入框
+    // ซ่อนช่องตอบกลับอื่น
     document.querySelectorAll('.reply-input-container').forEach(container => {
       container.style.display = 'none';
     });
 
-    // 显示当前博文的回复输入框
+    // แสดงช่องตอบกลับของโพสต์ปัจจุบัน
     const postElement = document.querySelector(`.weibo-post[data-post-id="${postId}"]`);
     if (postElement) {
       const replyContainer = postElement.querySelector('.reply-input-container');
@@ -1485,7 +1489,7 @@ class WeiboUI {
         replyContainer.style.display = 'block';
         const textarea = replyContainer.querySelector('textarea');
 
-        // 如果是回复评论，设置占位符
+        // หากเป็นการตอบกลับความคิดเห็น ให้ตั้งค่าตัวยึดข้อความ
         if (commentId) {
           const commentElement = document.querySelector(`.comment-item[data-comment-id="${commentId}"]`);
           if (commentElement) {
@@ -1506,7 +1510,7 @@ class WeiboUI {
   }
 
   /**
-   * 隐藏回复输入框
+   * ซ่อนช่องตอบกลับ
    */
   hideReplyInput(btn) {
     const replyContainer = btn.closest('.reply-input-container');
@@ -1521,7 +1525,7 @@ class WeiboUI {
   }
 
   /**
-   * 发送回复
+   * ส่งการตอบกลับ
    */
   async sendReply(btn) {
     const replyContainer = btn.closest('.reply-input-container');
@@ -1541,54 +1545,54 @@ class WeiboUI {
     const replyTo = textarea.dataset.replyTo;
     const commentId = textarea.dataset.commentId;
 
-    // 立即清空输入框并隐藏，模拟发送成功的效果
-    const originalContent = content; // 保存内容用于错误恢复
+    // ล้างช่องป้อนและซ่อนทันที จำลองเอฟเฟกต์การส่งสำเร็จ
+    const originalContent = content; // เก็บเนื้อหาไว้สำหรับการกู้คืนเมื่อเกิดข้อผิดพลาด
     textarea.value = '';
     this.hideReplyInput(btn);
 
-    // 显示发送中通知
+    // แสดงการแจ้งเตือนกำลังส่ง
     this.showNotification('กำลังส่งการตอบกลับ...', 'loading');
 
     try {
-      // 构建回复格式
+      // สร้างรูปแบบการตอบกลับ
       let replyFormat;
       if (replyTo && commentId) {
-        // 回复评论
+        // ตอบกลับความคิดเห็น
         replyFormat = `[回复|${this.getCurrentUsername()}|${postId}|回复${replyTo}：${originalContent}]`;
       } else {
-        // 回复博文
+        // ตอบกลับโพสต์
         replyFormat = `[评论|${this.getCurrentUsername()}|${postId}|${originalContent}]`;
       }
 
-      console.log('[Weibo UI] 发送回复:', replyFormat);
+      console.log('[Weibo UI] ส่งการตอบกลับ:', replyFormat);
 
-      // 调用微博管理器发送回复
+      // เรียกตัวจัดการ Weibo เพื่อส่งการตอบกลับ
       if (window.weiboManager && window.weiboManager.sendReplyToAPI) {
         await window.weiboManager.sendReplyToAPI(replyFormat);
 
-        // 显示成功通知
+        // แสดงการแจ้งเตือนสำเร็จ
         this.showNotification('ตอบกลับสำเร็จ', 'success');
 
-        // 刷新微博列表
+        // รีเฟรชรายการ Weibo
         setTimeout(() => {
           this.refreshWeiboList();
         }, 1000);
       } else {
-        console.error('[Weibo UI] 微博管理器未找到或方法不存在');
+        console.error('[Weibo UI] ไม่พบตัวจัดการ Weibo หรือเมธอดไม่มีอยู่');
         this.showNotification('ตอบกลับล้มเหลว: ตัวจัดการ Weibo ยังไม่พร้อม', 'error');
-        // 恢复输入内容
+        // กู้คืนเนื้อหาที่ป้อน
         this.restoreReplyInput(postId, originalContent, replyTo, commentId);
       }
     } catch (error) {
-      console.error('[Weibo UI] 发送回复失败:', error);
+      console.error('[Weibo UI] ส่งการตอบกลับล้มเหลว:', error);
       this.showNotification('ตอบกลับล้มเหลว: ' + error.message, 'error');
-      // 恢复输入内容
+      // กู้คืนเนื้อหาที่ป้อน
       this.restoreReplyInput(postId, originalContent, replyTo, commentId);
     }
   }
 
   /**
-   * 恢复回复输入框内容（发送失败时使用）
+   * กู้คืนเนื้อหาในช่องตอบกลับ (ใช้เมื่อส่งล้มเหลว)
    */
   restoreReplyInput(postId, content, replyTo = null, commentId = null) {
     const postElement = document.querySelector(`.weibo-post[data-post-id="${postId}"]`);
@@ -1615,20 +1619,20 @@ class WeiboUI {
   }
 
   /**
-   * 显示通知
+   * แสดงการแจ้งเตือน
    */
   showNotification(message, type = 'success') {
-    // 移除现有通知
+    // ลบการแจ้งเตือนที่มีอยู่
     const existingNotification = document.querySelector('.reply-notification');
     if (existingNotification) {
       existingNotification.remove();
     }
 
-    // 创建通知元素
+    // สร้าง element การแจ้งเตือน
     const notification = document.createElement('div');
     notification.className = `reply-notification ${type}`;
 
-    // 根据类型设置图标
+    // ตั้งค่าไอคอนตามประเภท
     let icon = '';
     switch (type) {
       case 'success':
@@ -1646,15 +1650,15 @@ class WeiboUI {
 
     notification.innerHTML = `${icon}${message}`;
 
-    // 添加到页面
+    // เพิ่มไปยังหน้า
     document.body.appendChild(notification);
 
-    // 显示动画
+    // อนิเมชันแสดงผล
     setTimeout(() => {
       notification.classList.add('show');
     }, 100);
 
-    // 自动隐藏（loading类型不自动隐藏）
+    // ซ่อนอัตโนมัติ (ประเภท loading ไม่ซ่อนอัตโนมัติ)
     if (type !== 'loading') {
       setTimeout(() => {
         notification.classList.remove('show');
@@ -1668,36 +1672,36 @@ class WeiboUI {
   }
 
   /**
-   * 更新用户名显示（账户切换时调用）
+   * อัปเดตการแสดงชื่อผู้ใช้ (เรียกเมื่อสลับบัญชี)
    */
   updateUsernameDisplay() {
-    // 更新用户页面中的用户名显示
+    // อัปเดตการแสดงชื่อผู้ใช้ในหน้าผู้ใช้
     const profileNameElement = document.querySelector('.profile-name');
     if (profileNameElement) {
       const newUsername = this.getCurrentUsername();
       profileNameElement.textContent = newUsername;
-      console.log('[Weibo UI] 用户名显示已更新:', newUsername);
+      console.log('[Weibo UI] อัปเดตการแสดงชื่อผู้ใช้แล้ว:', newUsername);
 
-      // 同时更新头像显示
+      // อัปเดตการแสดงอวาตาร์ด้วย
       const userAvatarLarge = document.querySelector('.user-avatar-large');
       if (userAvatarLarge) {
         userAvatarLarge.innerHTML = this.generateAvatarHTML(newUsername, 'large');
       }
 
-      // 更新账户类型显示
+      // อัปเดตการแสดงประเภทบัญชี
       const accountTypeElement = document.querySelector('.account-type');
       if (accountTypeElement && window.weiboManager) {
         const accountType = window.weiboManager.currentAccount.isMainAccount ? '大号' : '小号';
         accountTypeElement.textContent = accountType;
       }
 
-      // 更新粉丝数显示（如果在用户页面）
+      // อัปเดตการแสดงจำนวนแฟน (หากอยู่ในหน้าผู้ใช้)
       this.updateFansDisplay();
     }
   }
 
   /**
-   * 更新粉丝数显示（账户切换时调用）
+   * อัปเดตการแสดงจำนวนแฟน (เรียกเมื่อสลับบัญชี)
    */
   updateFansDisplay() {
     const fansNumberElement = document.querySelector('.stat-item .stat-number');
@@ -1709,13 +1713,13 @@ class WeiboUI {
 
       if (currentFans) {
         fansNumberElement.textContent = currentFans;
-        console.log('[Weibo UI] 粉丝数显示已更新:', currentFans, '(', isMainAccount ? '大号' : '小号', ')');
+        console.log('[Weibo UI] อัปเดตการแสดงจำนวนแฟนแล้ว:', currentFans, '(', isMainAccount ? '大号' : '小号', ')');
       }
     }
   }
 
   /**
-   * 显示编辑用户名对话框
+   * แสดงกล่องโต้ตอบแก้ไขชื่อผู้ใช้
    */
   showEditNameDialog() {
     const currentName = this.getCurrentUsername();
@@ -1728,65 +1732,65 @@ class WeiboUI {
   }
 
   /**
-   * 更新用户名
+   * อัปเดตชื่อผู้ใช้
    */
   updateUsername(newName) {
     try {
       if (window.weiboManager && window.weiboManager.setUsername) {
         window.weiboManager.setUsername(newName);
 
-        // 立即更新DOM中的用户名显示
+        // อัปเดตการแสดงชื่อผู้ใช้ใน DOM ทันที
         const profileNameElement = document.querySelector('.profile-name');
         if (profileNameElement) {
           profileNameElement.textContent = newName;
         }
 
-        // 更新头像显示
+        // อัปเดตการแสดงอวาตาร์
         const userAvatarElements = document.querySelectorAll('.user-avatar-large .author-avatar');
         userAvatarElements.forEach(avatar => {
           avatar.textContent = newName[0] || '?';
           avatar.style.background = this.getAvatarColor(newName);
         });
 
-        // 刷新用户页面
+        // รีเฟรชหน้าผู้ใช้
         if (this.currentPage === 'user') {
           this.refreshWeiboList();
         }
 
-        console.log('[Weibo UI] 用户名已更新:', newName);
+        console.log('[Weibo UI] อัปเดตชื่อผู้ใช้แล้ว:', newName);
       } else {
-        throw new Error('微博管理器未就绪');
+        throw new Error('ตัวจัดการ Weibo ยังไม่พร้อม');
       }
     } catch (error) {
-      console.error('[Weibo UI] 更新用户名失败:', error);
+      console.error('[Weibo UI] อัปเดตชื่อผู้ใช้ล้มเหลว:', error);
       alert(`อัปเดตชื่อผู้ใช้ล้มเหลว: ${error.message}`);
     }
   }
 
   /**
-   * 设置当前页面
+   * ตั้งค่าหน้าปัจจุบัน
    */
   setCurrentPage(page) {
     if (['hot', 'ranking', 'user'].includes(page)) {
       this.currentPage = page;
 
-      // 更新微博管理器的当前页面
+      // อัปเดตหน้าปัจจุบันของตัวจัดการ Weibo
       if (window.weiboManager && window.weiboManager.setCurrentPage) {
         window.weiboManager.setCurrentPage(page);
       }
 
-      console.log('[Weibo UI] 当前页面已设置:', page);
+      console.log('[Weibo UI] ตั้งค่าหน้าปัจจุบันแล้ว:', page);
     }
   }
 
   /**
-   * 删除微博及其所有评论和回复
+   * ลบ Weibo รวมถึงความคิดเห็นและการตอบกลับทั้งหมด
    */
   async deletePost(postId) {
-    console.log('[Weibo UI] 开始删除微博:', postId);
+    console.log('[Weibo UI] เริ่มลบ Weibo:', postId);
 
     try {
-      // 显示确认对话框
+      // แสดงกล่องโต้ตอบยืนยัน
       if (
         !confirm(
           `คุณแน่ใจหรือไม่ว่าต้องการลบ Weibo ID: ${postId} พร้อมความคิดเห็นทั้งหมด? การกระทำนี้ไม่สามารถย้อนกลับได้`,
@@ -1795,87 +1799,87 @@ class WeiboUI {
         return;
       }
 
-      // 获取当前聊天数据
+      // ดึงข้อมูลแชทปัจจุบัน
       const chatData = await this.getCurrentChatData();
       if (!chatData || !chatData.messages || chatData.messages.length === 0) {
-        throw new Error('无聊天数据');
+        throw new Error('ไม่มีข้อมูลแชท');
       }
 
-      // 获取第一条消息（包含微博内容）
+      // ดึงข้อความแรก (มีเนื้อหา Weibo)
       const firstMessage = chatData.messages[0];
       if (!firstMessage || !firstMessage.mes) {
-        throw new Error('无法找到微博内容');
+        throw new Error('ไม่พบเนื้อหา Weibo');
       }
 
       let content = firstMessage.mes;
 
-      // 提取微博标记之间的内容
+      // ดึงเนื้อหาระหว่างเครื่องหมาย Weibo
       const weiboRegex = /<!-- WEIBO_CONTENT_START -->([\s\S]*?)<!-- WEIBO_CONTENT_END -->/;
       const match = content.match(weiboRegex);
 
       if (!match) {
-        throw new Error('未找到微博内容标记');
+        throw new Error('ไม่พบเครื่องหมายเนื้อหา Weibo');
       }
 
       let weiboContent = match[1];
 
-      // 删除包含指定微博ID的所有格式
-      // 删除主博文: [博文|发博人昵称|博文id|博文内容]
+      // ลบรูปแบบทั้งหมดที่มีรหัส Weibo ที่ระบุ
+      // ลบโพสต์หลัก: [博文|ชื่อผู้โพสต์|รหัสโพสต์|เนื้อหาโพสต์]
       const postRegex = new RegExp(`\\[博文\\|[^|]+\\|${postId}\\|[^\\]]+\\]`, 'g');
       weiboContent = weiboContent.replace(postRegex, '');
 
-      // 删除评论: [评论|评论人昵称|博文id|评论内容]
+      // ลบความคิดเห็น: [评论|ชื่อผู้แสดงความคิดเห็น|รหัสโพสต์|เนื้อหาความคิดเห็น]
       const commentRegex = new RegExp(`\\[评论\\|[^|]+\\|${postId}\\|[^\\]]+\\]`, 'g');
       weiboContent = weiboContent.replace(commentRegex, '');
 
-      // 删除回复: [回复|回复人昵称|博文id|回复内容]
+      // ลบการตอบกลับ: [回复|ชื่อผู้ตอบ|รหัสโพสต์|เนื้อหาการตอบ]
       const replyRegex = new RegExp(`\\[回复\\|[^|]+\\|${postId}\\|[^\\]]+\\]`, 'g');
       weiboContent = weiboContent.replace(replyRegex, '');
 
-      // 清理多余的空行
+      // ล้างบรรทัดว่างที่เกิน
       weiboContent = weiboContent.replace(/\n{3,}/g, '\n\n');
 
-      // 重新构建消息内容
+      // สร้างเนื้อหาข้อความใหม่
       const newContent = content.replace(
         /<!-- WEIBO_CONTENT_START -->[\s\S]*?<!-- WEIBO_CONTENT_END -->/,
         `<!-- WEIBO_CONTENT_START -->${weiboContent}<!-- WEIBO_CONTENT_END -->`,
       );
 
-      // 更新消息内容
+      // อัปเดตเนื้อหาข้อความ
       await window.mobileContextEditor.modifyMessage(0, newContent);
 
-      console.log('[Weibo UI] ✅ 微博删除成功:', postId);
+      console.log('[Weibo UI] ✅ ลบ Weibo สำเร็จ:', postId);
 
-      // 显示成功提示
+      // แสดงคำแนะนำสำเร็จ
       this.showNotification('🗑️ ลบ Weibo แล้ว', 'success');
 
-      // 刷新微博内容
+      // รีเฟรชเนื้อหา Weibo
       setTimeout(() => {
         this.refreshWeiboList();
       }, 500);
     } catch (error) {
-      console.error('[Weibo UI] 删除微博失败:', error);
+      console.error('[Weibo UI] ลบ Weibo ล้มเหลว:', error);
       this.showNotification('❌ ลบล้มเหลว: ' + error.message, 'error');
     }
   }
 }
 
-// 创建全局实例
+// สร้างอินสแตนซ์ global
 if (typeof window !== 'undefined') {
   window.weiboUI = new WeiboUI();
-  console.log('[Weibo UI] ✅ 微博UI管理器已创建');
+  console.log('[Weibo UI] ✅ สร้างตัวจัดการ UI Weibo แล้ว');
 }
 
 /**
- * 获取微博应用内容（供手机框架调用）
+ * ดึงเนื้อหาแอป Weibo (สำหรับเฟรมเวิร์กมือถือเรียก)
  */
 function getWeiboAppContent() {
   try {
-    console.log('[Weibo UI] 生成微博应用内容...');
+    console.log('[Weibo UI] กำลังสร้างเนื้อหาแอป Weibo...');
 
     return `
       <div class="weibo-app">
-        <!-- 页面切换栏 -->
+        <!-- แถบสลับหน้า -->
         <div class="weibo-tabs">
           <div class="tab-item active" data-page="hot">
             <i class="fas fa-fire"></i>
@@ -1891,7 +1895,7 @@ function getWeiboAppContent() {
           </div>
         </div>
 
-        <!-- 微博内容区域 -->
+        <!-- พื้นที่เนื้อหา Weibo -->
         <div class="weibo-content" id="weibo-content">
           <div class="loading-state">
             <i class="fas fa-spinner fa-spin"></i>
@@ -1901,7 +1905,7 @@ function getWeiboAppContent() {
       </div>
     `;
   } catch (error) {
-    console.error('[Weibo UI] 生成微博应用内容失败:', error);
+    console.error('[Weibo UI] สร้างเนื้อหาแอป Weibo ล้มเหลว:', error);
     return `
       <div class="error-placeholder">
         <div class="error-icon">❌</div>
@@ -1914,68 +1918,68 @@ function getWeiboAppContent() {
 }
 
 /**
- * 绑定微博事件（供手机框架调用）
+ * ผูกอีเวนต์ Weibo (สำหรับเฟรมเวิร์กมือถือเรียก)
  */
 function bindWeiboEvents() {
   try {
-    console.log('[Weibo UI] 绑定微博事件...');
+    console.log('[Weibo UI] กำลังผูกอีเวนต์ Weibo...');
 
-    // 绑定页面切换事件
+    // ผูกอีเวนต์การสลับหน้า
     document.querySelectorAll('.weibo-tabs .tab-item').forEach(tab => {
       tab.addEventListener('click', e => {
         e.preventDefault();
         const page = tab.dataset.page;
 
-        // 更新选中状态
+        // อัปเดตสถานะที่เลือก
         document.querySelectorAll('.weibo-tabs .tab-item').forEach(t => t.classList.remove('active'));
         tab.classList.add('active');
 
-        // 切换页面
+        // สลับหน้า
         if (window.weiboUI) {
           window.weiboUI.setCurrentPage(page);
           window.weiboUI.refreshWeiboList();
         }
 
-        console.log('[Weibo UI] 切换到页面:', page);
+        console.log('[Weibo UI] สลับไปยังหน้า:', page);
       });
     });
 
-    // 初始化微博内容
+    // เริ่มต้นเนื้อหา Weibo
     if (window.weiboUI) {
-      // 设置默认页面
+      // ตั้งค่าหน้าเริ่มต้น
       window.weiboUI.setCurrentPage('hot');
 
-      // 延迟加载内容，确保DOM完全渲染
+      // หน่วงเวลาในการโหลดเนื้อหา เพื่อให้แน่ใจว่า DOM เรนเดอร์ครบ
       setTimeout(() => {
         window.weiboUI.refreshWeiboList();
       }, 100);
     }
 
-    console.log('[Weibo UI] ✅ 微博事件绑定完成');
+    console.log('[Weibo UI] ✅ ผูกอีเวนต์ Weibo เสร็จสมบูรณ์');
   } catch (error) {
-    console.error('[Weibo UI] 绑定微博事件失败:', error);
+    console.error('[Weibo UI] ผูกอีเวนต์ Weibo ล้มเหลว:', error);
   }
 }
 
-// 确保全局函数可用
+// ตรวจสอบให้แน่ใจว่าฟังก์ชัน global ใช้งานได้
 if (typeof window !== 'undefined') {
   window.getWeiboAppContent = getWeiboAppContent;
   window.bindWeiboEvents = bindWeiboEvents;
 
-  // 🔥 添加评论布局修复的全局函数
+  // 🔥 เพิ่มฟังก์ชัน global สำหรับแก้ไขเลย์เอาต์ของความคิดเห็น
   window.fixWeiboCommentLayout = function () {
-    console.log('🔧 [全局函数] 修复微博评论布局...');
+    console.log('🔧 [ฟังก์ชัน global] กำลังแก้ไขเลย์เอาต์ความคิดเห็น Weibo...');
     if (window.WeiboUI && window.WeiboUI.manualFixCommentLayout) {
       return window.WeiboUI.manualFixCommentLayout();
     } else {
-      console.error('❌ WeiboUI 类未找到，无法执行修复');
+      console.error('❌ ไม่พบคลาส WeiboUI ไม่สามารถดำเนินการแก้ไขได้');
       return { total: 0, fixed: 0 };
     }
   };
 
-  // 🔥 添加评论布局检查的全局函数
+  // 🔥 เพิ่มฟังก์ชัน global สำหรับตรวจสอบเลย์เอาต์ของความคิดเห็น
   window.checkWeiboCommentLayout = function () {
-    console.log('🔍 [全局函数] 检查微博评论布局状态...');
+    console.log('🔍 [ฟังก์ชัน global] กำลังตรวจสอบสถานะเลย์เอาต์ความคิดเห็น Weibo...');
     const commentItems = document.querySelectorAll('.weibo-app .comment-item');
     let issues = [];
 
@@ -1987,7 +1991,7 @@ if (typeof window !== 'undefined') {
         const authorComputed = window.getComputedStyle(author);
         if (authorComputed.flexDirection !== 'row' || authorComputed.display !== 'flex') {
           issues.push(
-            `评论 ${index + 1}: 作者区域布局异常 (display: ${authorComputed.display}, flex-direction: ${
+            `ความคิดเห็น ${index + 1}: เลย์เอาต์ส่วนผู้เขียนผิดปกติ (display: ${authorComputed.display}, flex-direction: ${
               authorComputed.flexDirection
             })`,
           );
@@ -1998,7 +2002,7 @@ if (typeof window !== 'undefined') {
         const infoComputed = window.getComputedStyle(info);
         if (infoComputed.flexDirection !== 'column' || infoComputed.display !== 'flex') {
           issues.push(
-            `评论 ${index + 1}: 信息区域布局异常 (display: ${infoComputed.display}, flex-direction: ${
+            `ความคิดเห็น ${index + 1}: เลย์เอาต์ส่วนข้อมูลผิดปกติ (display: ${infoComputed.display}, flex-direction: ${
               infoComputed.flexDirection
             })`,
           );
@@ -2006,20 +2010,20 @@ if (typeof window !== 'undefined') {
       }
     });
 
-    console.log(`📊 检查结果: 共 ${commentItems.length} 个评论，发现 ${issues.length} 个布局问题`);
+    console.log(`📊 ผลการตรวจสอบ: รวม ${commentItems.length} ความคิดเห็น พบ ${issues.length} ปัญหาเลย์เอาต์`);
     if (issues.length > 0) {
-      console.warn('⚠️ 发现的问题:');
+      console.warn('⚠️ ปัญหาที่พบ:');
       issues.forEach(issue => console.warn(`  - ${issue}`));
-      console.log('💡 建议执行: fixWeiboCommentLayout() 来修复这些问题');
+      console.log('💡 แนะนำให้รัน: fixWeiboCommentLayout() เพื่อแก้ไขปัญหาเหล่านี้');
     } else {
-      console.log('✅ 所有评论布局正常');
+      console.log('✅ เลย์เอาต์ความคิดเห็นทั้งหมดปกติ');
     }
 
     return { total: commentItems.length, issues: issues.length, details: issues };
   };
 
-  console.log('🔧 [Weibo UI] 评论布局修复工具已加载');
-  console.log('💡 可用命令:');
-  console.log('  - fixWeiboCommentLayout() : 修复评论布局问题');
-  console.log('  - checkWeiboCommentLayout() : 检查评论布局状态');
+  console.log('🔧 [Weibo UI] โหลดเครื่องมือแก้ไขเลย์เอาต์ความคิดเห็นแล้ว');
+  console.log('💡 คำสั่งที่ใช้ได้:');
+  console.log('  - fixWeiboCommentLayout() : แก้ไขปัญหาเลย์เอาต์ความคิดเห็น');
+  console.log('  - checkWeiboCommentLayout() : ตรวจสอบสถานะเลย์เอาต์ความคิดเห็น');
 }

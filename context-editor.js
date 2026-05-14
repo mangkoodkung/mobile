@@ -1,14 +1,14 @@
 // ==Mobile Context Editor==
 // @name         Mobile Context Editor
 // @version      2.0.0
-// @description  SillyTavern移动端上下文编辑器 - 使用原生API
+// @description  ตัวแก้ไขบริบทบนมือถือของ SillyTavern - ใช้ API ดั้งเดิม
 // @author       cd
 // @license      MIT
 
 /**
- * SillyTavern 移动端上下文编辑器 v2.2 - 性能优化版
- * 使用SillyTavern.getContext() API和数据结构
- * 新增：分页加载、虚拟滚动、懒加载等性能优化
+ * ตัวแก้ไขบริบทบนมือถือของ SillyTavern v2.2 - เวอร์ชันปรับแต่งประสิทธิภาพ
+ * ใช้ SillyTavern.getContext() API และโครงสร้างข้อมูล
+ * เพิ่มใหม่: โหลดแบบแบ่งหน้า, virtual scroll, lazy load และการปรับแต่งประสิทธิภาพอื่น ๆ
  */
 class MobileContextEditor {
   constructor() {
@@ -16,46 +16,46 @@ class MobileContextEditor {
     this.currentChatData = null;
     this.isModified = false;
 
-    // 性能优化相关配置
-    this.pageSize = 20; // 每页显示的消息数量
-    this.currentPage = 0; // 当前页码
-    this.totalPages = 0; // 总页数
-    this.messageCache = new Map(); // 消息缓存
-    this.renderCache = new Map(); // 渲染缓存
-    this.isLoading = false; // 加载状态
-    this.virtualScrollEnabled = true; // 虚拟滚动开关
+    // การตั้งค่าที่เกี่ยวกับการปรับแต่งประสิทธิภาพ
+    this.pageSize = 20; // จำนวนข้อความที่แสดงต่อหน้า
+    this.currentPage = 0; // หมายเลขหน้าปัจจุบัน
+    this.totalPages = 0; // จำนวนหน้าทั้งหมด
+    this.messageCache = new Map(); // แคชข้อความ
+    this.renderCache = new Map(); // แคชการเรนเดอร์
+    this.isLoading = false; // สถานะการโหลด
+    this.virtualScrollEnabled = true; // สวิตช์ virtual scroll
 
-    this.log('info', 'MobileContextEditor v2.2 初始化开始 - 性能优化版');
+    this.log('info', 'MobileContextEditor v2.2 เริ่มต้นการเริ่มต้น - เวอร์ชันปรับแต่งประสิทธิภาพ');
 
-    // 立即初始化
+    // เริ่มต้นทันที
     this.initialize();
   }
 
   /**
-   * 等待SillyTavern完全加载 - 监听APP_READY事件
+   * รอให้ SillyTavern โหลดเสร็จสมบูรณ์ - ฟังเหตุการณ์ APP_READY
    */
   async waitForSillyTavern() {
-    // 检查是否已经有APP_READY事件
+    // ตรวจสอบว่ามีเหตุการณ์ APP_READY แล้วหรือไม่
     if (window.eventSource && window.event_types) {
-      console.log('[Mobile Context Editor] 监听APP_READY事件...');
+      console.log('[Mobile Context Editor] กำลังฟังเหตุการณ์ APP_READY...');
       window.eventSource.on(window.event_types.APP_READY, () => {
-        console.log('[Mobile Context Editor] ✅ APP_READY事件触发，开始初始化');
+        console.log('[Mobile Context Editor] ✅ เหตุการณ์ APP_READY ทำงาน เริ่มต้นการเริ่มต้น');
         this.initialize();
       });
     } else {
-      // 备用方案：等待事件系统加载
+      // ทางเลือกสำรอง: รอให้ระบบเหตุการณ์โหลด
       const checkInterval = setInterval(() => {
         if (window.eventSource && window.event_types) {
           clearInterval(checkInterval);
-          console.log('[Mobile Context Editor] 事件系统已加载，监听APP_READY...');
+          console.log('[Mobile Context Editor] ระบบเหตุการณ์โหลดแล้ว กำลังฟัง APP_READY...');
           window.eventSource.on(window.event_types.APP_READY, () => {
-            console.log('[Mobile Context Editor] ✅ APP_READY事件触发，开始初始化');
+            console.log('[Mobile Context Editor] ✅ เหตุการณ์ APP_READY ทำงาน เริ่มต้นการเริ่มต้น');
             this.initialize();
           });
         } else if (this.isSillyTavernReady()) {
-          // 如果SillyTavern已经完全加载，直接初始化
+          // หาก SillyTavern โหลดสมบูรณ์แล้ว ให้เริ่มต้นทันที
           clearInterval(checkInterval);
-          console.log('[Mobile Context Editor] ✅ SillyTavern已就绪，直接初始化');
+          console.log('[Mobile Context Editor] ✅ SillyTavern พร้อมแล้ว เริ่มต้นทันที');
           this.initialize();
         }
       }, 500);
@@ -63,17 +63,17 @@ class MobileContextEditor {
   }
 
   /**
-   * 检查SillyTavern是否准备就绪
+   * ตรวจสอบว่า SillyTavern พร้อมใช้งานหรือไม่
    */
   isSillyTavernReady() {
     try {
-      // 检查新的SillyTavern API
+      // ตรวจสอบ SillyTavern API ใหม่
       if (window.SillyTavern && typeof window.SillyTavern.getContext === 'function') {
         const context = window.SillyTavern.getContext();
         return !!(context && context.chat && Array.isArray(context.chat));
       }
 
-      // 降级检查旧的全局变量
+      // ลดระดับลงไปตรวจสอบตัวแปร global เดิม
       return !!(window.SillyTavern && window.chat && window.characters && window.this_chid !== undefined);
     } catch (error) {
       return false;
@@ -81,52 +81,52 @@ class MobileContextEditor {
   }
 
   /**
-   * 初始化编辑器
+   * เริ่มต้นตัวแก้ไข
    */
   initialize() {
     try {
       this.initialized = true;
       this.setupUI();
       this.bindEvents();
-      console.log('[Mobile Context Editor] v2.0 初始化完成 - 使用原生API');
+      console.log('[Mobile Context Editor] v2.0 เริ่มต้นเสร็จสิ้น - ใช้ API ดั้งเดิม');
     } catch (error) {
-      console.error('[Mobile Context Editor] 初始化失败:', error);
+      console.error('[Mobile Context Editor] เริ่มต้นล้มเหลว:', error);
     }
   }
 
   /**
-   * 强制初始化 - 即使SillyTavern未完全就绪也创建界面
+   * เริ่มต้นแบบบังคับ - สร้างอินเทอร์เฟซแม้ว่า SillyTavern จะยังไม่พร้อมสมบูรณ์
    */
   forceInitialize() {
     try {
-      console.log('[Mobile Context Editor] 🔧 强制初始化编辑器界面');
+      console.log('[Mobile Context Editor] 🔧 เริ่มต้นอินเทอร์เฟซตัวแก้ไขแบบบังคับ');
       this.setupUI();
       this.bindEvents();
       this.showEditor();
       return true;
     } catch (error) {
-      console.error('[Mobile Context Editor] 强制初始化失败:', error);
+      console.error('[Mobile Context Editor] เริ่มต้นแบบบังคับล้มเหลว:', error);
       return false;
     }
   }
 
   /**
-   * 获取当前聊天数据 - 优化版本，支持分页和缓存
+   * ดึงข้อมูลแชทปัจจุบัน - เวอร์ชันที่ปรับแต่งแล้ว รองรับการแบ่งหน้าและแคช
    */
   getCurrentChatData(useCache = true) {
     try {
       if (!this.isSillyTavernReady()) {
-        throw new Error('SillyTavern 未准备就绪');
+        throw new Error('SillyTavern ยังไม่พร้อมใช้งาน');
       }
 
-      // 如果使用缓存且缓存存在，直接返回
+      // หากเปิดใช้แคชและมีแคชอยู่แล้ว ส่งคืนทันที
       if (useCache && this.currentChatData) {
         return this.currentChatData;
       }
 
       let chatData;
 
-      // 优先使用新的SillyTavern API
+      // ใช้ SillyTavern API ใหม่เป็นอันดับแรก
       if (window.SillyTavern && typeof window.SillyTavern.getContext === 'function') {
         const context = window.SillyTavern.getContext();
         const currentCharacter = context.characters[context.characterId];
@@ -138,17 +138,17 @@ class MobileContextEditor {
             create_date: context.chatCreateDate || Date.now(),
             chat_metadata: context.chatMetadata || {},
           },
-          messages: context.chat, // 直接引用SillyTavern的chat数组
+          messages: context.chat, // อ้างอิง chat array ของ SillyTavern โดยตรง
           fileName: currentCharacter?.chat,
           characterName: currentCharacter?.name || 'Assistant',
           userName: context.name1 || 'User',
           avatarUrl: currentCharacter?.avatar,
         };
       } else {
-        // 降级使用旧的全局变量
+        // ลดระดับลงไปใช้ตัวแปร global เดิม
         const character = window.characters[window.this_chid];
         if (!character) {
-          throw new Error('未找到当前角色');
+          throw new Error('ไม่พบตัวละครปัจจุบัน');
         }
 
         chatData = {
@@ -168,24 +168,24 @@ class MobileContextEditor {
 
       this.currentChatData = chatData;
 
-      // 计算分页信息
+      // คำนวณข้อมูลการแบ่งหน้า
       this.totalPages = Math.ceil(chatData.messages.length / this.pageSize);
-      this.currentPage = Math.max(0, this.totalPages - 1); // 默认显示最后一页
+      this.currentPage = Math.max(0, this.totalPages - 1); // แสดงหน้าสุดท้ายเป็นค่าเริ่มต้น
 
       this.log(
         'info',
-        `加载聊天数据成功: ${chatData.messages.length} 条消息 (${chatData.characterName}), 分为 ${this.totalPages} 页`,
+        `โหลดข้อมูลแชทสำเร็จ: ${chatData.messages.length} ข้อความ (${chatData.characterName}), แบ่งเป็น ${this.totalPages} หน้า`,
       );
 
       return chatData;
     } catch (error) {
-      this.log('error', '获取聊天数据失败', error);
+      this.log('error', 'ดึงข้อมูลแชทล้มเหลว', error);
       throw error;
     }
   }
 
   /**
-   * 获取指定页的消息数据
+   * ดึงข้อมูลข้อความของหน้าที่ระบุ
    */
   getPageMessages(pageIndex = this.currentPage) {
     if (!this.currentChatData) {
@@ -198,33 +198,33 @@ class MobileContextEditor {
 
     return messages.slice(startIndex, endIndex).map((msg, index) => ({
       ...msg,
-      globalIndex: startIndex + index, // 全局索引
-      pageIndex: index, // 页内索引
+      globalIndex: startIndex + index, // ดัชนีรวมทั้งหมด
+      pageIndex: index, // ดัชนีภายในหน้า
     }));
   }
 
   /**
-   * 清除缓存
+   * ล้างแคช
    */
   clearCache() {
     this.messageCache.clear();
     this.renderCache.clear();
     this.currentChatData = null;
-    this.log('info', '缓存已清除');
+    this.log('info', 'ล้างแคชแล้ว');
   }
 
   /**
-   * 使用服务端分页API加载聊天数据 - 适用于大文件
+   * ใช้ API แบ่งหน้าฝั่งเซิร์ฟเวอร์เพื่อโหลดข้อมูลแชท - เหมาะกับไฟล์ขนาดใหญ่
    */
   async loadChatDataWithPagination(page = 0, pageSize = this.pageSize, searchQuery = '') {
     try {
       if (!this.isSillyTavernReady()) {
-        throw new Error('SillyTavern未准备就绪');
+        throw new Error('SillyTavern ยังไม่พร้อมใช้งาน');
       }
 
       let character, avatarUrl, fileName;
 
-      // 获取当前角色信息
+      // ดึงข้อมูลตัวละครปัจจุบัน
       if (window.SillyTavern && typeof window.SillyTavern.getContext === 'function') {
         const context = window.SillyTavern.getContext();
         character = context.characters[context.characterId];
@@ -237,10 +237,10 @@ class MobileContextEditor {
       }
 
       if (!character || !fileName) {
-        throw new Error('未找到当前角色或聊天文件');
+        throw new Error('ไม่พบตัวละครปัจจุบันหรือไฟล์แชท');
       }
 
-      this.log('info', `使用分页API加载聊天数据: 第${page + 1}页, 每页${pageSize}条`);
+      this.log('info', `ใช้ API แบ่งหน้าโหลดข้อมูลแชท: หน้า ${page + 1}, ${pageSize} ข้อความต่อหน้า`);
 
       const response = await fetch('/api/chats/get-paginated', {
         method: 'POST',
@@ -257,19 +257,19 @@ class MobileContextEditor {
       });
 
       if (!response.ok) {
-        throw new Error(`服务器错误: ${response.status} ${response.statusText}`);
+        throw new Error(`เซิร์ฟเวอร์ผิดพลาด: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
 
-      // 更新分页信息
+      // อัปเดตข้อมูลการแบ่งหน้า
       this.currentPage = data.currentPage;
       this.totalPages = data.totalPages;
       this.pageSize = data.pageSize;
 
       this.log(
         'info',
-        `分页数据加载成功: ${data.messages.length}条消息, 总计${data.totalCount}条, 文件大小${data.fileSize}`,
+        `โหลดข้อมูลแบ่งหน้าสำเร็จ: ${data.messages.length} ข้อความ, รวมทั้งหมด ${data.totalCount} ข้อความ, ขนาดไฟล์ ${data.fileSize}`,
       );
 
       return {
@@ -284,59 +284,59 @@ class MobileContextEditor {
         userName: window.name1 || 'User',
       };
     } catch (error) {
-      this.log('error', '分页加载聊天数据失败', error);
+      this.log('error', 'โหลดข้อมูลแชทแบบแบ่งหน้าล้มเหลว', error);
       throw error;
     }
   }
 
   /**
-   * 智能选择加载方式 - 根据文件大小决定使用内存加载还是分页加载
+   * เลือกวิธีโหลดอัจฉริยะ - ตัดสินใจระหว่างโหลดในหน่วยความจำหรือแบบแบ่งหน้าตามขนาดไฟล์
    */
   async smartLoadChatData() {
     try {
-      // 首先尝试获取基本的聊天数据来判断大小
+      // ลองดึงข้อมูลแชทพื้นฐานก่อนเพื่อประเมินขนาด
       const basicData = this.getCurrentChatData(false);
       const messageCount = basicData.messages.length;
 
-      // 如果消息数量超过阈值，使用分页API
-      const LARGE_CHAT_THRESHOLD = 500; // 超过500条消息认为是大文件
+      // หากจำนวนข้อความเกินค่าขีดจำกัด ให้ใช้ API แบ่งหน้า
+      const LARGE_CHAT_THRESHOLD = 500; // เกิน 500 ข้อความถือว่าเป็นไฟล์ขนาดใหญ่
 
       if (messageCount > LARGE_CHAT_THRESHOLD) {
-        this.log('info', `检测到大型聊天文件(${messageCount}条消息)，使用分页模式`);
+        this.log('info', `ตรวจพบไฟล์แชทขนาดใหญ่ (${messageCount} ข้อความ) ใช้โหมดแบ่งหน้า`);
         this.usePaginationMode = true;
 
-        // 使用分页API加载最后一页
+        // ใช้ API แบ่งหน้าโหลดหน้าสุดท้าย
         const lastPage = Math.max(0, Math.ceil(messageCount / this.pageSize) - 1);
         return await this.loadChatDataWithPagination(lastPage, this.pageSize);
       } else {
-        this.log('info', `普通大小聊天文件(${messageCount}条消息)，使用内存模式`);
+        this.log('info', `ไฟล์แชทขนาดปกติ (${messageCount} ข้อความ) ใช้โหมดหน่วยความจำ`);
         this.usePaginationMode = false;
         return basicData;
       }
     } catch (error) {
-      this.log('error', '智能加载失败，回退到基本模式', error);
+      this.log('error', 'โหลดอัจฉริยะล้มเหลว ย้อนกลับสู่โหมดพื้นฐาน', error);
       this.usePaginationMode = false;
       return this.getCurrentChatData(false);
     }
   }
 
   /**
-   * 修改消息内容（使用SillyTavern API）
+   * แก้ไขเนื้อหาข้อความ (ใช้ SillyTavern API)
    */
   async modifyMessage(messageIndex, newContent, newName = null) {
     try {
       if (!this.isSillyTavernReady()) {
-        throw new Error('SillyTavern未准备就绪');
+        throw new Error('SillyTavern ยังไม่พร้อมใช้งาน');
       }
 
       const context = window.SillyTavern.getContext();
       const chat = context.chat;
 
       if (messageIndex < 0 || messageIndex >= chat.length) {
-        throw new Error(`消息索引无效: ${messageIndex} (总共 ${chat.length} 条消息)`);
+        throw new Error(`ดัชนีข้อความไม่ถูกต้อง: ${messageIndex} (รวม ${chat.length} ข้อความ)`);
       }
 
-      // 修改聊天数组中的消息
+      // แก้ไขข้อความใน chat array
       const message = chat[messageIndex];
       const oldContent = message.mes;
 
@@ -345,13 +345,13 @@ class MobileContextEditor {
         message.name = newName;
       }
 
-      // 使用SillyTavern上下文API保存和刷新
+      // ใช้ context API ของ SillyTavern เพื่อบันทึกและรีเฟรช
       await context.saveChat();
-      //   await context.reloadCurrentChat(); // 重新加载当前聊天
+      //   await context.reloadCurrentChat(); // โหลดแชทปัจจุบันใหม่
 
       this.isModified = true;
       console.log(
-        `[Mobile Context Editor] 修改消息 ${messageIndex}: "${oldContent.substring(
+        `[Mobile Context Editor] แก้ไขข้อความ ${messageIndex}: "${oldContent.substring(
           0,
           30,
         )}..." → "${newContent.substring(0, 30)}..."`,
@@ -359,23 +359,23 @@ class MobileContextEditor {
 
       return true;
     } catch (error) {
-      console.error('[Mobile Context Editor] 修改消息失败:', error);
+      console.error('[Mobile Context Editor] แก้ไขข้อความล้มเหลว:', error);
       throw error;
     }
   }
 
   /**
-   * 添加新消息（使用SillyTavern的原生API）
+   * เพิ่มข้อความใหม่ (ใช้ API ดั้งเดิมของ SillyTavern)
    */
   async addMessage(content, isUser = false, name = null, extra = {}) {
     try {
       if (!this.isSillyTavernReady()) {
-        throw new Error('SillyTavern未准备就绪');
+        throw new Error('SillyTavern ยังไม่พร้อมใช้งาน');
       }
 
       const context = window.SillyTavern.getContext();
 
-      // 构建消息对象（符合SillyTavern的消息格式）
+      // สร้างออบเจกต์ข้อความ (ตามรูปแบบข้อความของ SillyTavern)
       const message = {
         name: name || (isUser ? context.name1 || 'User' : context.name2 || 'Assistant'),
         is_user: true,
@@ -387,43 +387,45 @@ class MobileContextEditor {
         ...(!isUser && { gen_started: Date.now(), gen_finished: Date.now() }),
       };
 
-      // 如果不是用户消息，添加生成相关字段
+      // หากไม่ใช่ข้อความผู้ใช้ ให้เพิ่มฟิลด์ที่เกี่ยวกับการสร้าง
       if (!isUser) {
         message.swipe_id = 0;
         message.swipes = [content];
       }
 
-      // 添加到聊天数组
+      // เพิ่มเข้า chat array
       context.chat.push(message);
 
-      // 使用SillyTavern上下文API添加消息
+      // ใช้ context API ของ SillyTavern เพื่อเพิ่มข้อความ
       context.addOneMessage(message);
 
-      // 保存聊天
+      // บันทึกแชท
       await context.saveChat();
 
       this.isModified = true;
-      console.log(`[Mobile Context Editor] 添加新${isUser ? '用户' : '助手'}消息: "${content.substring(0, 50)}..."`);
+      console.log(
+        `[Mobile Context Editor] เพิ่มข้อความ${isUser ? 'ผู้ใช้' : 'ผู้ช่วย'}ใหม่: "${content.substring(0, 50)}..."`,
+      );
 
-      return context.chat.length - 1; // 返回新消息的索引
+      return context.chat.length - 1; // ส่งคืนดัชนีของข้อความใหม่
     } catch (error) {
-      console.error('[Mobile Context Editor] 添加消息失败:', error);
+      console.error('[Mobile Context Editor] เพิ่มข้อความล้มเหลว:', error);
       throw error;
     }
   }
 
   /**
-   * 删除消息 - 改进版本
+   * ลบข้อความ - เวอร์ชันปรับปรุง
    */
   async deleteMessage(messageIndex) {
     try {
       if (!this.isSillyTavernReady()) {
-        throw new Error('SillyTavern 未准备就绪');
+        throw new Error('SillyTavern ยังไม่พร้อมใช้งาน');
       }
 
       let chatArray;
 
-      // 获取聊天数组
+      // ดึง chat array
       if (window.SillyTavern && typeof window.SillyTavern.getContext === 'function') {
         const context = window.SillyTavern.getContext();
         chatArray = context.chat;
@@ -432,85 +434,85 @@ class MobileContextEditor {
       }
 
       if (!chatArray || !Array.isArray(chatArray)) {
-        throw new Error('聊天数据不可用');
+        throw new Error('ข้อมูลแชทไม่พร้อมใช้งาน');
       }
 
       if (messageIndex < 0 || messageIndex >= chatArray.length) {
-        throw new Error(`消息索引无效: ${messageIndex}，总消息数: ${chatArray.length}`);
+        throw new Error(`ดัชนีข้อความไม่ถูกต้อง: ${messageIndex}, จำนวนข้อความรวม: ${chatArray.length}`);
       }
 
       const messageToDelete = chatArray[messageIndex];
       this.log(
         'info',
-        `准备删除消息 ${messageIndex}: ${messageToDelete.name}: ${messageToDelete.mes.substring(0, 50)}...`,
+        `เตรียมลบข้อความ ${messageIndex}: ${messageToDelete.name}: ${messageToDelete.mes.substring(0, 50)}...`,
       );
 
-      // 直接从聊天数组中删除
+      // ลบออกจาก chat array โดยตรง
       const deletedMessage = chatArray.splice(messageIndex, 1)[0];
       this.isModified = true;
 
-      this.log('info', `消息 ${messageIndex} 删除成功`);
+      this.log('info', `ลบข้อความ ${messageIndex} สำเร็จ`);
 
-      // 立即保存和刷新
+      // บันทึกและรีเฟรชทันที
       await this.saveChatData();
       await this.refreshChatDisplay();
 
       return deletedMessage;
     } catch (error) {
-      this.log('error', '删除消息失败', error);
+      this.log('error', 'ลบข้อความล้มเหลว', error);
       throw error;
     }
   }
 
   /**
-   * 保存聊天数据 - 改进版本
+   * บันทึกข้อมูลแชท - เวอร์ชันปรับปรุง
    */
   async saveChatData() {
     try {
       if (!this.isSillyTavernReady()) {
-        throw new Error('SillyTavern 未准备就绪');
+        throw new Error('SillyTavern ยังไม่พร้อมใช้งาน');
       }
 
-      this.log('info', '开始保存聊天数据...');
+      this.log('info', 'เริ่มบันทึกข้อมูลแชท...');
 
-      // 方法1: 使用SillyTavern.getContext().saveChat (新API)
+      // วิธีที่ 1: ใช้ SillyTavern.getContext().saveChat (API ใหม่)
       if (window.SillyTavern && typeof window.SillyTavern.getContext === 'function') {
         try {
           const context = window.SillyTavern.getContext();
           if (context && typeof context.saveChat === 'function') {
-            this.log('info', '使用 SillyTavern.getContext().saveChat 保存...');
+            this.log('info', 'บันทึกด้วย SillyTavern.getContext().saveChat...');
             await context.saveChat();
-            this.log('info', 'SillyTavern.getContext().saveChat 保存成功');
+            this.log('info', 'SillyTavern.getContext().saveChat บันทึกสำเร็จ');
             this.isModified = false;
             return true;
           }
         } catch (error) {
-          this.log('warn', 'SillyTavern.getContext().saveChat 失败，尝试其他方法', error);
+          this.log('warn', 'SillyTavern.getContext().saveChat ล้มเหลว ลองวิธีอื่น', error);
         }
       }
 
-      // 方法2: 使用SillyTavern的原生保存函数
+      // วิธีที่ 2: ใช้ฟังก์ชันบันทึกดั้งเดิมของ SillyTavern
       if (typeof window.saveChat === 'function') {
-        this.log('info', '使用 window.saveChat 保存...');
+        this.log('info', 'บันทึกด้วย window.saveChat...');
         await window.saveChat();
-        this.log('info', 'window.saveChat 保存成功');
+        this.log('info', 'window.saveChat บันทึกสำเร็จ');
         this.isModified = false;
         return true;
       }
 
-      // 方法3: 使用saveChatConditional
+      // วิธีที่ 3: ใช้ saveChatConditional
       if (typeof window.saveChatConditional === 'function') {
-        this.log('info', '使用 window.saveChatConditional 保存...');
+        this.log('info', 'บันทึกด้วย window.saveChatConditional...');
         await window.saveChatConditional();
-        this.log('info', 'window.saveChatConditional 保存成功');
+        this.log('info', 'window.saveChatConditional บันทึกสำเร็จ');
         this.isModified = false;
         return true;
       }
 
-      // 方法4: 手动调用API（兼容旧版本）
+      // วิธีที่ 4: เรียก API ด้วยตนเอง (เข้ากันได้กับเวอร์ชันเก่า)
       let character, chatData, userName, characterName;
 
-      // 获取角色和聊天数据
+      // ดึงข้อมูลตัวละครและแชท
       if (window.SillyTavern && typeof window.SillyTavern.getContext === 'function') {
         const context = window.SillyTavern.getContext();
         character = context.characters[context.characterId];
@@ -525,7 +527,7 @@ class MobileContextEditor {
       }
 
       if (character && chatData) {
-        this.log('info', '使用手动API调用保存...');
+        this.log('info', 'บันทึกด้วยการเรียก API ด้วยตนเอง...');
 
         const saveData = [
           {
@@ -551,50 +553,50 @@ class MobileContextEditor {
         });
 
         if (!response.ok) {
-          throw new Error(`保存失败: ${response.status} ${response.statusText}`);
+          throw new Error(`บันทึกล้มเหลว: ${response.status} ${response.statusText}`);
         }
 
-        this.log('info', '手动API调用保存成功');
+        this.log('info', 'เรียก API ด้วยตนเองบันทึกสำเร็จ');
         this.isModified = false;
         return true;
       }
 
-      throw new Error('没有可用的保存方法或角色信息缺失');
+      throw new Error('ไม่มีวิธีบันทึกที่ใช้ได้หรือข้อมูลตัวละครหายไป');
     } catch (error) {
-      this.log('error', '保存聊天数据失败', error);
+      this.log('error', 'บันทึกข้อมูลแชทล้มเหลว', error);
       throw error;
     }
   }
 
   /**
-   * 刷新聊天显示
+   * รีเฟรชการแสดงผลแชท
    */
   async refreshChatDisplay() {
     try {
       if (typeof window.printMessages === 'function') {
-        this.log('info', '刷新聊天显示...');
+        this.log('info', 'กำลังรีเฟรชการแสดงผลแชท...');
         await window.printMessages();
-        this.log('info', '聊天显示刷新成功');
+        this.log('info', 'รีเฟรชการแสดงผลแชทสำเร็จ');
       } else {
-        this.log('warn', 'printMessages 函数不可用');
+        this.log('warn', 'ฟังก์ชัน printMessages ไม่พร้อมใช้งาน');
       }
     } catch (error) {
-      this.log('error', '刷新聊天显示失败', error);
+      this.log('error', 'รีเฟรชการแสดงผลแชทล้มเหลว', error);
     }
   }
 
   /**
-   * 导出聊天数据为JSONL格式
+   * ส่งออกข้อมูลแชทเป็นรูปแบบ JSONL
    */
   exportToJsonl() {
     try {
       if (!this.isSillyTavernReady()) {
-        throw new Error('SillyTavern未准备就绪');
+        throw new Error('SillyTavern ยังไม่พร้อมใช้งาน');
       }
 
       const context = window.SillyTavern.getContext();
 
-      // 构建JSONL数据（符合SillyTavern格式）
+      // สร้างข้อมูล JSONL (ตามรูปแบบของ SillyTavern)
       const header = {
         user_name: context.name1 || 'User',
         character_name: context.name2 || 'Assistant',
@@ -605,7 +607,7 @@ class MobileContextEditor {
       const saveData = [header, ...context.chat];
       const jsonlData = saveData.map(JSON.stringify).join('\n');
 
-      // 下载文件
+      // ดาวน์โหลดไฟล์
       const blob = new Blob([jsonlData], { type: 'application/json' });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -616,16 +618,16 @@ class MobileContextEditor {
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
 
-      console.log('[Mobile Context Editor] JSONL 导出完成');
+      console.log('[Mobile Context Editor] ส่งออก JSONL เสร็จสิ้น');
       return jsonlData;
     } catch (error) {
-      console.error('[Mobile Context Editor] 导出失败:', error);
+      console.error('[Mobile Context Editor] ส่งออกล้มเหลว:', error);
       throw error;
     }
   }
 
   /**
-   * 获取统计信息
+   * ดึงข้อมูลสถิติ
    */
   getStatistics() {
     try {
@@ -648,59 +650,59 @@ class MobileContextEditor {
         sillyTavernReady: this.isSillyTavernReady(),
       };
     } catch (error) {
-      console.error('[Mobile Context Editor] 获取统计失败:', error);
+      console.error('[Mobile Context Editor] ดึงข้อมูลสถิติล้มเหลว:', error);
       return null;
     }
   }
 
   /**
-   * 调试SillyTavern状态
+   * ดีบักสถานะ SillyTavern
    */
   debugSillyTavernStatus() {
-    console.log('=== SillyTavern 状态调试 ===');
-    console.log('SillyTavern对象:', !!window.SillyTavern);
-    console.log('chat数组:', !!window.chat, window.chat?.length);
-    console.log('characters数组:', !!window.characters, window.characters?.length);
+    console.log('=== ดีบักสถานะ SillyTavern ===');
+    console.log('ออบเจกต์ SillyTavern:', !!window.SillyTavern);
+    console.log('chat array:', !!window.chat, window.chat?.length);
+    console.log('characters array:', !!window.characters, window.characters?.length);
     console.log('this_chid:', window.this_chid);
-    console.log('saveChat函数:', typeof window.saveChat);
-    console.log('printMessages函数:', typeof window.printMessages);
-    console.log('saveChatConditional函数:', typeof window.saveChatConditional);
-    console.log('准备状态:', this.isSillyTavernReady());
+    console.log('ฟังก์ชัน saveChat:', typeof window.saveChat);
+    console.log('ฟังก์ชัน printMessages:', typeof window.printMessages);
+    console.log('ฟังก์ชัน saveChatConditional:', typeof window.saveChatConditional);
+    console.log('สถานะความพร้อม:', this.isSillyTavernReady());
   }
 
   /**
-   * 等待SillyTavern准备就绪
+   * รอให้ SillyTavern พร้อมใช้งาน
    */
   async waitForSillyTavernReady(timeout = 30000) {
-    console.log('[Mobile Context Editor] 等待SillyTavern准备就绪...');
+    console.log('[Mobile Context Editor] กำลังรอให้ SillyTavern พร้อมใช้งาน...');
 
     const startTime = Date.now();
 
     while (Date.now() - startTime < timeout) {
       if (this.isSillyTavernReady()) {
-        console.log('[Mobile Context Editor] ✅ SillyTavern已准备就绪');
+        console.log('[Mobile Context Editor] ✅ SillyTavern พร้อมใช้งานแล้ว');
         return true;
       }
 
-      // 等待500ms后重试
+      // รอ 500ms แล้วลองใหม่
       await new Promise(resolve => setTimeout(resolve, 500));
     }
 
-    console.warn('[Mobile Context Editor] ⚠️ 等待超时，SillyTavern可能未完全加载');
+    console.warn('[Mobile Context Editor] ⚠️ หมดเวลารอ SillyTavern อาจยังโหลดไม่เสร็จสมบูรณ์');
     return false;
   }
 
   /**
-   * 设置移动端UI界面 - 优化版本，增加分页控制
+   * ตั้งค่าอินเทอร์เฟซ UI บนมือถือ - เวอร์ชันปรับแต่งแล้ว เพิ่มการควบคุมการแบ่งหน้า
    */
   setupUI() {
-    // 等待jQuery加载
+    // รอให้ jQuery โหลด
     if (typeof $ === 'undefined') {
       setTimeout(() => this.setupUI(), 1000);
       return;
     }
 
-    // 创建移动端编辑器按钮（放在右下角，与其他mobile按钮保持一致）
+    // สร้างปุ่มตัวแก้ไขบนมือถือ (วางที่มุมขวาล่าง ให้สอดคล้องกับปุ่ม mobile อื่น ๆ)
     const buttonHtml = `
             <button id="mobile-context-editor-btn" style="position: fixed; bottom: 80px; right: 20px; z-index: 9997; background: linear-gradient(135deg, #9C27B0, #673AB7); color: white; border: none; padding: 12px; border-radius: 50%; cursor: pointer; box-shadow: 0 4px 20px rgba(0,0,0,0.3); transition: all 0.3s ease; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; font-size: 20px;">
                 🛠️
@@ -709,7 +711,7 @@ class MobileContextEditor {
 
     $('body').append(buttonHtml);
 
-    // 悬停效果
+    // เอฟเฟกต์ hover
     $('#mobile-context-editor-btn').hover(
       function () {
         $(this).css('transform', 'scale(1.1)');
@@ -719,7 +721,7 @@ class MobileContextEditor {
       },
     );
 
-    // 创建移动端优化的编辑器弹窗
+    // สร้าง modal ตัวแก้ไขที่ปรับแต่งสำหรับมือถือ
     const modalHtml = `
             <div id="mobile-context-editor-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 9999; overflow-y: auto;">
 
@@ -746,17 +748,17 @@ class MobileContextEditor {
                         <button id="mobile-test-api-btn" style="background: #00BCD4; color: white; border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-size: 14px;" disabled>🔧 ทดสอบ API</button>
                     </div>
 
-                    <!-- 新增：分页控制区域 -->
+                    <!-- เพิ่มใหม่: พื้นที่ควบคุมการแบ่งหน้า -->
                     <div id="mobile-pagination-controls" style="display: none; margin-bottom: 15px; padding: 10px; background: #e8f5e8; border-radius: 8px; border: 1px solid #4CAF50;">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                            <span id="mobile-page-info" style="font-size: 14px; color: #333; font-weight: bold;">第 1 页，共 1 页</span>
+                            <span id="mobile-page-info" style="font-size: 14px; color: #333; font-weight: bold;">หน้า 1 จาก 1</span>
                             <div>
-                                <label style="font-size: 12px; color: #666;">每页显示：</label>
+                                <label style="font-size: 12px; color: #666;">แสดงต่อหน้า:</label>
                                 <select id="mobile-page-size" style="padding: 4px; border-radius: 4px; border: 1px solid #ddd; font-size: 12px;">
-                                    <option value="10">10条</option>
-                                    <option value="20" selected>20条</option>
-                                    <option value="50">50条</option>
-                                    <option value="100">100条</option>
+                                    <option value="10">10 ข้อความ</option>
+                                    <option value="20" selected>20 ข้อความ</option>
+                                    <option value="50">50 ข้อความ</option>
+                                    <option value="100">100 ข้อความ</option>
                                 </select>
                             </div>
                         </div>
@@ -774,7 +776,7 @@ class MobileContextEditor {
                         <p style="text-align: center; padding: 40px 20px; color: #666; margin: 0; font-size: 16px;">คลิก "โหลดแชท" เพื่อเริ่มแก้ไข</p>
                     </div>
 
-                    <!-- 新增：加载指示器 -->
+                    <!-- เพิ่มใหม่: ตัวบ่งชี้การโหลด -->
                     <div id="mobile-loading-indicator" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.8); color: white; padding: 20px; border-radius: 10px; text-align: center; z-index: 10000;">
                         <div style="font-size: 24px; margin-bottom: 10px;">⏳</div>
                         <div>กำลังโหลด...</div>
@@ -787,7 +789,7 @@ class MobileContextEditor {
   }
 
   /**
-   * 绑定移动端事件
+   * เชื่อมโยงเหตุการณ์บนมือถือ
    */
   bindEvents() {
     if (typeof $ === 'undefined') {
@@ -795,66 +797,66 @@ class MobileContextEditor {
       return;
     }
 
-    // 打开/关闭编辑器
+    // เปิด/ปิดตัวแก้ไข
     $(document).on('click', '#mobile-context-editor-btn', () => this.showEditor());
     $(document).on('click', '#mobile-context-editor-close', () => this.hideEditor());
 
-    // 功能按钮
+    // ปุ่มฟังก์ชัน
     $(document).on('click', '#mobile-load-chat-btn', async () => {
       try {
         this.showLoadingIndicator(true);
-        this.updateStatus('🔄 正在检查SillyTavern状态...');
+        this.updateStatus('🔄 กำลังตรวจสอบสถานะ SillyTavern...');
 
-        // 等待SillyTavern准备就绪
+        // รอให้ SillyTavern พร้อม
         const isReady = await this.waitForSillyTavernReady(10000);
         if (!isReady) {
-          this.updateStatus('❌ SillyTavern未准备就绪，请等待页面完全加载后重试');
+          this.updateStatus('❌ SillyTavern ยังไม่พร้อมใช้งาน กรุณารอให้หน้าโหลดเสร็จแล้วลองใหม่');
           this.showLoadingIndicator(false);
           return;
         }
 
-        this.updateStatus('🔄 正在分析聊天文件大小...');
+        this.updateStatus('🔄 กำลังวิเคราะห์ขนาดไฟล์แชท...');
 
-        // 使用智能加载
+        // ใช้การโหลดอัจฉริยะ
         const chatData = await this.smartLoadChatData();
 
         if (this.usePaginationMode) {
-          // 分页模式
+          // โหมดแบ่งหน้า
           this.currentChatData = {
-            messages: [], // 在分页模式下不缓存所有消息
+            messages: [], // ในโหมดแบ่งหน้าจะไม่แคชข้อความทั้งหมด
             characterName: chatData.characterName,
             userName: chatData.userName,
           };
           this.totalPages = chatData.totalPages;
           this.currentPage = chatData.currentPage;
 
-          this.updateStatus(`🔄 正在渲染消息 (分页模式)...`);
+          this.updateStatus(`🔄 กำลังเรนเดอร์ข้อความ (โหมดแบ่งหน้า)...`);
           await this.renderPaginatedMessages(chatData.messages);
 
           this.updateStatus(
-            `✅ 大型聊天文件加载成功！总计 ${chatData.totalCount} 条消息 (${chatData.characterName}) - 分页模式 [${chatData.fileSize}]`,
+            `✅ โหลดไฟล์แชทขนาดใหญ่สำเร็จ! รวม ${chatData.totalCount} ข้อความ (${chatData.characterName}) - โหมดแบ่งหน้า [${chatData.fileSize}]`,
           );
         } else {
-          // 内存模式
+          // โหมดหน่วยความจำ
           this.currentChatData = chatData;
           this.totalPages = Math.ceil(chatData.messages.length / this.pageSize);
           this.currentPage = Math.max(0, this.totalPages - 1);
 
-          this.updateStatus(`🔄 正在渲染消息 (内存模式)...`);
+          this.updateStatus(`🔄 กำลังเรนเดอร์ข้อความ (โหมดหน่วยความจำ)...`);
           await this.renderMobileChatMessages();
 
           this.updateStatus(
-            `✅ 聊天数据加载成功！共 ${chatData.messages.length} 条消息 (${chatData.characterName}) - 内存模式`,
+            `✅ โหลดข้อมูลแชทสำเร็จ! รวม ${chatData.messages.length} ข้อความ (${chatData.characterName}) - โหมดหน่วยความจำ`,
           );
         }
 
-        // 显示分页控制
+        // แสดงการควบคุมการแบ่งหน้า
         this.showPaginationControls(true);
         this.updatePaginationInfo();
         this.updateMobileButtonStates();
         this.showLoadingIndicator(false);
       } catch (error) {
-        this.updateStatus(`❌ 加载失败: ${error.message}`);
+        this.updateStatus(`❌ โหลดล้มเหลว: ${error.message}`);
         this.showLoadingIndicator(false);
       }
     });
@@ -862,9 +864,9 @@ class MobileContextEditor {
     $(document).on('click', '#mobile-save-chat-btn', async () => {
       try {
         await this.saveChatData();
-        this.updateStatus('✅ 保存成功！');
+        this.updateStatus('✅ บันทึกสำเร็จ!');
       } catch (error) {
-        this.updateStatus(`❌ 保存失败: ${error.message}`);
+        this.updateStatus(`❌ บันทึกล้มเหลว: ${error.message}`);
       }
     });
 
@@ -877,10 +879,10 @@ class MobileContextEditor {
         try {
           await this.addMessage(content, isUser);
           this.renderMobileChatMessages();
-          this.updateStatus(`➕ 已添加新${isUser ? '用户' : '角色'}消息`);
+          this.updateStatus(`➕ เพิ่มข้อความ${isUser ? 'ผู้ใช้' : 'ตัวละคร'}ใหม่แล้ว`);
           this.updateMobileButtonStates();
         } catch (error) {
-          this.updateStatus(`❌ 添加失败: ${error.message}`);
+          this.updateStatus(`❌ เพิ่มล้มเหลว: ${error.message}`);
         }
       }
     });
@@ -888,7 +890,7 @@ class MobileContextEditor {
     $(document).on('click', '#mobile-stats-btn', () => {
       const stats = this.getStatistics();
       if (stats) {
-        const statsText = `📊 总计${stats.totalMessages}条 | 用户${stats.userMessages}条 | 角色${stats.botMessages}条 | ${stats.totalCharacters}字符 | ${stats.characterName}`;
+        const statsText = `📊 รวม ${stats.totalMessages} ข้อความ | ผู้ใช้ ${stats.userMessages} | ตัวละคร ${stats.botMessages} | ${stats.totalCharacters} ตัวอักษร | ${stats.characterName}`;
         this.updateStatus(statsText);
       }
     });
@@ -897,40 +899,40 @@ class MobileContextEditor {
       try {
         await this.refreshChatDisplay();
         this.renderMobileChatMessages();
-        this.updateStatus('🔄 界面刷新完成');
+        this.updateStatus('🔄 รีเฟรชอินเทอร์เฟซเสร็จสิ้น');
       } catch (error) {
-        this.updateStatus(`❌ 刷新失败: ${error.message}`);
+        this.updateStatus(`❌ รีเฟรชล้มเหลว: ${error.message}`);
       }
     });
 
     $(document).on('click', '#mobile-export-btn', () => {
       try {
         this.exportToJsonl();
-        this.updateStatus('📤 JSONL文件导出成功');
+        this.updateStatus('📤 ส่งออกไฟล์ JSONL สำเร็จ');
       } catch (error) {
-        this.updateStatus(`❌ 导出失败: ${error.message}`);
+        this.updateStatus(`❌ ส่งออกล้มเหลว: ${error.message}`);
       }
     });
 
     $(document).on('click', '#mobile-quick-edit-btn', async () => {
       try {
-        this.updateStatus('⚡ 启动快速修改...');
+        this.updateStatus('⚡ เริ่มแก้ไขด่วน...');
         await this.quickEditLastMessage();
       } catch (error) {
-        this.updateStatus(`❌ 快速修改失败: ${error.message}`);
+        this.updateStatus(`❌ แก้ไขด่วนล้มเหลว: ${error.message}`);
       }
     });
 
     $(document).on('click', '#mobile-test-api-btn', async () => {
       try {
-        this.updateStatus('🔧 测试API连接...');
+        this.updateStatus('🔧 กำลังทดสอบการเชื่อมต่อ API...');
         await this.testApiConnection();
       } catch (error) {
-        this.updateStatus(`❌ API测试失败: ${error.message}`);
+        this.updateStatus(`❌ ทดสอบ API ล้มเหลว: ${error.message}`);
       }
     });
 
-    // 分页控制事件
+    // เหตุการณ์ควบคุมการแบ่งหน้า
     $(document).on('click', '#mobile-first-page', () => this.goToPage(0));
     $(document).on('click', '#mobile-prev-page', () => this.goToPage(this.currentPage - 1));
     $(document).on('click', '#mobile-next-page', () => this.goToPage(this.currentPage + 1));
@@ -941,7 +943,7 @@ class MobileContextEditor {
       await this.changePageSize(newPageSize);
     });
 
-    // 消息操作
+    // การจัดการข้อความ
     $(document).on('click', '.mobile-edit-message-btn', async e => {
       const messageIndex = parseInt($(e.target).data('index'));
       await this.editMobileMessage(messageIndex);
@@ -953,39 +955,39 @@ class MobileContextEditor {
         try {
           await this.deleteMessage(messageIndex);
 
-          // 重新计算分页并刷新显示
+          // คำนวณการแบ่งหน้าใหม่และรีเฟรชการแสดงผล
           this.clearCache();
           this.getCurrentChatData(false);
           this.updatePaginationInfo();
           await this.renderMobileChatMessages();
 
-          this.updateStatus(`🗑️ 已删除消息 ${messageIndex}`);
+          this.updateStatus(`🗑️ ลบข้อความ ${messageIndex} แล้ว`);
           this.updateMobileButtonStates();
         } catch (error) {
-          this.updateStatus(`❌ 删除失败: ${error.message}`);
+          this.updateStatus(`❌ ลบล้มเหลว: ${error.message}`);
         }
       }
     });
   }
 
   showEditor() {
-    // 确保UI已经创建
+    // ตรวจสอบให้แน่ใจว่า UI ถูกสร้างแล้ว
     if (!$('#mobile-context-editor-modal').length) {
       this.setupUI();
     }
 
     $('#mobile-context-editor-modal').show();
 
-    // 检查SillyTavern状态并显示相应界面
+    // ตรวจสอบสถานะ SillyTavern และแสดงอินเทอร์เฟซที่เหมาะสม
     if (!this.isSillyTavernReady()) {
       this.showWaitingInterface();
     } else {
       const context = window.SillyTavern.getContext();
       if (context && context.chat && context.chat.length > 0) {
         this.renderMobileChatMessages();
-        this.updateStatus('✅ 聊天数据已就绪，可以开始编辑');
+        this.updateStatus('✅ ข้อมูลแชทพร้อมแล้ว สามารถเริ่มแก้ไขได้');
       } else {
-        this.updateStatus('⚠️ 请先加载聊天数据');
+        this.updateStatus('⚠️ กรุณาโหลดข้อมูลแชทก่อน');
       }
     }
 
@@ -993,7 +995,7 @@ class MobileContextEditor {
   }
 
   /**
-   * 显示等待SillyTavern加载的界面
+   * แสดงอินเทอร์เฟซรอ SillyTavern โหลด
    */
   showWaitingInterface() {
     const waitingHtml = `
@@ -1029,28 +1031,28 @@ class MobileContextEditor {
         `;
 
     $('#mobile-context-editor-content').html(waitingHtml);
-    this.updateStatus('⏳ 等待SillyTavern加载完成...');
+    this.updateStatus('⏳ กำลังรอ SillyTavern โหลดเสร็จ...');
     this.updateWaitingStatus();
   }
 
   /**
-   * 检查并刷新状态
+   * ตรวจสอบและรีเฟรชสถานะ
    */
   checkAndRefresh() {
-    console.log('[Mobile Context Editor] 重新检查SillyTavern状态...');
+    console.log('[Mobile Context Editor] กำลังตรวจสอบสถานะ SillyTavern อีกครั้ง...');
 
     if (this.isSillyTavernReady()) {
-      this.updateStatus('✅ SillyTavern已就绪！正在加载聊天数据...');
+      this.updateStatus('✅ SillyTavern พร้อมแล้ว! กำลังโหลดข้อมูลแชท...');
       this.renderMobileChatMessages();
       this.updateMobileButtonStates();
     } else {
       this.updateWaitingStatus();
-      this.updateStatus('⏳ SillyTavern仍在加载中，请稍候...');
+      this.updateStatus('⏳ SillyTavern ยังโหลดอยู่ กรุณารอสักครู่...');
     }
   }
 
   /**
-   * 更新等待状态的详细信息
+   * อัปเดตรายละเอียดสถานะการรอ
    */
   updateWaitingStatus() {
     const statusDetails = document.getElementById('waiting-status-details');
@@ -1068,7 +1070,7 @@ class MobileContextEditor {
   }
 
   /**
-   * 强制模式 - 提供基本功能即使SillyTavern未完全就绪
+   * โหมดบังคับ - ให้ฟังก์ชันพื้นฐานแม้ว่า SillyTavern จะยังไม่พร้อมสมบูรณ์
    */
   forceMode() {
     const forceHtml = `
@@ -1109,14 +1111,14 @@ class MobileContextEditor {
         `;
 
     $('#mobile-context-editor-content').html(forceHtml);
-    this.updateStatus('🛠️ 强制模式已激活 - 请使用控制台命令');
+    this.updateStatus('🛠️ โหมดบังคับเปิดใช้งานแล้ว - กรุณาใช้คำสั่งคอนโซล');
 
-    // 开始自动重试
+    // เริ่มลองใหม่อัตโนมัติ
     this.startAutoRetry();
   }
 
   /**
-   * 开始自动重试检查
+   * เริ่มการตรวจสอบลองใหม่อัตโนมัติ
    */
   startAutoRetry() {
     if (this.autoRetryInterval) {
@@ -1125,13 +1127,13 @@ class MobileContextEditor {
 
     this.autoRetryInterval = setInterval(() => {
       if (this.isSillyTavernReady()) {
-        console.log('[Mobile Context Editor] 自动重试成功，SillyTavern已就绪！');
+        console.log('[Mobile Context Editor] ลองใหม่อัตโนมัติสำเร็จ SillyTavern พร้อมแล้ว!');
         clearInterval(this.autoRetryInterval);
         this.checkAndRefresh();
       } else {
-        console.log('[Mobile Context Editor] 自动重试检查中...');
+        console.log('[Mobile Context Editor] กำลังตรวจสอบลองใหม่อัตโนมัติ...');
       }
-    }, 30000); // 每30秒检查一次
+    }, 30000); // ตรวจสอบทุก 30 วินาที
   }
 
   hideEditor() {
@@ -1155,24 +1157,24 @@ class MobileContextEditor {
     $('#mobile-refresh-btn').prop('disabled', !hasData);
     $('#mobile-export-btn').prop('disabled', !hasData);
     $('#mobile-quick-edit-btn').prop('disabled', !hasData);
-    $('#mobile-test-api-btn').prop('disabled', !this.isSillyTavernReady()); // API测试只需要SillyTavern就绪
+    $('#mobile-test-api-btn').prop('disabled', !this.isSillyTavernReady()); // ทดสอบ API ต้องการเพียง SillyTavern พร้อม
   }
 
   /**
-   * 渲染移动端聊天消息 - 优化版本，支持分页和虚拟滚动
+   * เรนเดอร์ข้อความแชทบนมือถือ - เวอร์ชันปรับแต่ง รองรับการแบ่งหน้าและ virtual scroll
    */
   async renderMobileChatMessages() {
     if (!this.isSillyTavernReady()) return;
 
     if (!this.currentChatData) {
-      this.updateStatus('⚠️ 请先加载聊天数据');
+      this.updateStatus('⚠️ กรุณาโหลดข้อมูลแชทก่อน');
       return;
     }
 
     this.showLoadingIndicator(true);
 
     try {
-      // 获取当前页的消息
+      // ดึงข้อความของหน้าปัจจุบัน
       const pageMessages = this.getPageMessages();
 
       if (pageMessages.length === 0) {
@@ -1188,13 +1190,13 @@ class MobileContextEditor {
 
       let html = '<div style="padding: 10px;">';
 
-      // 分批渲染消息以避免阻塞UI
+      // เรนเดอร์ข้อความเป็นชุดเพื่อหลีกเลี่ยงการบล็อก UI
       for (let i = 0; i < pageMessages.length; i++) {
         const message = pageMessages[i];
         const messageHtml = this.renderSingleMessage(message);
         html += messageHtml;
 
-        // 每处理5条消息就让出控制权，避免阻塞UI
+        // ทุก ๆ 5 ข้อความให้คืนการควบคุมเพื่อหลีกเลี่ยงการบล็อก UI
         if (i % 5 === 4) {
           await new Promise(resolve => setTimeout(resolve, 0));
         }
@@ -1205,21 +1207,21 @@ class MobileContextEditor {
 
       this.showLoadingIndicator(false);
     } catch (error) {
-      this.log('error', '渲染消息失败', error);
-      this.updateStatus(`❌ 渲染失败: ${error.message}`);
+      this.log('error', 'เรนเดอร์ข้อความล้มเหลว', error);
+      this.updateStatus(`❌ เรนเดอร์ล้มเหลว: ${error.message}`);
       this.showLoadingIndicator(false);
     }
   }
 
   /**
-   * 渲染单条消息
+   * เรนเดอร์ข้อความเดียว
    */
   renderSingleMessage(message) {
     const isUser = message.is_user;
     const name = message.name || (isUser ? 'ผู้ใช้' : 'ผู้ช่วย');
     const globalIndex = message.globalIndex;
 
-    // 智能截断消息内容
+    // ตัดทอนเนื้อหาข้อความอย่างชาญฉลาด
     let content = message.mes || '';
     const maxLength = 200;
     let displayContent = content;
@@ -1228,7 +1230,7 @@ class MobileContextEditor {
       displayContent = content.substring(0, maxLength) + '...';
     }
 
-    // 转义HTML特殊字符
+    // เอสเคปอักขระพิเศษ HTML
     displayContent = this.escapeHtml(displayContent);
 
     return `
@@ -1251,7 +1253,7 @@ class MobileContextEditor {
   }
 
   /**
-   * 渲染分页模式的消息
+   * เรนเดอร์ข้อความในโหมดแบ่งหน้า
    */
   async renderPaginatedMessages(messages) {
     if (!messages || messages.length === 0) {
@@ -1266,17 +1268,17 @@ class MobileContextEditor {
 
     let html = '<div style="padding: 10px;">';
 
-    // 分批渲染消息以避免阻塞UI
+    // เรนเดอร์ข้อความเป็นชุดเพื่อหลีกเลี่ยงการบล็อก UI
     for (let i = 0; i < messages.length; i++) {
       const message = messages[i];
       const messageHtml = this.renderSingleMessage({
         ...message,
-        globalIndex: message.index, // 使用服务端返回的全局索引
+        globalIndex: message.index, // ใช้ดัชนีรวมที่ส่งมาจากเซิร์ฟเวอร์
         pageIndex: i,
       });
       html += messageHtml;
 
-      // 每处理3条消息就让出控制权，避免阻塞UI
+      // ทุก ๆ 3 ข้อความให้คืนการควบคุมเพื่อหลีกเลี่ยงการบล็อก UI
       if (i % 3 === 2) {
         await new Promise(resolve => setTimeout(resolve, 0));
       }
@@ -1287,7 +1289,7 @@ class MobileContextEditor {
   }
 
   /**
-   * 转义HTML特殊字符
+   * เอสเคปอักขระพิเศษ HTML
    */
   escapeHtml(text) {
     const div = document.createElement('div');
@@ -1308,35 +1310,35 @@ class MobileContextEditor {
       try {
         await this.modifyMessage(messageIndex, newContent);
         this.renderMobileChatMessages();
-        this.updateStatus(`✏️ 已修改消息 ${messageIndex}`);
+        this.updateStatus(`✏️ แก้ไขข้อความ ${messageIndex} แล้ว`);
         this.updateMobileButtonStates();
       } catch (error) {
-        this.updateStatus(`❌ 修改失败: ${error.message}`);
+        this.updateStatus(`❌ แก้ไขล้มเหลว: ${error.message}`);
       }
     }
   }
 
   /**
-   * 快速修改最后一条消息
+   * แก้ไขข้อความสุดท้ายแบบด่วน
    */
   async quickEditLastMessage() {
     try {
       if (!this.isSillyTavernReady()) {
-        throw new Error('SillyTavern未准备就绪');
+        throw new Error('SillyTavern ยังไม่พร้อมใช้งาน');
       }
 
       const context = window.SillyTavern.getContext();
       if (!context.chat || context.chat.length === 0) {
-        throw new Error('没有可修改的消息');
+        throw new Error('ไม่มีข้อความที่สามารถแก้ไขได้');
       }
 
       const lastIndex = context.chat.length - 1;
       const lastMessage = context.chat[lastIndex];
 
-      // 创建快速编辑界面
+      // สร้างอินเทอร์เฟซแก้ไขด่วน
       const quickEditHtml = `
                 <div style="padding: 20px; background: #f8f9fa; border-radius: 8px; margin: 10px 0;">
-                    <h4 style="margin: 0 0 15px 0; color: #333;">⚡ 快速修改最后一条消息</h4>
+                    <h4 style="margin: 0 0 15px 0; color: #333;">⚡ แก้ไขข้อความสุดท้ายแบบด่วน</h4>
 
                     <div style="margin-bottom: 15px;">
                         <strong>ผู้ส่งข้อความ:</strong> ${
@@ -1364,26 +1366,26 @@ class MobileContextEditor {
                         <button onclick="window.mobileContextEditor.executeQuickEdit(${lastIndex})" style="
                             background: #28a745; color: white; border: none; padding: 10px 20px;
                             border-radius: 5px; cursor: pointer; flex: 1;
-                        ">✅ 保存修改</button>
+                        ">✅ บันทึกการแก้ไข</button>
 
                         <button onclick="window.mobileContextEditor.renderMobileChatMessages()" style="
                             background: #6c757d; color: white; border: none; padding: 10px 20px;
                             border-radius: 5px; cursor: pointer; flex: 1;
-                        ">❌ 取消</button>
+                        ">❌ ยกเลิก</button>
                     </div>
                 </div>
             `;
 
       $('#mobile-context-editor-content').html(quickEditHtml);
-      this.updateStatus('⚡ 快速修改模式已激活');
+      this.updateStatus('⚡ โหมดแก้ไขด่วนเปิดใช้งานแล้ว');
     } catch (error) {
-      console.error('[Mobile Context Editor] 快速修改失败:', error);
+      console.error('[Mobile Context Editor] แก้ไขด่วนล้มเหลว:', error);
       throw error;
     }
   }
 
   /**
-   * 执行快速编辑
+   * ดำเนินการแก้ไขด่วน
    */
   async executeQuickEdit(messageIndex) {
     try {
@@ -1395,59 +1397,59 @@ class MobileContextEditor {
         return;
       }
 
-      this.updateStatus('💾 正在保存修改...');
+      this.updateStatus('💾 กำลังบันทึกการแก้ไข...');
 
-      // 执行修改
+      // ดำเนินการแก้ไข
       await this.modifyMessage(messageIndex, newContent, newName || null);
 
-      // 重新渲染消息列表
+      // เรนเดอร์รายการข้อความใหม่
       this.renderMobileChatMessages();
-      this.updateStatus('✅ 快速修改完成并已保存！');
+      this.updateStatus('✅ แก้ไขด่วนเสร็จสิ้นและบันทึกแล้ว!');
       this.updateMobileButtonStates();
     } catch (error) {
-      console.error('[Mobile Context Editor] 执行快速编辑失败:', error);
-      this.updateStatus(`❌ 保存失败: ${error.message}`);
+      console.error('[Mobile Context Editor] ดำเนินการแก้ไขด่วนล้มเหลว:', error);
+      this.updateStatus(`❌ บันทึกล้มเหลว: ${error.message}`);
     }
   }
 
   /**
-   * 测试API连接
+   * ทดสอบการเชื่อมต่อ API
    */
   async testApiConnection() {
     try {
-      this.updateStatus('🔧 正在测试API连接...');
+      this.updateStatus('🔧 กำลังทดสอบการเชื่อมต่อ API...');
 
-      // 创建测试结果界面
+      // สร้างอินเทอร์เฟซผลการทดสอบ
       const testResultHtml = `
                 <div style="padding: 20px; background: #f8f9fa; border-radius: 8px; margin: 10px 0;">
-                    <h4 style="margin: 0 0 15px 0; color: #333;">🔧 API连接测试</h4>
+                    <h4 style="margin: 0 0 15px 0; color: #333;">🔧 ทดสอบการเชื่อมต่อ API</h4>
 
                     <div id="api-test-results" style="font-family: monospace; font-size: 12px; background: #ffffff; padding: 15px; border-radius: 4px; border: 1px solid #ddd; max-height: 300px; overflow-y: auto;">
-                        <div style="color: #007bff;">📊 正在运行测试...</div>
+                        <div style="color: #007bff;">📊 กำลังรันการทดสอบ...</div>
                     </div>
 
                     <div style="margin-top: 15px;">
                         <button onclick="window.mobileContextEditor.renderMobileChatMessages()" style="
                             background: #007bff; color: white; border: none; padding: 10px 20px;
                             border-radius: 5px; cursor: pointer; width: 100%;
-                        ">🔙 返回消息列表</button>
+                        ">🔙 กลับไปยังรายการข้อความ</button>
                     </div>
                 </div>
             `;
 
       $('#mobile-context-editor-content').html(testResultHtml);
 
-      // 运行测试
+      // รันการทดสอบ
       const results = [];
       const addResult = (test, result, details = '') => {
         results.push(`${result === 'PASS' ? '✅' : '❌'} ${test}: ${result} ${details}`);
         document.getElementById('api-test-results').innerHTML = results.join('<br>');
       };
 
-      // 测试1: SillyTavern基础对象
+      // ทดสอบ 1: ออบเจกต์พื้นฐาน SillyTavern
       addResult('SillyTavern Object', window.SillyTavern ? 'PASS' : 'FAIL');
 
-      // 测试2: 获取上下文
+      // ทดสอบ 2: ดึงคอนเท็กซ์
       let context = null;
       try {
         context = window.SillyTavern.getContext();
@@ -1457,39 +1459,39 @@ class MobileContextEditor {
       }
 
       if (context) {
-        // 测试3: 聊天数据
+        // ทดสอบ 3: ข้อมูลแชท
         addResult('Chat Data', Array.isArray(context.chat) ? 'PASS' : 'FAIL', `- ${context.chat?.length || 0} ข้อความ`);
 
-        // 测试4: 角色数据
+        // ทดสอบ 4: ข้อมูลตัวละคร
         addResult(
           'Character Data',
           Array.isArray(context.characters) ? 'PASS' : 'FAIL',
           `- ${context.characters?.length || 0} ตัวละคร`,
         );
 
-        // 测试5: 当前角色
+        // ทดสอบ 5: ตัวละครปัจจุบัน
         addResult(
           'Current Character',
           context.characterId !== undefined ? 'PASS' : 'FAIL',
           `- ID: ${context.characterId}`,
         );
 
-        // 测试6: 用户名
+        // ทดสอบ 6: ชื่อผู้ใช้
         addResult('Username', context.name1 ? 'PASS' : 'FAIL', `- ${context.name1}`);
 
-        // 测试7: 角色名
+        // ทดสอบ 7: ชื่อตัวละคร
         addResult('Character Name', context.name2 ? 'PASS' : 'FAIL', `- ${context.name2}`);
 
-        // 测试8: 保存函数
+        // ทดสอบ 8: ฟังก์ชันบันทึก
         addResult('Save Function', typeof context.saveChat === 'function' ? 'PASS' : 'FAIL');
 
-        // 测试9: 重载函数
+        // ทดสอบ 9: ฟังก์ชันโหลดซ้ำ
         addResult('Reload Function', typeof context.reloadCurrentChat === 'function' ? 'PASS' : 'FAIL');
 
-        // 测试10: 添加消息函数
+        // ทดสอบ 10: ฟังก์ชันเพิ่มข้อความ
         addResult('Add Message Function', typeof context.addOneMessage === 'function' ? 'PASS' : 'FAIL');
 
-        // 测试11: 尝试获取聊天数据
+        // ทดสอบ 11: ลองดึงข้อมูลแชท
         try {
           const chatData = this.getCurrentChatData();
           addResult('Get Chat Data', chatData ? 'PASS' : 'FAIL', `- ${chatData?.messages?.length || 0} ข้อความ`);
@@ -1497,7 +1499,7 @@ class MobileContextEditor {
           addResult('Get Chat Data', 'FAIL', `- ${error.message}`);
         }
 
-        // 测试12: 尝试获取统计信息
+        // ทดสอบ 12: ลองดึงข้อมูลสถิติ
         try {
           const stats = this.getStatistics();
           addResult('Get Statistics', stats ? 'PASS' : 'FAIL', `- ${stats?.totalMessages || 0} ข้อความ`);
@@ -1506,28 +1508,28 @@ class MobileContextEditor {
         }
       }
 
-      // 添加总结
+      // เพิ่มสรุป
       const passCount = results.filter(r => r.includes('✅')).length;
       const totalCount = results.length;
       results.push('');
-      results.push(`📊 测试总结: ${passCount}/${totalCount} 项通过`);
+      results.push(`📊 สรุปการทดสอบ: ${passCount}/${totalCount} รายการผ่าน`);
       results.push('');
-      results.push('🔧 如果有测试失败，请检查SillyTavern是否完全加载');
+      results.push('🔧 หากมีการทดสอบล้มเหลว กรุณาตรวจสอบว่า SillyTavern โหลดสมบูรณ์หรือไม่');
 
       document.getElementById('api-test-results').innerHTML = results.join('<br>');
-      this.updateStatus(`🔧 API测试完成 - ${passCount}/${totalCount} 项通过`);
+      this.updateStatus(`🔧 ทดสอบ API เสร็จสิ้น - ${passCount}/${totalCount} รายการผ่าน`);
     } catch (error) {
-      console.error('[Mobile Context Editor] API测试失败:', error);
-      this.updateStatus(`❌ API测试失败: ${error.message}`);
+      console.error('[Mobile Context Editor] ทดสอบ API ล้มเหลว:', error);
+      this.updateStatus(`❌ ทดสอบ API ล้มเหลว: ${error.message}`);
     }
   }
 
   /**
-   * 分页控制方法
+   * วิธีการควบคุมการแบ่งหน้า
    */
 
   /**
-   * 跳转到指定页
+   * ข้ามไปยังหน้าที่ระบุ
    */
   async goToPage(pageIndex) {
     if (pageIndex < 0 || pageIndex >= this.totalPages) {
@@ -1540,24 +1542,24 @@ class MobileContextEditor {
 
     try {
       if (this.usePaginationMode) {
-        // 分页模式：从服务器加载指定页
+        // โหมดแบ่งหน้า: โหลดหน้าที่ระบุจากเซิร์ฟเวอร์
         const chatData = await this.loadChatDataWithPagination(pageIndex, this.pageSize);
         await this.renderPaginatedMessages(chatData.messages);
       } else {
-        // 内存模式：直接渲染
+        // โหมดหน่วยความจำ: เรนเดอร์โดยตรง
         await this.renderMobileChatMessages();
       }
 
-      this.updateStatus(`📄 已跳转到第 ${pageIndex + 1} 页`);
+      this.updateStatus(`📄 ข้ามไปยังหน้า ${pageIndex + 1} แล้ว`);
     } catch (error) {
-      this.updateStatus(`❌ 跳转失败: ${error.message}`);
+      this.updateStatus(`❌ ข้ามล้มเหลว: ${error.message}`);
     } finally {
       this.showLoadingIndicator(false);
     }
   }
 
   /**
-   * 更改每页显示数量
+   * เปลี่ยนจำนวนที่แสดงต่อหน้า
    */
   async changePageSize(newPageSize) {
     if (newPageSize === this.pageSize) return;
@@ -1567,13 +1569,13 @@ class MobileContextEditor {
 
     try {
       if (this.usePaginationMode) {
-        // 分页模式：重新加载当前页
+        // โหมดแบ่งหน้า: โหลดหน้าปัจจุบันใหม่
         const chatData = await this.loadChatDataWithPagination(this.currentPage, newPageSize);
         this.totalPages = chatData.totalPages;
         this.currentPage = Math.min(this.currentPage, this.totalPages - 1);
         await this.renderPaginatedMessages(chatData.messages);
       } else {
-        // 内存模式：重新计算分页
+        // โหมดหน่วยความจำ: คำนวณการแบ่งหน้าใหม่
         if (this.currentChatData) {
           this.totalPages = Math.ceil(this.currentChatData.messages.length / this.pageSize);
           this.currentPage = Math.min(this.currentPage, this.totalPages - 1);
@@ -1582,23 +1584,23 @@ class MobileContextEditor {
       }
 
       this.updatePaginationInfo();
-      this.updateStatus(`📄 每页显示已更改为 ${newPageSize} 条`);
+      this.updateStatus(`📄 เปลี่ยนการแสดงต่อหน้าเป็น ${newPageSize} ข้อความแล้ว`);
     } catch (error) {
-      this.updateStatus(`❌ 更改页面大小失败: ${error.message}`);
+      this.updateStatus(`❌ เปลี่ยนขนาดหน้าล้มเหลว: ${error.message}`);
     } finally {
       this.showLoadingIndicator(false);
     }
   }
 
   /**
-   * 显示/隐藏分页控制
+   * แสดง/ซ่อนการควบคุมการแบ่งหน้า
    */
   showPaginationControls(show) {
     $('#mobile-pagination-controls').toggle(show);
   }
 
   /**
-   * 更新分页信息显示
+   * อัปเดตการแสดงข้อมูลการแบ่งหน้า
    */
   updatePaginationInfo() {
     if (!this.currentChatData) return;
@@ -1608,26 +1610,26 @@ class MobileContextEditor {
     const endIndex = Math.min((this.currentPage + 1) * this.pageSize, totalMessages);
 
     $('#mobile-page-info').text(
-      `第 ${this.currentPage + 1} 页，共 ${this.totalPages} 页 (${startIndex}-${endIndex}/${totalMessages})`,
+      `หน้า ${this.currentPage + 1} จาก ${this.totalPages} (${startIndex}-${endIndex}/${totalMessages})`,
     );
 
-    // 更新按钮状态
+    // อัปเดตสถานะปุ่ม
     $('#mobile-first-page, #mobile-prev-page').prop('disabled', this.currentPage === 0);
     $('#mobile-next-page, #mobile-last-page').prop('disabled', this.currentPage === this.totalPages - 1);
 
-    // 更新页面大小选择器
+    // อัปเดต selector ขนาดหน้า
     $('#mobile-page-size').val(this.pageSize);
   }
 
   /**
-   * 显示/隐藏加载指示器
+   * แสดง/ซ่อนตัวบ่งชี้การโหลด
    */
   showLoadingIndicator(show) {
     $('#mobile-loading-indicator').toggle(show);
   }
 
   /**
-   * 日志记录
+   * บันทึกล็อก
    */
   log(level, message, data = null) {
     const timestamp = new Date().toLocaleTimeString();
@@ -1635,7 +1637,7 @@ class MobileContextEditor {
 
     switch (level) {
       case 'info':
-        // 修复：只在调试模式下输出info级别日志
+        // แก้ไข: แสดงล็อกระดับ info เฉพาะในโหมดดีบัก
         if (window.DEBUG_CONTEXT_EDITOR) {
           console.log(logMessage, data);
         }
@@ -1654,10 +1656,10 @@ class MobileContextEditor {
   }
 }
 
-// 创建全局实例
+// สร้างอินสแตนซ์ระดับ global
 window.mobileContextEditor = new MobileContextEditor();
 
-// 添加展开消息的事件处理
+// เพิ่มการจัดการเหตุการณ์ขยายข้อความ
 $(document).on('click', '.mobile-expand-message-btn', function (e) {
   const messageIndex = parseInt($(e.target).data('index'));
   const editor = window.mobileContextEditor;
@@ -1666,7 +1668,7 @@ $(document).on('click', '.mobile-expand-message-btn', function (e) {
     const message = editor.currentChatData.messages[messageIndex];
     const fullContent = message.mes || '';
 
-    // 创建全文显示弹窗
+    // สร้าง modal แสดงข้อความเต็ม
     const fullTextModal = `
       <div id="mobile-full-text-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10001; display: flex; align-items: center; justify-content: center;">
         <div style="background: white; margin: 20px; padding: 20px; border-radius: 10px; max-width: 90%; max-height: 80%; overflow-y: auto;">
@@ -1683,4 +1685,4 @@ $(document).on('click', '.mobile-expand-message-btn', function (e) {
   }
 });
 
-console.log('[Mobile Context Editor] v2.2 移动端上下文编辑器加载完成 - 性能优化版');
+console.log('[Mobile Context Editor] v2.2 ตัวแก้ไขบริบทบนมือถือโหลดเสร็จสิ้น - เวอร์ชันปรับแต่งประสิทธิภาพ');
