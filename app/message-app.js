@@ -564,9 +564,12 @@ if (typeof window.MessageApp === 'undefined') {
         if (this.retryCount <= 10) {
           // 从5次增加到10次
           console.log(`[Message App] 重试次数: ${this.retryCount}/10`);
-          setTimeout(() => {
-            this.setupSillyTavernEventListeners();
-          }, 2000 + this.retryCount * 1000); // 增加延迟时间：2秒基础 + 递增1秒
+          setTimeout(
+            () => {
+              this.setupSillyTavernEventListeners();
+            },
+            2000 + this.retryCount * 1000,
+          ); // 增加延迟时间：2秒基础 + 递增1秒
         } else {
           console.warn('[Message App] 达到最大重试次数，但继续尝试事件监听...');
           // 修复：不立即回退到轮询，而是继续尝试事件监听
@@ -1226,7 +1229,7 @@ if (typeof window.MessageApp === 'undefined') {
           // 更新时间显示为"刚刚"
           const timeElement = item.querySelector('.time');
           if (timeElement) {
-            timeElement.textContent = '刚刚';
+            timeElement.textContent = 'เมื่อกี้';
             timeElement.classList.add('just-updated');
 
             // 5秒后恢复正常时间显示
@@ -2124,8 +2127,8 @@ if (typeof window.MessageApp === 'undefined') {
           `
                 <div class="error-state">
                     <div class="error-icon">⚠️</div>
-                    <div class="error-text">好友列表渲染失败</div>
-                    <div class="error-hint">请刷新重试</div>
+                    <div class="error-text">แสดงรายชื่อเพื่อนล้มเหลว</div>
+                    <div class="error-hint">กรุณารีเฟรชและลองใหม่</div>
                 </div>
             `
         );
@@ -2134,7 +2137,7 @@ if (typeof window.MessageApp === 'undefined') {
         return `
                 <div class="error-state">
                     <div class="error-icon">⚠️</div>
-                    <div class="error-text">加载好友列表失败</div>
+                    <div class="error-text">โหลดรายชื่อเพื่อนล้มเหลว</div>
                     <div class="error-details">${error.message}</div>
                 </div>
             `;
@@ -2171,8 +2174,8 @@ if (typeof window.MessageApp === 'undefined') {
           deleteGroupListContainer.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-icon">👥</div>
-                        <div class="empty-text">暂无群聊</div>
-                        <div class="empty-hint">请先创建群聊</div>
+                        <div class="empty-text">ยังไม่มีกลุ่มแชท</div>
+                        <div class="empty-hint">กรุณาสร้างกลุ่มแชทก่อน</div>
                     </div>
                 `;
           return;
@@ -2196,7 +2199,7 @@ if (typeof window.MessageApp === 'undefined') {
                         </div>
                         <button class="delete-group-btn" data-group-id="${group.id}" data-group-name="${group.name}">
                             <span class="delete-icon">❌</span>
-                            <span>删除</span>
+                            <span>ลบ</span>
                         </button>
                     </div>
                 `;
@@ -2214,7 +2217,7 @@ if (typeof window.MessageApp === 'undefined') {
           deleteGroupListContainer.innerHTML = `
                     <div class="error-state">
                         <div class="error-icon">⚠️</div>
-                        <div class="error-text">加载群聊列表失败</div>
+                        <div class="error-text">โหลดรายการกลุ่มแชทล้มเหลว</div>
                         <div class="error-details">${error.message}</div>
                     </div>
                 `;
@@ -2781,7 +2784,7 @@ if (typeof window.MessageApp === 'undefined') {
       panel.innerHTML = `
             <div class="special-panel-content">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h3>选择表情</h3>
+                    <h3>เลือกอิโมจิ</h3>
                     <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: none; border: none; font-size: 18px; cursor: pointer;">✕</button>
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(10, 1fr); gap: 10px; max-height: 200px; overflow-y: auto;">
@@ -3483,7 +3486,7 @@ if (typeof window.MessageApp === 'undefined') {
                 <div style="margin-bottom: 20px;">
                     <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">请输入语音内容：</label>
                     <textarea id="voice-content-input"
-                             placeholder="请输入要发送的语音内容，例如：我叫个外卖"
+                             placeholder="กรุณาใส่เนื้อหาเสียงที่ต้องการส่ง เช่น: ฉันสั่งอาหาร"
                              style="width: 100%; min-height: 80px; max-height: 150px; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; resize: vertical; font-family: inherit; line-height: 1.4; outline: none; transition: border-color 0.3s ease;"
                              maxlength="200"></textarea>
                     <div style="text-align: right; margin-top: 5px; font-size: 12px; color: #999;">
@@ -3594,7 +3597,7 @@ if (typeof window.MessageApp === 'undefined') {
 
       if (!targetInput) {
         console.error('找不到目标输入框');
-        this.showToast('未找到输入框，请先打开聊天窗口', 'error');
+        this.showToast('ไม่พบช่องป้อนข้อความ กรุณาเปิดหน้าต่างแชทก่อน', 'error');
         return;
       }
 
@@ -3647,7 +3650,7 @@ if (typeof window.MessageApp === 'undefined') {
       }
 
       // 显示成功提示
-      this.showToast('语音消息已插入到输入框', 'success');
+      this.showToast('แทรกข้อความเสียงลงช่องป้อนข้อความแล้ว', 'success');
 
       console.log('语音消息已插入:', voiceMessage);
     }
@@ -3697,7 +3700,7 @@ if (typeof window.MessageApp === 'undefined') {
 
       if (!targetInput) {
         console.error('找不到目标输入框');
-        this.showToast('未找到输入框，请先打开聊天窗口', 'error');
+        this.showToast('ไม่พบช่องป้อนข้อความ กรุณาเปิดหน้าต่างแชทก่อน', 'error');
         return;
       }
 
@@ -3752,7 +3755,7 @@ if (typeof window.MessageApp === 'undefined') {
       }
 
       // 显示成功提示
-      this.showToast('表情包已插入到输入框', 'success');
+      this.showToast('แทรกสติกเกอร์ลงช่องป้อนข้อความแล้ว', 'success');
 
       console.log('表情包消息已插入:', stickerMessage);
     }
@@ -3831,10 +3834,10 @@ if (typeof window.MessageApp === 'undefined') {
         this.updateStickerPanel(stickerImages);
 
         // 显示成功提示
-        this.showToast('表情包配置已刷新', 'success');
+        this.showToast('รีเฟรชการตั้งค่าสติกเกอร์แล้ว', 'success');
       } catch (error) {
         console.error('[Message App] 刷新表情包配置失败:', error);
-        this.showToast('刷新失败，请检查世界书配置', 'error');
+        this.showToast('รีเฟรชล้มเหลว กรุณาตรวจสอบการตั้งค่า World Book', 'error');
       } finally {
         // 恢复按钮状态
         if (refreshBtn) {
@@ -3936,7 +3939,7 @@ if (typeof window.MessageApp === 'undefined') {
                 <div style="margin-bottom: 20px;">
                     <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">请输入红包金额：</label>
                     <input type="number" id="redpack-amount-input"
-                           placeholder="请输入金额，例如：88.88"
+                           placeholder="กรุณาใส่จำนวนเงิน เช่น: 88.88"
                            step="0.01" min="0.01" max="9999999"
                            style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; transition: border-color 0.3s ease;" />
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px; font-size: 12px; color: #999;">
@@ -3948,7 +3951,7 @@ if (typeof window.MessageApp === 'undefined') {
                 <div style="margin-bottom: 20px;">
                     <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">红包祝福语（可选）：</label>
                     <input type="text" id="redpack-message-input"
-                           placeholder="恭喜发财，大吉大利"
+                           placeholder="ร่ำรวยเงินทอง โชคดีมีชัย"
                            maxlength="20"
                            style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; transition: border-color 0.3s ease;" />
                     <div style="text-align: right; margin-top: 5px; font-size: 12px; color: #999;">
@@ -4095,7 +4098,7 @@ if (typeof window.MessageApp === 'undefined') {
 
       if (!targetInput) {
         console.error('找不到目标输入框');
-        this.showToast('未找到输入框，请先打开聊天窗口', 'error');
+        this.showToast('ไม่พบช่องป้อนข้อความ กรุณาเปิดหน้าต่างแชทก่อน', 'error');
         return;
       }
 
@@ -4147,7 +4150,7 @@ if (typeof window.MessageApp === 'undefined') {
       }
 
       // 显示成功提示
-      this.showToast(`红包已插入到输入框：￥${amount.toFixed(2)}`, 'success');
+      this.showToast(`แทรกซองแดงลงช่องป้อนข้อความแล้ว: ￥${amount.toFixed(2)}`, 'success');
 
       console.log('红包消息已插入:', redpackMessage);
     }
@@ -4169,7 +4172,7 @@ if (typeof window.MessageApp === 'undefined') {
         console.warn('[Message App] AttachmentSender未加载，尝试加载...');
         this.loadAttachmentSender();
         // 显示加载提示
-        this.showToast('正在加载附件功能...', 'info');
+        this.showToast('กำลังโหลดฟังก์ชันแนบไฟล์...', 'info');
         return;
       }
 
@@ -4211,7 +4214,7 @@ if (typeof window.MessageApp === 'undefined') {
                         transition: all 0.3s ease;
                     ">
                         <div style="font-size: 48px; margin-bottom: 10px;">📎</div>
-                        <div style="font-size: 16px; color: #666; margin-bottom: 10px;">点击选择文件或拖拽文件到此处</div>
+                        <div style="font-size: 16px; color: #666; margin-bottom: 10px;">คลิกเลือกไฟล์หรือลากไฟล์มาที่นี่</div>
                         <div style="font-size: 12px; color: #999;">
                             支持图片、文档、压缩包等文件类型<br>
                             最大文件大小：10MB
@@ -4228,8 +4231,8 @@ if (typeof window.MessageApp === 'undefined') {
                 </div>
 
                 <div style="margin-bottom: 20px;">
-                    <h4 style="margin: 0 0 10px 0; color: #555; font-size: 14px;">附加消息（可选）：</h4>
-                    <textarea id="attachment-message-input" placeholder="输入要一起发送的消息内容，支持换行发送多条消息..."
+                    <h4 style="margin: 0 0 10px 0; color: #555; font-size: 14px;">ข้อความเพิ่มเติม (ไม่บังคับ):</h4>
+                    <textarea id="attachment-message-input" placeholder="ใส่ข้อความที่ต้องการส่งพร้อมกัน รองรับขึ้นบรรทัดใหม่เพื่อส่งหลายข้อความ..."
                               style="width: 100%; min-height: 80px; padding: 10px; border: 1px solid #ddd; border-radius: 6px; resize: vertical; font-size: 14px; font-family: inherit; box-sizing: border-box;"
                               maxlength="1000"></textarea>
                     <div style="font-size: 12px; color: #999; margin-top: 5px;">
@@ -4318,7 +4321,7 @@ if (typeof window.MessageApp === 'undefined') {
           console.log('[Message App] 🔍 附加消息内容:', additionalMessages);
 
           sendBtn.disabled = true;
-          sendBtn.textContent = '发送中...';
+          sendBtn.textContent = 'กำลังส่ง...';
           sendBtn.style.background = '#6c757d';
 
           try {
@@ -4334,7 +4337,7 @@ if (typeof window.MessageApp === 'undefined') {
             console.log('[Message App] 🔍 处理统计:', { successCount, failCount });
 
             if (successCount > 0) {
-              this.showToast(`成功发送 ${successCount} 个附件`, 'success');
+              this.showToast(`ส่ง ${successCount} ไฟล์แนบสำเร็จ`, 'success');
             }
 
             if (failCount > 0) {
@@ -4343,17 +4346,17 @@ if (typeof window.MessageApp === 'undefined') {
                 .map(r => r.errors.join(', '))
                 .join('; ');
               console.error('[Message App] ❌ 发送失败的错误:', errors);
-              this.showToast(`${failCount} 个附件发送失败: ${errors}`, 'error');
+              this.showToast(`ส่ง ${failCount} ไฟล์แนบล้มเหลว: ${errors}`, 'error');
             }
 
             // 关闭面板
             panel.remove();
           } catch (error) {
             console.error('[Message App] ❌ 发送附件失败:', error);
-            this.showToast('发送附件失败: ' + error.message, 'error');
+            this.showToast('ส่งไฟล์แนบล้มเหลว: ' + error.message, 'error');
 
             sendBtn.disabled = false;
-            sendBtn.textContent = '发送附件';
+            sendBtn.textContent = 'ส่งไฟล์แนบ';
             sendBtn.style.background = 'linear-gradient(135deg, #007bff 0%, #0056b3 100%)';
           }
         });
@@ -4382,7 +4385,7 @@ if (typeof window.MessageApp === 'undefined') {
       };
       script.onerror = error => {
         console.error('[Message App] ❌ 附件发送器脚本加载失败:', error);
-        this.showToast('附件功能加载失败', 'error');
+        this.showToast('โหลดฟังก์ชันแนบไฟล์ล้มเหลว', 'error');
       };
 
       document.head.appendChild(script);
@@ -4505,12 +4508,12 @@ if (typeof window.MessageApp === 'undefined') {
         sendBtn.disabled = false;
         sendBtn.style.background = 'linear-gradient(135deg, #007bff 0%, #0056b3 100%)';
         sendBtn.style.cursor = 'pointer';
-        sendBtn.textContent = `发送附件 (${selectedFiles.length})`;
+        sendBtn.textContent = `ส่งไฟล์แนบ (${selectedFiles.length})`;
       } else {
         sendBtn.disabled = true;
         sendBtn.style.background = '#6c757d';
         sendBtn.style.cursor = 'not-allowed';
-        sendBtn.textContent = '无有效文件';
+        sendBtn.textContent = 'ไม่มีไฟล์ที่ใช้ได้';
       }
     }
 
@@ -4704,9 +4707,9 @@ if (typeof window.MessageApp === 'undefined') {
           appContent.innerHTML = `
                     <div class="error-state">
                         <div class="error-icon">⚠️</div>
-                        <div class="error-text">界面更新失败</div>
+                        <div class="error-text">อัปเดตหน้าจอล้มเหลว</div>
                         <div class="error-details">${error.message}</div>
-                        <button onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;">重新加载</button>
+                        <button onclick="location.reload()" style="margin-top: 10px; padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;">โหลดใหม่</button>
                     </div>
                 `;
         }
@@ -4719,7 +4722,7 @@ if (typeof window.MessageApp === 'undefined') {
 
       if (!this.currentFriendId) {
         console.error('[Message App] 没有选中的好友');
-        return '<div class="error-message">没有选中的好友</div>';
+        return '<div class="error-message">ไม่ได้เลือกเพื่อน</div>';
       }
 
       if (window.renderMessageDetailForFriend) {
@@ -4767,7 +4770,7 @@ if (typeof window.MessageApp === 'undefined') {
                     <div class="message-detail-content">
                         <div class="error-messages">
                             <div class="error-icon">⚠️</div>
-                            <div class="error-text">消息渲染器未加载</div>
+                            <div class="error-text">ตัวแสดงข้อความยังไม่โหลด</div>
                         </div>
                     </div>
                     <div class="message-detail-footer">
@@ -4879,7 +4882,7 @@ if (typeof window.MessageApp === 'undefined') {
                         <div class="message-detail-content">
                             <div class="error-messages">
                                 <div class="error-icon">⚠️</div>
-                                <div class="error-text">加载消息失败</div>
+                                <div class="error-text">โหลดข้อความล้มเหลว</div>
                                 <div class="error-details">${error.message}</div>
                             </div>
                         </div>
@@ -4896,7 +4899,7 @@ if (typeof window.MessageApp === 'undefined') {
                                         <button class="send-tool-btn" id="detail-attachment-btn" title="附件">📁</button>
                                     </div>
 
-                                    <button class="send-message-btn" id="detail-send-btn">发送</button>
+                                    <button class="send-message-btn" id="detail-send-btn">ส่ง</button>
                                 </div>
 
                             </div>

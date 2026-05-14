@@ -292,8 +292,8 @@ if (typeof window.BackpackApp === 'undefined') {
             if (!item || typeof item !== 'object') return;
 
             // 提取物品数据（变量格式：[值, 描述]）
-            const getName = (field) => item[field] && Array.isArray(item[field]) ? item[field][0] : '';
-            const getNumber = (field) => {
+            const getName = field => (item[field] && Array.isArray(item[field]) ? item[field][0] : '');
+            const getNumber = field => {
               const val = item[field] && Array.isArray(item[field]) ? item[field][0] : 0;
               return typeof val === 'number' ? val : parseFloat(val) || 0;
             };
@@ -486,7 +486,7 @@ if (typeof window.BackpackApp === 'undefined') {
         return `
                 <div class="backpack-empty-state">
                     <div class="empty-icon" style="color: #333;">🎒</div>
-                    <div class="empty-title" style="color: #333;">背包空空如也</div>
+                    <div class="empty-title" style="color: #333;">กระเป๋าว่างเปล่า</div>
                 </div>
             `;
       }
@@ -501,15 +501,14 @@ if (typeof window.BackpackApp === 'undefined') {
       const filteredItems = this.getFilteredItems();
 
       const itemCards = filteredItems
-        .map(
-          item => {
-            // 判断是否是装备类物品（可以穿戴）
-            const isEquipment = item.type === '装备';
-            const actionButton = isEquipment
-              ? `<button class="equip-item-btn" data-item-id="${item.id}" data-item-name="${item.name}">装备</button>`
-              : `<button class="use-item-btn" data-item-id="${item.id}">使用</button>`;
+        .map(item => {
+          // 判断是否是装备类物品（可以穿戴）
+          const isEquipment = item.type === '装备';
+          const actionButton = isEquipment
+            ? `<button class="equip-item-btn" data-item-id="${item.id}" data-item-name="${item.name}">สวมใส่</button>`
+            : `<button class="use-item-btn" data-item-id="${item.id}">ใช้</button>`;
 
-            return `
+          return `
             <div class="backpack-item" data-item-id="${item.id}">
                 <div class="backpack-item-info">
                     <div class="backpack-item-header">
@@ -524,8 +523,7 @@ if (typeof window.BackpackApp === 'undefined') {
                 </div>
             </div>
         `;
-          }
-        )
+        })
         .join('');
 
       // 渲染分类标签栏（可折叠）
@@ -552,7 +550,7 @@ if (typeof window.BackpackApp === 'undefined') {
           <div class="backpack-search-bar">
               <input type="text"
                      class="backpack-search-input"
-                     placeholder="搜索物品名称或描述..."
+                     placeholder="ค้นหาชื่อหรือคำอธิบายของไอเทม..."
                      value="${this.searchQuery}"
                      id="backpackSearchInput">
               <button class="backpack-search-clear" id="backpackSearchClear">✕</button>
@@ -563,8 +561,8 @@ if (typeof window.BackpackApp === 'undefined') {
       return `
             <div class="backpack-item-list">
                 <div class="backpack-header">
-                    <div class="backpack-title">我的背包</div>
-                    <div class="backpack-stats">共 ${this.items.length} 种物品，总计 ${totalItems} 件</div>
+                    <div class="backpack-title">กระเป๋าของฉัน</div>
+                    <div class="backpack-stats">มี ${this.items.length} ชนิด รวม ${totalItems} ชิ้น</div>
                 </div>
                 ${categoryTabsHtml}
                 ${searchBarHtml}
@@ -676,8 +674,8 @@ if (typeof window.BackpackApp === 'undefined') {
                     </div>
                     <div class="backpack-item-description">${item.description}</div>
                     <div class="backpack-item-footer">
-                        <div class="backpack-item-quantity">数量: ${item.quantity}</div>
-                        <button class="use-item-btn" data-item-id="${item.id}">使用</button>
+                        <div class="backpack-item-quantity">จำนวน: ${item.quantity}</div>
+                        <button class="use-item-btn" data-item-id="${item.id}">ใช้</button>
                     </div>
                 </div>
             </div>
@@ -858,7 +856,9 @@ if (typeof window.BackpackApp === 'undefined') {
         // 1. 检查该部位是否已有装备
         const currentEquipment = mvuData.stat_data['用户']?.['当前着装']?.[slot]?.[0];
         if (currentEquipment && currentEquipment.trim() !== '') {
-          const confirm = window.confirm(`该部位已装备"${currentEquipment}"，是否替换？\n（旧装备会返回背包）`);
+          const confirm = window.confirm(
+            `ตำแหน่งนี้สวมใส่ "${currentEquipment}" อยู่แล้ว ต้องการแทนที่หรือไม่?\n(อุปกรณ์เก่าจะกลับเข้ากระเป๋า)`,
+          );
           if (!confirm) {
             console.log('[Backpack App] 用户取消替换');
             return;
@@ -874,20 +874,20 @@ if (typeof window.BackpackApp === 'undefined') {
             const currentCount = newBackpackCategory[currentEquipment]['数量']?.[0] || 0;
             newBackpackCategory[currentEquipment] = {
               ...newBackpackCategory[currentEquipment],
-              数量: [currentCount + 1, newBackpackCategory[currentEquipment]['数量']?.[1] || '']
+              数量: [currentCount + 1, newBackpackCategory[currentEquipment]['数量']?.[1] || ''],
             };
           } else {
             newBackpackCategory[currentEquipment] = {
               名称: [currentEquipment, ''],
               数量: [1, ''],
               效果: [`${slot}装备`, ''],
-              品质: ['普通', '']
+              品质: ['普通', ''],
             };
           }
 
           await window.Mvu.setMvuVariable(mvuData, backpackPath, newBackpackCategory, {
             reason: `${currentEquipment}返回背包`,
-            is_recursive: false
+            is_recursive: false,
           });
           console.log('[Backpack App] 旧装备已返回背包:', currentEquipment);
         }
@@ -895,7 +895,7 @@ if (typeof window.BackpackApp === 'undefined') {
         // 2. 穿上新装备
         await window.Mvu.setMvuVariable(mvuData, `用户.当前着装.${slot}[0]`, itemName, {
           reason: `装备${itemName}`,
-          is_recursive: false
+          is_recursive: false,
         });
         console.log('[Backpack App] 已装备到', slot);
 
@@ -917,14 +917,14 @@ if (typeof window.BackpackApp === 'undefined') {
               // 数量减1
               newBackpackCategory[itemName] = {
                 ...newBackpackCategory[itemName],
-                数量: [currentCount - 1, newBackpackCategory[itemName]['数量']?.[1] || '']
+                数量: [currentCount - 1, newBackpackCategory[itemName]['数量']?.[1] || ''],
               };
               console.log('[Backpack App] 物品数量-1:', itemName, '剩余:', currentCount - 1);
             }
 
             await window.Mvu.setMvuVariable(mvuData, backpackPath, newBackpackCategory, {
               reason: `装备${itemName}`,
-              is_recursive: false
+              is_recursive: false,
             });
           }
         }
@@ -936,7 +936,7 @@ if (typeof window.BackpackApp === 'undefined') {
         await window.Mvu.replaceMvuData(mvuData, { type: 'message', message_id: targetMessageId });
 
         console.log('[Backpack App] ✅ 装备成功');
-        alert(`已将"${itemName}"装备到${slot}`);
+        alert(`สวมใส่ "${itemName}" ที่ ${slot} แล้ว`);
 
         // 刷新显示
         setTimeout(() => {
@@ -946,16 +946,15 @@ if (typeof window.BackpackApp === 'undefined') {
             window.statusApp.refreshStatusData();
           }
         }, 300);
-
       } catch (error) {
         console.error('[Backpack App] 装备失败:', error);
-        alert('装备失败: ' + error.message);
+        alert('สวมใส่ล้มเหลว: ' + error.message);
       }
     }
 
     // 显示选择装备部位的对话框
     showEquipSlotModal(itemName) {
-      return new Promise((resolve) => {
+      return new Promise(resolve => {
         const slots = ['头部', '耳朵', '上衣', '下装', '内衣', '内裤', '袜子', '鞋子'];
 
         // 创建模态框HTML
@@ -963,15 +962,19 @@ if (typeof window.BackpackApp === 'undefined') {
           <div class="backpack-equip-modal-overlay" id="equipModalOverlay">
             <div class="backpack-equip-modal">
               <div class="backpack-equip-modal-header">
-                <h3>选择装备部位</h3>
+                <h3>เลือกตำแหน่งสวมใส่</h3>
                 <button class="backpack-equip-modal-close" id="equipModalClose">✕</button>
               </div>
               <div class="backpack-equip-modal-body">
                 <p>将"${itemName}"装备到：</p>
                 <div class="backpack-equip-slot-list">
-                  ${slots.map(slot => `
+                  ${slots
+                    .map(
+                      slot => `
                     <button class="backpack-equip-slot-btn" data-slot="${slot}">${slot}</button>
-                  `).join('')}
+                  `,
+                    )
+                    .join('')}
                 </div>
               </div>
             </div>
@@ -989,7 +992,7 @@ if (typeof window.BackpackApp === 'undefined') {
 
         // 点击部位按钮
         document.querySelectorAll('.backpack-equip-slot-btn').forEach(btn => {
-          btn.addEventListener('click', (e) => {
+          btn.addEventListener('click', e => {
             const slot = e.target.getAttribute('data-slot');
             modalContainer.remove();
             resolve(slot);
@@ -1003,7 +1006,7 @@ if (typeof window.BackpackApp === 'undefined') {
         });
 
         // 点击遮罩层关闭
-        overlay.addEventListener('click', (e) => {
+        overlay.addEventListener('click', e => {
           if (e.target === overlay) {
             modalContainer.remove();
             resolve(null);
@@ -1023,12 +1026,12 @@ if (typeof window.BackpackApp === 'undefined') {
           </div>
           <div class="modal-body">
             <div class="form-group">
-              <label class="form-label">请输入要对谁使用该物品：</label>
-              <input type="text" class="form-input" id="useTarget" placeholder="例如：自己、队友、敌人等">
+              <label class="form-label">กรุณาใส่ผู้ที่จะใช้ไอเทมนี้:</label>
+              <input type="text" class="form-input" id="useTarget" placeholder="เช่น: ตัวเอง, เพื่อนร่วมทีม, ศัตรู ฯลฯ">
             </div>
             <div class="form-group">
-              <label class="form-label">请输入要如何使用该物品：</label>
-              <input type="text" class="form-input" id="useMethod" placeholder="例如：直接食用、投掷、涂抹等">
+              <label class="form-label">กรุณาใส่วิธีใช้ไอเทมนี้:</label>
+              <input type="text" class="form-input" id="useMethod" placeholder="เช่น: กินตรงๆ, ขว้าง, ทา ฯลฯ">
             </div>
             <div class="form-group">
               <label class="form-label">使用数量：</label>
@@ -1039,8 +1042,8 @@ if (typeof window.BackpackApp === 'undefined') {
               </div>
             </div>
             <div class="modal-actions">
-              <button class="modal-btn btn-primary" id="confirmUse">使用</button>
-              <button class="modal-btn btn-secondary" id="cancelUse">取消</button>
+              <button class="modal-btn btn-primary" id="confirmUse">ใช้</button>
+              <button class="modal-btn btn-secondary" id="cancelUse">ยกเลิก</button>
             </div>
           </div>
         </div>
@@ -1098,7 +1101,7 @@ if (typeof window.BackpackApp === 'undefined') {
           const message = await this.generateUseMessageWithContext(item, target, method, currentQuantity);
           this.sendToSillyTavern(message);
 
-          this.showToast(`使用了 ${currentQuantity} 个 ${item.name}`, 'success');
+          this.showToast(`ใช้ ${currentQuantity} ${item.name} แล้ว`, 'success');
 
           // 关闭弹窗
           modal.remove();
@@ -1109,7 +1112,7 @@ if (typeof window.BackpackApp === 'undefined') {
           }, 500);
         } catch (error) {
           console.error('[Backpack App] 使用物品失败:', error);
-          this.showToast('使用物品失败: ' + error.message, 'error');
+          this.showToast('ใช้ไอเทมล้มเหลว: ' + error.message, 'error');
         }
       });
 
@@ -1502,14 +1505,14 @@ window.getBackpackAppContent = function () {
 
   if (!window.backpackApp) {
     console.error('[Backpack App] backpackApp实例不存在');
-    return '<div class="error-message">背包应用加载失败</div>';
+    return '<div class="error-message">โหลดแอปกระเป๋าล้มเหลว</div>';
   }
 
   try {
     return window.backpackApp.getAppContent();
   } catch (error) {
     console.error('[Backpack App] 获取应用内容失败:', error);
-    return '<div class="error-message">获取内容失败</div>';
+    return '<div class="error-message">ดึงข้อมูลล้มเหลว</div>';
   }
 };
 

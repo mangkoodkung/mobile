@@ -833,7 +833,7 @@ if (typeof window.LiveApp === 'undefined') {
         console.log('[Live App] 直播已开始');
       } catch (error) {
         console.error('[Live App] 开始直播失败:', error);
-        this.showToast('开始直播失败: ' + error.message, 'error');
+        this.showToast('เริ่มไลฟ์ล้มเหลว: ' + error.message, 'error');
       }
     }
 
@@ -857,11 +857,11 @@ if (typeof window.LiveApp === 'undefined') {
         // 更新界面
         this.updateAppContent();
 
-        this.showToast('直播已结束', 'success');
+        this.showToast('จบไลฟ์แล้ว', 'success');
         console.log('[Live App] 直播已结束');
       } catch (error) {
         console.error('[Live App] 结束直播失败:', error);
-        this.showToast('结束直播失败: ' + error.message, 'error');
+        this.showToast('จบไลฟ์ล้มเหลว: ' + error.message, 'error');
       }
     }
 
@@ -886,7 +886,7 @@ if (typeof window.LiveApp === 'undefined') {
         console.log('[Live App] 互动消息已发送');
       } catch (error) {
         console.error('[Live App] 继续互动失败:', error);
-        this.showToast('发送互动失败: ' + error.message, 'error');
+        this.showToast('ส่งการโต้ตอบล้มเหลว: ' + error.message, 'error');
       }
     }
 
@@ -1632,7 +1632,7 @@ if (typeof window.LiveApp === 'undefined') {
         }
       } catch (error) {
         console.error('[Live App] 转换直播格式失败:', error);
-        this.showToast('转换直播格式失败: ' + error.message, 'error');
+        this.showToast('แปลงรูปแบบไลฟ์ล้มเหลว: ' + error.message, 'error');
       }
     }
 
@@ -2155,19 +2155,22 @@ if (typeof window.LiveApp === 'undefined') {
       const baseDelay = 150;
       const stepDelay = 700; // ≈ 0.7 秒/条
       nodes.forEach((el, idx) => {
-        setTimeout(() => {
-          // 显示并触发过渡
-          el.style.display = '';
-          // 强制触发一次 reflow，保证过渡生效
-          // eslint-disable-next-line no-unused-expressions
-          el.offsetHeight;
-          el.classList.add('appear-show');
-          // 每条出现后，若容器存在则将其滚动到可见底部（瞬时，无动画）
-          const container = document.getElementById('danmaku-container');
-          if (container && el?.scrollIntoView) {
-            el.scrollIntoView({ block: 'end', inline: 'nearest' });
-          }
-        }, baseDelay + idx * stepDelay);
+        setTimeout(
+          () => {
+            // 显示并触发过渡
+            el.style.display = '';
+            // 强制触发一次 reflow，保证过渡生效
+            // eslint-disable-next-line no-unused-expressions
+            el.offsetHeight;
+            el.classList.add('appear-show');
+            // 每条出现后，若容器存在则将其滚动到可见底部（瞬时，无动画）
+            const container = document.getElementById('danmaku-container');
+            if (container && el?.scrollIntoView) {
+              el.scrollIntoView({ block: 'end', inline: 'nearest' });
+            }
+          },
+          baseDelay + idx * stepDelay,
+        );
       });
     }
   }
@@ -2183,7 +2186,7 @@ window.getLiveAppContent = function () {
 
   if (!window.liveApp) {
     console.error('[Live App] liveApp实例不存在');
-    return '<div class="error-message">直播应用加载失败</div>';
+    return '<div class="error-message">โหลดแอปไลฟ์ล้มเหลว</div>';
   }
 
   try {
@@ -2192,7 +2195,7 @@ window.getLiveAppContent = function () {
     return window.liveApp.getAppContent();
   } catch (error) {
     console.error('[Live App] 获取应用内容失败:', error);
-    return '<div class="error-message">直播应用内容加载失败</div>';
+    return '<div class="error-message">โหลดเนื้อหาแอปไลฟ์ล้มเหลว</div>';
   }
 };
 

@@ -789,17 +789,17 @@ if (typeof window.MessageRenderer === 'undefined') {
                         <div class="message-stats">
                             显示最新 ${latestMessages.length}/${totalCount} 条消息
                             (我方: ${messageData.myMessages.length}, 对方: ${messageData.otherMessages.length}, 群聊: ${
-          messageData.groupMessages.length
-        })
+                              messageData.groupMessages.length
+                            })
                         </div>
                         <div class="message-send-area">
                             <div class="send-input-container">
-                                <textarea id="message-send-input" placeholder="发送消息..." maxlength="1000"></textarea>
+                                <textarea id="message-send-input" placeholder="ส่งข้อความ..." maxlength="1000"></textarea>
                                 <div class="send-tools">
-                                    <button class="send-tool-btn" id="send-emoji-btn" title="表情"><i class="fas fa-smile"></i></button>
-                                    <button class="send-tool-btn" id="send-sticker-btn" title="表情包"><i class="fas fa-image"></i></button>
-                                    <button class="send-tool-btn" id="send-voice-btn" title="语音"><i class="fas fa-microphone"></i></button>
-                                    <button class="send-tool-btn" id="send-redpack-btn" title="红包"><i class="fas fa-gift"></i></button>
+                                    <button class="send-tool-btn" id="send-emoji-btn" title="อิโมจิ"><i class="fas fa-smile"></i></button>
+                                    <button class="send-tool-btn" id="send-sticker-btn" title="สติกเกอร์"><i class="fas fa-image"></i></button>
+                                    <button class="send-tool-btn" id="send-voice-btn" title="เสียง"><i class="fas fa-microphone"></i></button>
+                                    <button class="send-tool-btn" id="send-redpack-btn" title="ซองแดง"><i class="fas fa-gift"></i></button>
                                 </div>
                             </div>
                             <button class="send-message-btn" id="send-message-btn"><i class="fas fa-paper-plane"></i></button>
@@ -1506,8 +1506,8 @@ if (typeof window.MessageRenderer === 'undefined') {
                 <div class="message-detail-content" id="message-detail-content" data-background-id="${friendId}">
                     <div class="empty-messages">
                         <div class="empty-icon">💬</div>
-                        <div class="empty-text">暂无消息记录</div>
-                        <div class="empty-hint">开始发送消息来建立聊天记录</div>
+                        <div class="empty-text">ยังไม่มีประวัติข้อความ</div>
+                        <div class="empty-hint">เริ่มส่งข้อความเพื่อสร้างประวัติแชท</div>
                     </div>
                 </div>
                 <div class="message-detail-footer">
@@ -1516,12 +1516,12 @@ if (typeof window.MessageRenderer === 'undefined') {
                     </div>
                     <div class="message-send-area">
                         <div class="send-input-container">
-                            <textarea id="message-send-input" placeholder="发送消息..." maxlength="1000"></textarea>
+                            <textarea id="message-send-input" placeholder="ส่งข้อความ..." maxlength="1000"></textarea>
                             <div class="send-tools">
-                                <button class="send-tool-btn" id="send-emoji-btn" title="表情"><i class="fas fa-smile"></i></button>
-                                <button class="send-tool-btn" id="send-sticker-btn" title="表情包"><i class="fas fa-image"></i></button>
-                                <button class="send-tool-btn" id="send-voice-btn" title="语音"><i class="fas fa-microphone"></i></button>
-                                <button class="send-tool-btn" id="send-redpack-btn" title="红包"><i class="fas fa-gift"></i></button>
+                                <button class="send-tool-btn" id="send-emoji-btn" title="อิโมจิ"><i class="fas fa-smile"></i></button>
+                                <button class="send-tool-btn" id="send-sticker-btn" title="สติกเกอร์"><i class="fas fa-image"></i></button>
+                                <button class="send-tool-btn" id="send-voice-btn" title="เสียง"><i class="fas fa-microphone"></i></button>
+                                <button class="send-tool-btn" id="send-redpack-btn" title="ซองแดง"><i class="fas fa-gift"></i></button>
                             </div>
                         </div>
                         <button class="send-message-btn" id="send-message-btn"><i class="fas fa-paper-plane"></i></button>
@@ -1540,7 +1540,7 @@ if (typeof window.MessageRenderer === 'undefined') {
                 <div class="message-detail-content" id="message-detail-content" data-background-id="${friendId}">
                     <div class="error-messages">
                         <div class="error-icon">⚠️</div>
-                        <div class="error-text">加载消息失败</div>
+                        <div class="error-text">โหลดข้อความล้มเหลว</div>
                         <div class="error-details">${errorMessage}</div>
                         <button class="retry-btn" onclick="window.messageRenderer.renderMessageDetail('${friendId}', '${friendName}')">
                             重试
@@ -1553,12 +1553,12 @@ if (typeof window.MessageRenderer === 'undefined') {
                     </div>
                     <div class="message-send-area">
                         <div class="send-input-container">
-                            <textarea id="message-send-input" placeholder="发送消息..." maxlength="1000"></textarea>
+                            <textarea id="message-send-input" placeholder="ส่งข้อความ..." maxlength="1000"></textarea>
                             <div class="send-tools">
-                                <button class="send-tool-btn" id="send-emoji-btn" title="表情"><i class="fas fa-smile"></i></button>
-                                <button class="send-tool-btn" id="send-sticker-btn" title="表情包"><i class="fas fa-image"></i></button>
-                                <button class="send-tool-btn" id="send-voice-btn" title="语音"><i class="fas fa-microphone"></i></button>
-                                <button class="send-tool-btn" id="send-redpack-btn" title="红包"><i class="fas fa-gift"></i></button>
+                                <button class="send-tool-btn" id="send-emoji-btn" title="อิโมจิ"><i class="fas fa-smile"></i></button>
+                                <button class="send-tool-btn" id="send-sticker-btn" title="สติกเกอร์"><i class="fas fa-image"></i></button>
+                                <button class="send-tool-btn" id="send-voice-btn" title="เสียง"><i class="fas fa-microphone"></i></button>
+                                <button class="send-tool-btn" id="send-redpack-btn" title="ซองแดง"><i class="fas fa-gift"></i></button>
                             </div>
                         </div>
                         <button class="send-message-btn" id="send-message-btn"><i class="fas fa-paper-plane"></i></button>
@@ -1875,7 +1875,7 @@ if (typeof window.MessageRenderer === 'undefined') {
       panel.innerHTML = `
             <div class="special-panel-content">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                    <h3>选择表情</h3>
+                    <h3>เลือกอิโมจิ</h3>
                     <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background: none; border: none; font-size: 18px; cursor: pointer;">✕</button>
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(10, 1fr); gap: 10px; max-height: 200px; overflow-y: auto;">
@@ -1996,7 +1996,7 @@ if (typeof window.MessageRenderer === 'undefined') {
                 <div style="margin-bottom: 20px;">
                     <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">请输入语音内容：</label>
                     <textarea id="voice-content-input"
-                             placeholder="请输入要发送的语音内容，例如：我叫个外卖"
+                             placeholder="กรุณาใส่เนื้อหาเสียงที่ต้องการส่ง เช่น: ฉันสั่งอาหาร"
                              style="width: 100%; min-height: 80px; max-height: 150px; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; resize: vertical; font-family: inherit; line-height: 1.4; outline: none; transition: border-color 0.3s ease;"
                              maxlength="200"></textarea>
                     <div style="text-align: right; margin-top: 5px; font-size: 12px; color: #999;">
@@ -2107,7 +2107,7 @@ if (typeof window.MessageRenderer === 'undefined') {
 
       if (!targetInput) {
         console.error('找不到目标输入框');
-        this.showToast('未找到输入框，请先打开聊天窗口', 'error');
+        this.showToast('ไม่พบช่องป้อนข้อความ กรุณาเปิดหน้าต่างแชทก่อน', 'error');
         return;
       }
 
@@ -2166,7 +2166,7 @@ if (typeof window.MessageRenderer === 'undefined') {
       }
 
       // 显示成功提示
-      this.showToast('语音消息已插入到输入框', 'success');
+      this.showToast('แทรกข้อความเสียงลงช่องป้อนข้อความแล้ว', 'success');
 
       console.log('语音消息已插入:', voiceMessage);
     }
@@ -2216,7 +2216,7 @@ if (typeof window.MessageRenderer === 'undefined') {
 
       if (!targetInput) {
         console.error('找不到目标输入框');
-        this.showToast('未找到输入框，请先打开聊天窗口', 'error');
+        this.showToast('ไม่พบช่องป้อนข้อความ กรุณาเปิดหน้าต่างแชทก่อน', 'error');
         return;
       }
 
@@ -2277,7 +2277,7 @@ if (typeof window.MessageRenderer === 'undefined') {
       }
 
       // 显示成功提示
-      this.showToast('表情包已插入到输入框', 'success');
+      this.showToast('แทรกสติกเกอร์ลงช่องป้อนข้อความแล้ว', 'success');
 
       console.log('表情包消息已插入:', stickerMessage);
     }
@@ -2914,7 +2914,7 @@ if (typeof window.MessageRenderer === 'undefined') {
                 <div style="margin-bottom: 20px;">
                     <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">请输入红包金额：</label>
                     <input type="number" id="redpack-amount-input"
-                           placeholder="请输入金额，例如：88.88"
+                           placeholder="กรุณาใส่จำนวนเงิน เช่น: 88.88"
                            step="0.01" min="0.01" max="9999999"
                            style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; transition: border-color 0.3s ease;" />
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 5px; font-size: 12px; color: #999;">
@@ -2926,7 +2926,7 @@ if (typeof window.MessageRenderer === 'undefined') {
                 <div style="margin-bottom: 20px;">
                     <label style="display: block; margin-bottom: 8px; color: #555; font-weight: 500;">红包祝福语（可选）：</label>
                     <input type="text" id="redpack-message-input"
-                           placeholder="恭喜发财，大吉大利"
+                           placeholder="ร่ำรวยเงินทอง โชคดีมีชัย"
                            maxlength="20"
                            style="width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; transition: border-color 0.3s ease;" />
                     <div style="text-align: right; margin-top: 5px; font-size: 12px; color: #999;">
@@ -3073,7 +3073,7 @@ if (typeof window.MessageRenderer === 'undefined') {
 
       if (!targetInput) {
         console.error('找不到目标输入框');
-        this.showToast('未找到输入框，请先打开聊天窗口', 'error');
+        this.showToast('ไม่พบช่องป้อนข้อความ กรุณาเปิดหน้าต่างแชทก่อน', 'error');
         return;
       }
 
@@ -3131,7 +3131,7 @@ if (typeof window.MessageRenderer === 'undefined') {
       }
 
       // 显示成功提示
-      this.showToast(`红包已插入到输入框：￥${amount.toFixed(2)}`, 'success');
+      this.showToast(`แทรกซองแดงลงช่องป้อนข้อความแล้ว: ￥${amount.toFixed(2)}`, 'success');
 
       console.log('红包消息已插入:', redpackMessage);
     }
@@ -3148,7 +3148,7 @@ if (typeof window.MessageRenderer === 'undefined') {
       const loadMoreBtn = document.getElementById('load-more-messages-btn');
 
       if (loadMoreBtn) {
-        loadMoreBtn.textContent = '加载中...';
+        loadMoreBtn.textContent = 'กำลังโหลด...';
         loadMoreBtn.disabled = true;
       }
 
@@ -3191,7 +3191,7 @@ if (typeof window.MessageRenderer === 'undefined') {
       const messagesContainer = document.getElementById('messages-container');
 
       if (loadOlderBtn) {
-        loadOlderBtn.textContent = '⏳ 加载中...';
+        loadOlderBtn.textContent = '⏳ กำลังโหลด...';
         loadOlderBtn.disabled = true;
       }
 
@@ -3632,10 +3632,10 @@ if (typeof window.MessageRenderer === 'undefined') {
         this.updateStickerPanel(stickerImages);
 
         // 显示成功提示
-        this.showToast('表情包配置已刷新', 'success');
+        this.showToast('รีเฟรชการตั้งค่าสติกเกอร์แล้ว', 'success');
       } catch (error) {
         console.error('[Message Renderer] 刷新表情包配置失败:', error);
-        this.showToast('刷新失败，请检查世界书配置', 'error');
+        this.showToast('รีเฟรชล้มเหลว กรุณาตรวจสอบการตั้งค่า World Book', 'error');
       } finally {
         // 恢复按钮状态
         if (refreshBtn) {
@@ -3891,7 +3891,7 @@ if (typeof window.MessageRenderer === 'undefined') {
   window.renderMessageDetailForFriend = async function (friendId, friendName) {
     if (!window.messageRenderer) {
       console.error('[Message Renderer] 消息渲染器未加载');
-      return '<div>消息渲染器未加载</div>';
+      return '<div>ตัวแสดงข้อความยังไม่โหลด</div>';
     }
 
     return await window.messageRenderer.renderMessageDetail(friendId, friendName);

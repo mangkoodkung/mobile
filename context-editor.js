@@ -172,7 +172,10 @@ class MobileContextEditor {
       this.totalPages = Math.ceil(chatData.messages.length / this.pageSize);
       this.currentPage = Math.max(0, this.totalPages - 1); // 默认显示最后一页
 
-      this.log('info', `加载聊天数据成功: ${chatData.messages.length} 条消息 (${chatData.characterName}), 分为 ${this.totalPages} 页`);
+      this.log(
+        'info',
+        `加载聊天数据成功: ${chatData.messages.length} 条消息 (${chatData.characterName}), 分为 ${this.totalPages} 页`,
+      );
 
       return chatData;
     } catch (error) {
@@ -196,7 +199,7 @@ class MobileContextEditor {
     return messages.slice(startIndex, endIndex).map((msg, index) => ({
       ...msg,
       globalIndex: startIndex + index, // 全局索引
-      pageIndex: index // 页内索引
+      pageIndex: index, // 页内索引
     }));
   }
 
@@ -264,7 +267,10 @@ class MobileContextEditor {
       this.totalPages = data.totalPages;
       this.pageSize = data.pageSize;
 
-      this.log('info', `分页数据加载成功: ${data.messages.length}条消息, 总计${data.totalCount}条, 文件大小${data.fileSize}`);
+      this.log(
+        'info',
+        `分页数据加载成功: ${data.messages.length}条消息, 总计${data.totalCount}条, 文件大小${data.fileSize}`,
+      );
 
       return {
         messages: data.messages,
@@ -341,7 +347,7 @@ class MobileContextEditor {
 
       // 使用SillyTavern上下文API保存和刷新
       await context.saveChat();
-    //   await context.reloadCurrentChat(); // 重新加载当前聊天
+      //   await context.reloadCurrentChat(); // 重新加载当前聊天
 
       this.isModified = true;
       console.log(
@@ -825,7 +831,9 @@ class MobileContextEditor {
           this.updateStatus(`🔄 正在渲染消息 (分页模式)...`);
           await this.renderPaginatedMessages(chatData.messages);
 
-          this.updateStatus(`✅ 大型聊天文件加载成功！总计 ${chatData.totalCount} 条消息 (${chatData.characterName}) - 分页模式 [${chatData.fileSize}]`);
+          this.updateStatus(
+            `✅ 大型聊天文件加载成功！总计 ${chatData.totalCount} 条消息 (${chatData.characterName}) - 分页模式 [${chatData.fileSize}]`,
+          );
         } else {
           // 内存模式
           this.currentChatData = chatData;
@@ -835,7 +843,9 @@ class MobileContextEditor {
           this.updateStatus(`🔄 正在渲染消息 (内存模式)...`);
           await this.renderMobileChatMessages();
 
-          this.updateStatus(`✅ 聊天数据加载成功！共 ${chatData.messages.length} 条消息 (${chatData.characterName}) - 内存模式`);
+          this.updateStatus(
+            `✅ 聊天数据加载成功！共 ${chatData.messages.length} 条消息 (${chatData.characterName}) - 内存模式`,
+          );
         }
 
         // 显示分页控制
@@ -843,7 +853,6 @@ class MobileContextEditor {
         this.updatePaginationInfo();
         this.updateMobileButtonStates();
         this.showLoadingIndicator(false);
-
       } catch (error) {
         this.updateStatus(`❌ 加载失败: ${error.message}`);
         this.showLoadingIndicator(false);
@@ -860,9 +869,11 @@ class MobileContextEditor {
     });
 
     $(document).on('click', '#mobile-add-message-btn', async () => {
-      const content = prompt('请输入新消息内容:');
+      const content = prompt('กรุณาใส่เนื้อหาข้อความใหม่:');
       if (content) {
-        const isUser = confirm('这是用户消息吗？\n点击"确定"表示用户消息\n点击"取消"表示角色消息');
+        const isUser = confirm(
+          'นี่เป็นข้อความของผู้ใช้หรือไม่?\nคลิก "ตกลง" = ข้อความผู้ใช้\nคลิก "ยกเลิก" = ข้อความตัวละคร',
+        );
         try {
           await this.addMessage(content, isUser);
           this.renderMobileChatMessages();
@@ -925,7 +936,7 @@ class MobileContextEditor {
     $(document).on('click', '#mobile-next-page', () => this.goToPage(this.currentPage + 1));
     $(document).on('click', '#mobile-last-page', () => this.goToPage(this.totalPages - 1));
 
-    $(document).on('change', '#mobile-page-size', async (e) => {
+    $(document).on('change', '#mobile-page-size', async e => {
       const newPageSize = parseInt(e.target.value);
       await this.changePageSize(newPageSize);
     });
@@ -937,7 +948,7 @@ class MobileContextEditor {
     });
 
     $(document).on('click', '.mobile-delete-message-btn', async e => {
-      if (confirm('确定要删除这条消息吗？')) {
+      if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบข้อความนี้?')) {
         const messageIndex = parseInt($(e.target).data('index'));
         try {
           await this.deleteMessage(messageIndex);
@@ -1168,7 +1179,7 @@ class MobileContextEditor {
         $('#mobile-context-editor-content').html(`
           <div style="text-align: center; padding: 40px 20px; color: #666;">
             <div style="font-size: 48px; margin-bottom: 20px;">📭</div>
-            <p style="margin: 0; font-size: 16px;">当前页没有消息</p>
+            <p style="margin: 0; font-size: 16px;">หน้าปัจจุบันไม่มีข้อความ</p>
           </div>
         `);
         this.showLoadingIndicator(false);
@@ -1247,7 +1258,7 @@ class MobileContextEditor {
       $('#mobile-context-editor-content').html(`
         <div style="text-align: center; padding: 40px 20px; color: #666;">
           <div style="font-size: 48px; margin-bottom: 20px;">📭</div>
-          <p style="margin: 0; font-size: 16px;">当前页没有消息</p>
+          <p style="margin: 0; font-size: 16px;">หน้าปัจจุบันไม่มีข้อความ</p>
         </div>
       `);
       return;
@@ -1261,7 +1272,7 @@ class MobileContextEditor {
       const messageHtml = this.renderSingleMessage({
         ...message,
         globalIndex: message.index, // 使用服务端返回的全局索引
-        pageIndex: i
+        pageIndex: i,
       });
       html += messageHtml;
 
@@ -1291,7 +1302,7 @@ class MobileContextEditor {
     if (messageIndex >= context.chat.length) return;
 
     const message = context.chat[messageIndex];
-    const newContent = prompt('编辑消息内容:', message.mes);
+    const newContent = prompt('แก้ไขเนื้อหาข้อความ:', message.mes);
 
     if (newContent !== null) {
       try {
@@ -1343,8 +1354,8 @@ class MobileContextEditor {
                     </div>
 
                     <div style="margin-bottom: 15px;">
-                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">修改发送者名称（可选）：</label>
-                        <input type="text" id="quick-edit-name" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="留空保持不变" value="${
+                        <label style="display: block; margin-bottom: 5px; font-weight: bold;">แก้ไขชื่อผู้ส่ง (ไม่บังคับ):</label>
+                        <input type="text" id="quick-edit-name" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" placeholder="เว้นว่างเพื่อคงเดิม" value="${
                           lastMessage.name || ''
                         }">
                     </div>
@@ -1380,7 +1391,7 @@ class MobileContextEditor {
       const newName = document.getElementById('quick-edit-name').value.trim();
 
       if (!newContent.trim()) {
-        alert('消息内容不能为空');
+        alert('เนื้อหาข้อความต้องไม่ว่างเปล่า');
         return;
       }
 
@@ -1592,7 +1603,9 @@ class MobileContextEditor {
     const startIndex = this.currentPage * this.pageSize + 1;
     const endIndex = Math.min((this.currentPage + 1) * this.pageSize, totalMessages);
 
-    $('#mobile-page-info').text(`第 ${this.currentPage + 1} 页，共 ${this.totalPages} 页 (${startIndex}-${endIndex}/${totalMessages})`);
+    $('#mobile-page-info').text(
+      `第 ${this.currentPage + 1} 页，共 ${this.totalPages} 页 (${startIndex}-${endIndex}/${totalMessages})`,
+    );
 
     // 更新按钮状态
     $('#mobile-first-page, #mobile-prev-page').prop('disabled', this.currentPage === 0);
@@ -1641,7 +1654,7 @@ class MobileContextEditor {
 window.mobileContextEditor = new MobileContextEditor();
 
 // 添加展开消息的事件处理
-$(document).on('click', '.mobile-expand-message-btn', function(e) {
+$(document).on('click', '.mobile-expand-message-btn', function (e) {
   const messageIndex = parseInt($(e.target).data('index'));
   const editor = window.mobileContextEditor;
 

@@ -798,7 +798,7 @@ class MobilePhone {
     const headerRight = document.getElementById('app-header-right');
 
     if (!state) {
-      titleElement.textContent = '应用';
+      titleElement.textContent = 'แอป';
       headerRight.innerHTML = '';
       return;
     }
@@ -947,7 +947,7 @@ class MobilePhone {
 
             // 显示生成状态提示
             if (window.showMobileToast) {
-              window.showMobileToast('🚀 正在生成论坛内容...', 'info');
+              window.showMobileToast('🚀 กำลังสร้างเนื้อหาฟอรัม...', 'info');
             }
 
             // 调用生成方法
@@ -955,13 +955,13 @@ class MobilePhone {
               .generateForumContent(true) // 强制生成，不检查消息增量
               .then(() => {
                 if (window.showMobileToast) {
-                  window.showMobileToast('✅ 论坛内容生成完成', 'success');
+                  window.showMobileToast('✅ สร้างเนื้อหาฟอรัมเสร็จ', 'success');
                 }
               })
               .catch(error => {
                 console.error('[Mobile Phone] 生成论坛内容失败:', error);
                 if (window.showMobileToast) {
-                  window.showMobileToast('❌ 生成失败: ' + error.message, 'error');
+                  window.showMobileToast('❌ สร้างล้มเหลว: ' + error.message, 'error');
                 }
               });
           }
@@ -1030,18 +1030,18 @@ class MobilePhone {
           console.log('[Mobile Phone] 触发立即生成微博');
 
           // 显示处理中提示
-          MobilePhone.showToast('🔄 开始生成微博内容...', 'processing');
+          MobilePhone.showToast('🔄 เริ่มสร้างเนื้อหา Weibo...', 'processing');
 
           try {
             const result = await window.weiboManager.generateWeiboContent(true);
             if (result) {
-              MobilePhone.showToast('✅ 微博内容生成成功！已插入到第1楼层', 'success');
+              MobilePhone.showToast('✅ สร้างเนื้อหา Weibo สำเร็จ! แทรกไปยังชั้น 1 แล้ว', 'success');
             } else {
-              MobilePhone.showToast('⚠️ 微博内容生成失败或被跳过', 'warning');
+              MobilePhone.showToast('⚠️ สร้างเนื้อหา Weibo ล้มเหลวหรือถูกข้าม', 'warning');
             }
           } catch (error) {
             console.error('[Mobile Phone] 生成微博内容出错:', error);
-            MobilePhone.showToast(`❌ 生成失败: ${error.message}`, 'error');
+            MobilePhone.showToast(`❌ สร้างล้มเหลว: ${error.message}`, 'error');
           }
         } else {
           console.error('[Mobile Phone] 微博管理器未找到');
@@ -1106,7 +1106,7 @@ class MobilePhone {
             window.weiboUI.refreshWeiboList();
           }
 
-          MobilePhone.showToast(`✅ 已切换到${newIsMainAccount ? '大号' : '小号'}`, 'success');
+          MobilePhone.showToast(`✅ สลับไปยัง${newIsMainAccount ? 'บัญชีหลัก' : 'บัญชีรอง'}แล้ว`, 'success');
           console.log('[Mobile Phone] 账户已切换:', newIsMainAccount ? '大号' : '小号');
         } else {
           console.error('[Mobile Phone] 微博管理器未就绪');
@@ -1362,7 +1362,7 @@ class MobilePhone {
 
       // 显示生成状态提示
       if (window.showMobileToast) {
-        window.showMobileToast('🎭 正在生成朋友圈内容...', 'info');
+        window.showMobileToast('🎭 กำลังสร้างเนื้อหาไทม์ไลน์...', 'info');
       }
 
       // 构建发送给AI的消息
@@ -1374,18 +1374,18 @@ class MobilePhone {
         await window.friendsCircle.sendToAI(message);
 
         if (window.showMobileToast) {
-          window.showMobileToast('✅ 朋友圈内容生成完成', 'success');
+          window.showMobileToast('✅ สร้างเนื้อหาไทม์ไลน์เสร็จ', 'success');
         }
       } else {
         console.error('[Mobile Phone] 朋友圈功能未就绪');
         if (window.showMobileToast) {
-          window.showMobileToast('❌ 朋友圈功能未就绪', 'error');
+          window.showMobileToast('❌ ฟังก์ชันไทม์ไลน์ยังไม่พร้อม', 'error');
         }
       }
     } catch (error) {
       console.error('[Mobile Phone] 生成朋友圈内容失败:', error);
       if (window.showMobileToast) {
-        window.showMobileToast('❌ 生成失败: ' + error.message, 'error');
+        window.showMobileToast('❌ สร้างล้มเหลว: ' + error.message, 'error');
       }
     }
   }
@@ -1457,12 +1457,12 @@ class MobilePhone {
                         </div>
                         <div class="diary-content">
                             <div class="diary-entry">
-                                <div class="entry-date">今天</div>
-                                <div class="entry-text">今天天气很好，心情也很棒！在SillyTavern里遇到了很多有趣的角色～</div>
+                                <div class="entry-date">วันนี้</div>
+                                <div class="entry-text">วันนี้อากาศดีมาก อารมณ์ก็ดีด้วย! เจอตัวละครน่าสนใจมากมายใน SillyTavern~</div>
                             </div>
                             <div class="diary-entry">
-                                <div class="entry-date">昨天</div>
-                                <div class="entry-text">学习了新的前端技术，感觉很有成就感。</div>
+                                <div class="entry-date">เมื่อวาน</div>
+                                <div class="entry-text">เรียนรู้เทคโนโลยี frontend ใหม่ รู้สึกภูมิใจมาก</div>
                             </div>
                         </div>
                     </div>
@@ -1475,14 +1475,14 @@ class MobilePhone {
                         <div class="mail-list">
                             <div class="mail-item unread">
                                 <div class="mail-sender">SillyTavern</div>
-                                <div class="mail-subject">欢迎使用手机界面</div>
-                                <div class="mail-preview">这是一个可爱的手机界面框架...</div>
+                                <div class="mail-subject">ยินดีต้อนรับสู่หน้าจอมือถือ</div>
+                                <div class="mail-preview">นี่คือเฟรมเวิร์กหน้าจอมือถือน่ารักๆ...</div>
                                 <div class="mail-time">1小时前</div>
                             </div>
                             <div class="mail-item">
-                                <div class="mail-sender">系统通知</div>
-                                <div class="mail-subject">插件更新提醒</div>
-                                <div class="mail-preview">Mobile Context插件已更新...</div>
+                                <div class="mail-sender">การแจ้งเตือนระบบ</div>
+                                <div class="mail-subject">แจ้งเตือนอัปเดตปลั๊กอิน</div>
+                                <div class="mail-preview">ปลั๊กอิน Mobile Context อัปเดตแล้ว...</div>
                                 <div class="mail-time">2小时前</div>
                             </div>
                         </div>
@@ -1783,8 +1783,8 @@ class MobilePhone {
         <div class="loading-spinner">
           <div class="spinner-ring"></div>
         </div>
-        <div class="loading-text">正在加载 ${appTitle}...</div>
-        <div class="loading-tip">首次加载可能需要几秒钟</div>
+        <div class="loading-text">กำลังโหลด ${appTitle}...</div>
+        <div class="loading-tip">การโหลดครั้งแรกอาจใช้เวลาสักครู่</div>
         <div class="loading-progress">
           <div class="progress-bar">
             <div class="progress-fill" id="loading-progress-${appName}"></div>
@@ -1997,9 +1997,9 @@ class MobilePhone {
       document.getElementById('app-content').innerHTML = `
                 <div class="error-placeholder">
                     <div class="error-icon">❌</div>
-                    <div class="error-text">论坛加载失败</div>
+                    <div class="error-text">โหลดฟอรัมล้มเหลว</div>
                     <div class="error-detail">${error.message}</div>
-                    <button onclick="window.mobilePhone.handleForumApp()" class="retry-button">重试</button>
+                    <button onclick="window.mobilePhone.handleForumApp()" class="retry-button">ลองอีกครั้ง</button>
                 </div>
             `;
     }
@@ -2099,9 +2099,9 @@ class MobilePhone {
       document.getElementById('app-content').innerHTML = `
                 <div class="error-placeholder">
                     <div class="error-icon">❌</div>
-                    <div class="error-text">微博加载失败</div>
+                    <div class="error-text">โหลด Weibo ล้มเหลว</div>
                     <div class="error-detail">${error.message}</div>
-                    <button onclick="window.mobilePhone.handleWeiboApp()" class="retry-button">重试</button>
+                    <button onclick="window.mobilePhone.handleWeiboApp()" class="retry-button">ลองอีกครั้ง</button>
                 </div>
             `;
     }
@@ -2212,9 +2212,9 @@ class MobilePhone {
       document.getElementById('app-content').innerHTML = `
                 <div class="error-state">
                     <div class="error-icon">⚠️</div>
-                    <div class="error-title">设置应用加载失败</div>
+                    <div class="error-title">โหลดแอปตั้งค่าล้มเหลว</div>
                     <div class="error-message">${error.message}</div>
-                    <button onclick="window.mobilePhone.handleSettingsApp()" class="retry-button">重试</button>
+                    <button onclick="window.mobilePhone.handleSettingsApp()" class="retry-button">ลองอีกครั้ง</button>
                 </div>
             `;
     }
@@ -2278,7 +2278,7 @@ class MobilePhone {
       document.getElementById('app-content').innerHTML = `
                 <div class="error-message">
                     <div class="error-icon">⚠️</div>
-                    <div class="error-title">加载失败</div>
+                    <div class="error-title">โหลดล้มเหลว</div>
                     <div class="error-details">${error.message}</div>
                     <button class="retry-button" onclick="window.MobilePhone.openApp('messages')">
                         重试
@@ -2332,9 +2332,9 @@ class MobilePhone {
       document.getElementById('app-content').innerHTML = `
                 <div class="error-message">
                     <div class="error-icon">⚠️</div>
-                    <div class="error-text">状态应用加载失败</div>
+                    <div class="error-text">โหลดแอปสถานะล้มเหลว</div>
                     <div class="error-details">${error.message}</div>
-                    <button onclick="window.mobilePhone.handleStatusApp()" class="retry-button">重试</button>
+                    <button onclick="window.mobilePhone.handleStatusApp()" class="retry-button">ลองอีกครั้ง</button>
                 </div>
             `;
     }
@@ -2384,9 +2384,9 @@ class MobilePhone {
       document.getElementById('app-content').innerHTML = `
                 <div class="error-message">
                     <div class="error-icon">⚠️</div>
-                    <div class="error-text">日记应用加载失败</div>
+                    <div class="error-text">โหลดแอปไดอารี่ล้มเหลว</div>
                     <div class="error-details">${error.message}</div>
-                    <button onclick="window.mobilePhone.handleDiaryApp()" class="retry-button">重试</button>
+                    <button onclick="window.mobilePhone.handleDiaryApp()" class="retry-button">ลองอีกครั้ง</button>
                 </div>
             `;
     }
@@ -2436,9 +2436,9 @@ class MobilePhone {
       document.getElementById('app-content').innerHTML = `
                 <div class="error-placeholder">
                     <div class="error-icon">❌</div>
-                    <div class="error-text">购物应用加载失败</div>
+                    <div class="error-text">โหลดแอปร้านค้าล้มเหลว</div>
                     <div class="error-detail">${error.message}</div>
-                    <button onclick="window.mobilePhone.handleShopApp()" class="retry-button">重试</button>
+                    <button onclick="window.mobilePhone.handleShopApp()" class="retry-button">ลองอีกครั้ง</button>
                 </div>
             `;
     }
@@ -2488,9 +2488,9 @@ class MobilePhone {
       document.getElementById('app-content').innerHTML = `
                 <div class="error-placeholder">
                     <div class="error-icon">❌</div>
-                    <div class="error-text">背包应用加载失败</div>
+                    <div class="error-text">โหลดแอปกระเป๋าล้มเหลว</div>
                     <div class="error-detail">${error.message}</div>
-                    <button onclick="window.mobilePhone.handleBackpackApp()" class="retry-button">重试</button>
+                    <button onclick="window.mobilePhone.handleBackpackApp()" class="retry-button">ลองอีกครั้ง</button>
                 </div>
             `;
     }
@@ -2540,9 +2540,9 @@ class MobilePhone {
       document.getElementById('app-content').innerHTML = `
                 <div class="error-placeholder">
                     <div class="error-icon">❌</div>
-                    <div class="error-text">任务应用加载失败</div>
+                    <div class="error-text">โหลดแอปภารกิจล้มเหลว</div>
                     <div class="error-detail">${error.message}</div>
-                    <button onclick="window.mobilePhone.handleTaskApp()" class="retry-button">重试</button>
+                    <button onclick="window.mobilePhone.handleTaskApp()" class="retry-button">ลองอีกครั้ง</button>
                 </div>
             `;
     }
@@ -2592,9 +2592,9 @@ class MobilePhone {
       document.getElementById('app-content').innerHTML = `
                 <div class="error-placeholder">
                     <div class="error-icon">❌</div>
-                    <div class="error-text">直播应用加载失败</div>
+                    <div class="error-text">โหลดแอปไลฟ์ล้มเหลว</div>
                     <div class="error-detail">${error.message}</div>
-                    <button onclick="window.mobilePhone.handleLiveApp()" class="retry-button">重试</button>
+                    <button onclick="window.mobilePhone.handleLiveApp()" class="retry-button">ลองอีกครั้ง</button>
                 </div>
             `;
     }
@@ -2644,9 +2644,9 @@ class MobilePhone {
       document.getElementById('app-content').innerHTML = `
                 <div class="error-placeholder">
                     <div class="error-icon">❌</div>
-                    <div class="error-text">观看直播应用加载失败</div>
+                    <div class="error-text">โหลดแอปดูไลฟ์ล้มเหลว</div>
                     <div class="error-detail">${error.message}</div>
-                    <button onclick="window.mobilePhone.handleWatchLiveApp()" class="retry-button">重试</button>
+                    <button onclick="window.mobilePhone.handleWatchLiveApp()" class="retry-button">ลองอีกครั้ง</button>
                 </div>
             `;
     }
@@ -2725,9 +2725,9 @@ class MobilePhone {
       document.getElementById('app-content').innerHTML = `
                 <div class="error-placeholder">
                     <div class="error-icon">❌</div>
-                    <div class="error-text">平行事件应用加载失败</div>
+                    <div class="error-text">โหลดแอปเหตุการณ์คู่ขนานล้มเหลว</div>
                     <div class="error-detail">${error.message}</div>
-                    <button onclick="window.mobilePhone.handleParallelEventsApp()" class="retry-button">重试</button>
+                    <button onclick="window.mobilePhone.handleParallelEventsApp()" class="retry-button">ลองอีกครั้ง</button>
                 </div>
             `;
     }
@@ -2771,9 +2771,9 @@ class MobilePhone {
       document.getElementById('app-content').innerHTML = `
                 <div class="error-placeholder">
                     <div class="error-icon">❌</div>
-                    <div class="error-text">档案应用加载失败</div>
+                    <div class="error-text">โหลดแอปโปรไฟล์ล้มเหลว</div>
                     <div class="error-detail">${error.message}</div>
-                    <button onclick="window.mobilePhone.handleProfileApp()" class="retry-button">重试</button>
+                    <button onclick="window.mobilePhone.handleProfileApp()" class="retry-button">ลองอีกครั้ง</button>
                 </div>
             `;
     }
@@ -2853,7 +2853,7 @@ class MobilePhone {
                     <div class="error-icon">❌</div>
                     <div class="error-text">API设置加载失败</div>
                     <div class="error-detail">${error.message}</div>
-                    <button onclick="window.mobilePhone.handleApiApp()" class="retry-button">重试</button>
+                    <button onclick="window.mobilePhone.handleApiApp()" class="retry-button">ลองอีกครั้ง</button>
                 </div>
             `;
     }
@@ -2900,10 +2900,10 @@ class MobilePhone {
 
                 <div class="settings-tabs">
                     <div class="tab-buttons">
-                        <button class="tab-btn active" data-tab="forum">论坛</button>
-                        <button class="tab-btn" data-tab="forum-styles">论坛风格</button>
-                        <button class="tab-btn" data-tab="parallel-events">平行事件</button>
-                        <button class="tab-btn" data-tab="weibo">微博</button>
+                        <button class="tab-btn active" data-tab="forum">ฟอรัม</button>
+                        <button class="tab-btn" data-tab="forum-styles">สไตล์ฟอรัม</button>
+                        <button class="tab-btn" data-tab="parallel-events">เหตุการณ์คู่ขนาน</button>
+                        <button class="tab-btn" data-tab="weibo">Weibo</button>
                         <button class="tab-btn" data-tab="api">API</button>
                     </div>
 
@@ -2945,8 +2945,8 @@ class MobilePhone {
                         </div>
 
                         <div class="setting-group">
-                            <label>自定义前缀:</label>
-                            <textarea id="forum-custom-prefix" placeholder="论坛生成的自定义提示词...">${
+                            <label>Prefix ที่กำหนดเอง:</label>
+                            <textarea id="forum-custom-prefix" placeholder="พรอมต์ที่กำหนดเองสำหรับสร้างฟอรัม...">${
                               window.forumStyles ? window.forumStyles.getCustomPrefix() : ''
                             }</textarea>
                         </div>
@@ -2976,8 +2976,8 @@ class MobilePhone {
                     <div class="m-tab-content" id="forum-styles-tab" style="display: none;">
                         <div class="forum-styles-container">
                             <div class="styles-header">
-                                <h3>🎨 论坛风格管理</h3>
-                                <p>创建和管理你的自定义论坛风格</p>
+                                <h3>🎨 จัดการสไตล์ฟอรัม</h3>
+                                <p>สร้างและจัดการสไตล์ฟอรัมที่กำหนดเอง</p>
                             </div>
 
                             <div class="styles-actions">
@@ -3000,19 +3000,19 @@ class MobilePhone {
                                 <div id="custom-styles-container">
                                     <div class="no-styles-placeholder">
                                         <div class="placeholder-icon">🎭</div>
-                                        <div class="placeholder-text">还没有自定义风格</div>
-                                        <div class="placeholder-hint">点击上方按钮创建你的第一个风格</div>
+                                        <div class="placeholder-text">ยังไม่มีสไตล์ที่กำหนดเอง</div>
+                                        <div class="placeholder-hint">คลิกปุ่มด้านบนเพื่อสร้างสไตล์แรกของคุณ</div>
                                     </div>
                                 </div>
                             </div>
 
                             <div class="styles-info">
-                                <h4>使用说明</h4>
+                                <h4>คำแนะนำการใช้งาน</h4>
                                 <ul>
-                                    <li>自定义风格会出现在论坛风格选择器中</li>
-                                    <li>可以导出风格文件在其他设备上使用</li>
-                                    <li>编辑风格时请保持格式的完整性</li>
-                                    <li>风格内容支持所有论坛功能和格式</li>
+                                    <li>สไตล์ที่กำหนดเองจะปรากฏในตัวเลือกสไตล์ฟอรัม</li>
+                                    <li>สามารถส่งออกไฟล์สไตล์เพื่อใช้บนอุปกรณ์อื่น</li>
+                                    <li>เมื่อแก้ไขสไตล์ กรุณารักษาความสมบูรณ์ของรูปแบบ</li>
+                                    <li>เนื้อหาสไตล์รองรับฟังก์ชันและรูปแบบฟอรัมทั้งหมด</li>
                                 </ul>
                             </div>
                         </div>
@@ -3021,8 +3021,8 @@ class MobilePhone {
                     <div class="m-tab-content" id="parallel-events-tab" style="display: none;">
                         <div class="parallel-events-container">
                             <div class="settings-header">
-                                <h3>🌀 平行事件设置</h3>
-                                <p>配置平行事件的生成风格和自定义前缀</p>
+                                <h3>🌀 ตั้งค่าเหตุการณ์คู่ขนาน</h3>
+                                <p>ตั้งค่าสไตล์การสร้างเหตุการณ์คู่ขนานและ prefix ที่กำหนดเอง</p>
                             </div>
 
                             <div class="setting-group">
@@ -3053,8 +3053,8 @@ class MobilePhone {
                             </div>
 
                             <div class="setting-group">
-                                <label>自定义前缀:</label>
-                                <textarea id="parallel-events-custom-prefix" placeholder="当选择'自定义'风格时，请在此输入具体的风格要求和生成指导...">${
+                                <label>Prefix ที่กำหนดเอง:</label>
+                                <textarea id="parallel-events-custom-prefix" placeholder="เมื่อเลือกสไตล์ 'กำหนดเอง' กรุณาใส่ข้อกำหนดสไตล์และคำแนะนำการสร้างที่นี่...">${
                                   parallelEventsSettings.customPrefix || ''
                                 }</textarea>
                                 <small>提示：选择"自定义"风格时，此前缀将作为主要的风格指导</small>
@@ -3065,7 +3065,7 @@ class MobilePhone {
                                 <input type="number" id="parallel-events-threshold" value="${
                                   parallelEventsSettings.threshold
                                 }" min="3" max="99">
-                                <small>楼层变化达到此数量时触发平行事件生成</small>
+                                <small>เมื่อการเปลี่ยนแปลงชั้นถึงจำนวนนี้จะทริกเกอร์การสร้างเหตุการณ์คู่ขนาน</small>
                             </div>
 
                             <div class="setting-group">
@@ -3084,12 +3084,12 @@ class MobilePhone {
                             </div>
 
                             <div class="parallel-events-info">
-                                <h4>使用说明</h4>
+                                <h4>คำแนะนำการใช้งาน</h4>
                                 <ul>
-                                    <li>平行事件会根据最近5层楼的对话内容生成相关的背景事件</li>
-                                    <li>生成的内容会自动插入到最新楼层</li>
-                                    <li>选择"自定义"风格可以完全自定义生成要求</li>
-                                    <li>自定义前缀可以进一步细化任何风格的生成方向</li>
+                                    <li>เหตุการณ์คู่ขนานจะสร้างเหตุการณ์พื้นหลังที่เกี่ยวข้องจากเนื้อหาบทสนทนา 5 ชั้นล่าสุด</li>
+                                    <li>เนื้อหาที่สร้างจะถูกแทรกอัตโนมัติไปยังชั้นล่าสุด</li>
+                                    <li>เลือกสไตล์ "กำหนดเอง" เพื่อกำหนดข้อกำหนดการสร้างเองทั้งหมด</li>
+                                    <li>Prefix ที่กำหนดเองสามารถปรับทิศทางการสร้างของสไตล์ใดก็ได้ให้ละเอียดขึ้น</li>
                                 </ul>
                             </div>
                         </div>
@@ -3099,8 +3099,8 @@ class MobilePhone {
 
 
                         <div class="setting-group">
-                            <label>自定义前缀:</label>
-                            <textarea id="weibo-custom-prefix" placeholder="微博生成的自定义提示词...">${
+                            <label>Prefix ที่กำหนดเอง:</label>
+                            <textarea id="weibo-custom-prefix" placeholder="พรอมต์ที่กำหนดเองสำหรับสร้าง Weibo...">${
                               window.weiboStyles ? window.weiboStyles.getCustomPrefix() : ''
                             }</textarea>
                         </div>
@@ -3490,23 +3490,23 @@ class MobilePhone {
           console.log('[Mobile Phone] 触发立即生成论坛');
 
           // 显示处理中提示
-          MobilePhone.showToast('🔄 开始生成论坛内容...', 'processing');
+          MobilePhone.showToast('🔄 เริ่มสร้างเนื้อหาฟอรัม...', 'processing');
 
           try {
             const result = await window.forumManager.generateForumContent(true);
             if (result) {
-              MobilePhone.showToast('✅ 论坛内容生成成功！已插入到第1楼层', 'success');
+              MobilePhone.showToast('✅ สร้างเนื้อหาฟอรัมสำเร็จ! แทรกไปยังชั้น 1 แล้ว', 'success');
               // 刷新状态显示
               setTimeout(() => this.updateApiStatus(), 500);
             } else {
-              MobilePhone.showToast('❌ 论坛内容生成失败，请查看控制台了解详情', 'error');
+              MobilePhone.showToast('❌ สร้างเนื้อหาฟอรัมล้มเหลว กรุณาดูรายละเอียดในคอนโซล', 'error');
             }
           } catch (error) {
             console.error('[Mobile Phone] 论坛生成出错:', error);
-            MobilePhone.showToast(`❌ 论坛生成出错: ${error.message}`, 'error');
+            MobilePhone.showToast(`❌ สร้างฟอรัมผิดพลาด: ${error.message}`, 'error');
           }
         } else {
-          MobilePhone.showToast('❌ 论坛管理器未初始化', 'error');
+          MobilePhone.showToast('❌ ตัวจัดการฟอรัมยังไม่เริ่มต้น', 'error');
         }
       });
     }
@@ -3516,24 +3516,24 @@ class MobilePhone {
     if (clearForumBtn) {
       clearForumBtn.addEventListener('click', async () => {
         if (window.forumManager) {
-          if (confirm('确认清除所有论坛内容？')) {
+          if (confirm('ยืนยันล้างเนื้อหาฟอรัมทั้งหมด?')) {
             console.log('[Mobile Phone] 触发清除论坛内容');
 
             // 显示处理中提示
-            MobilePhone.showToast('🔄 正在清除论坛内容...', 'processing');
+            MobilePhone.showToast('🔄 กำลังล้างเนื้อหาฟอรัม...', 'processing');
 
             try {
               await window.forumManager.clearForumContent();
-              MobilePhone.showToast('✅ 论坛内容已清除', 'success');
+              MobilePhone.showToast('✅ ล้างเนื้อหาฟอรัมแล้ว', 'success');
               // 刷新状态显示
               setTimeout(() => this.updateApiStatus(), 500);
             } catch (error) {
               console.error('[Mobile Phone] 清除论坛内容出错:', error);
-              MobilePhone.showToast(`❌ 清除论坛内容出错: ${error.message}`, 'error');
+              MobilePhone.showToast(`❌ ล้างเนื้อหาฟอรัมผิดพลาด: ${error.message}`, 'error');
             }
           }
         } else {
-          MobilePhone.showToast('❌ 论坛管理器未初始化', 'error');
+          MobilePhone.showToast('❌ ตัวจัดการฟอรัมยังไม่เริ่มต้น', 'error');
         }
       });
     }
@@ -3627,23 +3627,23 @@ class MobilePhone {
           console.log('[Mobile Phone] 触发立即生成微博');
 
           // 显示处理中提示
-          MobilePhone.showToast('🔄 开始生成微博内容...', 'processing');
+          MobilePhone.showToast('🔄 เริ่มสร้างเนื้อหา Weibo...', 'processing');
 
           try {
             const result = await window.weiboManager.generateWeiboContent(true);
             if (result) {
-              MobilePhone.showToast('✅ 微博内容生成成功！已插入到第1楼层', 'success');
+              MobilePhone.showToast('✅ สร้างเนื้อหา Weibo สำเร็จ! แทรกไปยังชั้น 1 แล้ว', 'success');
               // 刷新状态显示
               setTimeout(() => this.updateApiStatus(), 500);
             } else {
-              MobilePhone.showToast('❌ 微博内容生成失败，请查看控制台了解详情', 'error');
+              MobilePhone.showToast('❌ สร้างเนื้อหา Weibo ล้มเหลว กรุณาดูรายละเอียดในคอนโซล', 'error');
             }
           } catch (error) {
             console.error('[Mobile Phone] 微博生成出错:', error);
-            MobilePhone.showToast(`❌ 微博生成出错: ${error.message}`, 'error');
+            MobilePhone.showToast(`❌ สร้าง Weibo ผิดพลาด: ${error.message}`, 'error');
           }
         } else {
-          MobilePhone.showToast('❌ 微博管理器未初始化', 'error');
+          MobilePhone.showToast('❌ ตัวจัดการ Weibo ยังไม่เริ่มต้น', 'error');
         }
       });
     }
@@ -3653,24 +3653,24 @@ class MobilePhone {
     if (clearWeiboBtn) {
       clearWeiboBtn.addEventListener('click', async () => {
         if (window.weiboManager) {
-          if (confirm('确认清除所有微博内容？')) {
+          if (confirm('ยืนยันล้างเนื้อหา Weibo ทั้งหมด?')) {
             console.log('[Mobile Phone] 触发清除微博内容');
 
             // 显示处理中提示
-            MobilePhone.showToast('🔄 正在清除微博内容...', 'processing');
+            MobilePhone.showToast('🔄 กำลังล้างเนื้อหา Weibo...', 'processing');
 
             try {
               await window.weiboManager.clearWeiboContent();
-              MobilePhone.showToast('✅ 微博内容已清除', 'success');
+              MobilePhone.showToast('✅ ล้างเนื้อหา Weibo แล้ว', 'success');
               // 刷新状态显示
               setTimeout(() => this.updateApiStatus(), 500);
             } catch (error) {
               console.error('[Mobile Phone] 清除微博内容出错:', error);
-              MobilePhone.showToast(`❌ 清除微博内容出错: ${error.message}`, 'error');
+              MobilePhone.showToast(`❌ ล้างเนื้อหา Weibo ผิดพลาด: ${error.message}`, 'error');
             }
           }
         } else {
-          MobilePhone.showToast('❌ 微博管理器未初始化', 'error');
+          MobilePhone.showToast('❌ ตัวจัดการ Weibo ยังไม่เริ่มต้น', 'error');
         }
       });
     }
@@ -3779,19 +3779,19 @@ class MobilePhone {
       testParallelEventsBtn.addEventListener('click', async () => {
         if (window.parallelEventsManager) {
           console.log('[Mobile Phone] 触发测试生成平行事件');
-          MobilePhone.showToast('🔄 开始生成平行事件内容...', 'processing');
+          MobilePhone.showToast('🔄 เริ่มสร้างเนื้อหาเหตุการณ์คู่ขนาน...', 'processing');
 
           try {
             await window.parallelEventsManager.generateParallelEvent();
-            MobilePhone.showToast('✅ 平行事件生成完成', 'success');
+            MobilePhone.showToast('✅ สร้างเหตุการณ์คู่ขนานเสร็จ', 'success');
             // 刷新状态显示
             setTimeout(() => this.updateApiStatus(), 500);
           } catch (error) {
             console.error('[Mobile Phone] 生成平行事件出错:', error);
-            MobilePhone.showToast(`❌ 生成平行事件出错: ${error.message}`, 'error');
+            MobilePhone.showToast(`❌ สร้างเหตุการณ์คู่ขนานผิดพลาด: ${error.message}`, 'error');
           }
         } else {
-          MobilePhone.showToast('❌ 平行事件管理器未初始化', 'error');
+          MobilePhone.showToast('❌ ตัวจัดการเหตุการณ์คู่ขนานยังไม่เริ่มต้น', 'error');
         }
       });
     }
@@ -3803,9 +3803,9 @@ class MobilePhone {
         if (window.parallelEventsManager) {
           console.log('[Mobile Phone] 清空平行事件队列');
           window.parallelEventsManager.clearQueue();
-          MobilePhone.showToast('✅ 平行事件队列已清空', 'success');
+          MobilePhone.showToast('✅ ล้างคิวเหตุการณ์คู่ขนานแล้ว', 'success');
         } else {
-          MobilePhone.showToast('❌ 平行事件管理器未初始化', 'error');
+          MobilePhone.showToast('❌ ตัวจัดการเหตุการณ์คู่ขนานยังไม่เริ่มต้น', 'error');
         }
       });
     }
@@ -3823,7 +3823,7 @@ class MobilePhone {
         if (window.mobileCustomAPIConfig) {
           window.mobileCustomAPIConfig.showConfigPanel();
         } else {
-          alert('API配置模块未初始化');
+          alert('โมดูลตั้งค่า API ยังไม่เริ่มต้น');
         }
       });
     }
@@ -3840,7 +3840,7 @@ class MobilePhone {
     const resetAllBtn = document.getElementById('reset-all-settings');
     if (resetAllBtn) {
       resetAllBtn.addEventListener('click', () => {
-        if (confirm('确认重置所有论坛和微博设置？这将恢复到默认配置。')) {
+        if (confirm('ยืนยันรีเซ็ตการตั้งค่าฟอรัมและ Weibo ทั้งหมด? จะกลับไปเป็นค่าเริ่มต้น')) {
           this.resetAllApiSettings();
         }
       });
@@ -5475,11 +5475,11 @@ class MobilePhone {
       // 刷新界面
       this.handleApiApp();
 
-      alert('所有设置已重置为默认值');
+      alert('รีเซ็ตการตั้งค่าทั้งหมดเป็นค่าเริ่มต้นแล้ว');
       console.log('[Mobile Phone] 所有API设置已重置');
     } catch (error) {
       console.error('[Mobile Phone] 重置设置时出错:', error);
-      alert('重置设置时出错，请查看控制台');
+      alert('เกิดข้อผิดพลาดขณะรีเซ็ตการตั้งค่า กรุณาดูคอนโซล');
     }
   }
 
@@ -7344,7 +7344,7 @@ class MobilePhone {
     this.updateTextColorButton(newColor);
 
     // 显示提示
-    MobilePhone.showToast(`文字颜色已切换为${newColor === 'white' ? '白色' : '黑色'}`);
+    MobilePhone.showToast(`สลับสีตัวอักษรเป็น${newColor === 'white' ? 'ขาว' : 'ดำ'}แล้ว`);
   }
 
   // 应用文字颜色到页面
@@ -7390,7 +7390,7 @@ class MobilePhone {
     // 确保ImageConfigModal已加载
     if (!window.ImageConfigModal) {
       console.error('[Mobile Phone] ImageConfigModal未加载');
-      MobilePhone.showToast('图片配置功能未就绪', 'error');
+      MobilePhone.showToast('ฟังก์ชันตั้งค่ารูปภาพยังไม่พร้อม', 'error');
       return;
     }
 
@@ -7417,7 +7417,7 @@ class MobilePhone {
           console.log('[Mobile Phone] 延迟重试成功，显示好友弹窗');
           window.FriendImageConfigModal.show(friendId, friendName);
         } else {
-          MobilePhone.showToast('好友图片配置功能未就绪，请刷新页面重试', 'error');
+          MobilePhone.showToast('ฟังก์ชันตั้งค่ารูปภาพเพื่อนยังไม่พร้อม กรุณารีเฟรชหน้าและลองใหม่', 'error');
         }
       }, 500);
       return;

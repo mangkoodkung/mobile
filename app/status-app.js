@@ -223,8 +223,8 @@ if (typeof window.StatusApp === 'undefined') {
     parseUserData(userData) {
       if (!userData || typeof userData !== 'object') return null;
 
-      const getValue = (field) => userData[field] && Array.isArray(userData[field]) ? userData[field][0] : null;
-      const getClothingValue = (field) => {
+      const getValue = field => (userData[field] && Array.isArray(userData[field]) ? userData[field][0] : null);
+      const getClothingValue = field => {
         const clothing = userData['当前着装'];
         if (!clothing || typeof clothing !== 'object') return '';
         const item = clothing[field];
@@ -250,7 +250,7 @@ if (typeof window.StatusApp === 'undefined') {
           内裤: getClothingValue('内裤'),
           袜子: getClothingValue('袜子'),
           鞋子: getClothingValue('鞋子'),
-        }
+        },
       };
     }
 
@@ -268,8 +268,8 @@ if (typeof window.StatusApp === 'undefined') {
         const npc = npcData[npcKey];
         if (!npc || typeof npc !== 'object') return;
 
-        const getValue = (field) => npc[field] && Array.isArray(npc[field]) ? npc[field][0] : null;
-        const getClothingValue = (field) => {
+        const getValue = field => (npc[field] && Array.isArray(npc[field]) ? npc[field][0] : null);
+        const getClothingValue = field => {
           const clothing = npc['当前着装'];
           if (!clothing || typeof clothing !== 'object') return '';
           const item = clothing[field];
@@ -311,7 +311,7 @@ if (typeof window.StatusApp === 'undefined') {
             袜子: getClothingValue('袜子'),
             鞋子: getClothingValue('鞋子'),
           },
-          人物记忆: memories
+          人物记忆: memories,
         });
       });
 
@@ -357,7 +357,7 @@ if (typeof window.StatusApp === 'undefined') {
         return `
           <div class="cd-status-empty">
             <div class="cd-empty-icon">👤</div>
-            <div class="cd-empty-text">暂无状态数据</div>
+            <div class="cd-empty-text">ยังไม่มีข้อมูลสถานะ</div>
           </div>
         `;
       }
@@ -371,43 +371,43 @@ if (typeof window.StatusApp === 'undefined') {
           </div>
 
           <div class="cd-info-section">
-            <div class="cd-info-title">基本信息</div>
+            <div class="cd-info-title">ข้อมูลพื้นฐาน</div>
             <div class="cd-info-grid">
               <div class="cd-info-item">
-                <span class="cd-info-label">性别</span>
+                <span class="cd-info-label">เพศ</span>
                 <span class="cd-info-value">${this.userData.性别}</span>
               </div>
               <div class="cd-info-item">
-                <span class="cd-info-label">年龄</span>
+                <span class="cd-info-label">อายุ</span>
                 <span class="cd-info-value">${this.userData.年龄}岁</span>
               </div>
               <div class="cd-info-item">
-                <span class="cd-info-label">身高</span>
+                <span class="cd-info-label">ส่วนสูง</span>
                 <span class="cd-info-value">${this.userData.身高}</span>
               </div>
               <div class="cd-info-item">
-                <span class="cd-info-label">体重</span>
+                <span class="cd-info-label">น้ำหนัก</span>
                 <span class="cd-info-value">${this.userData.体重}</span>
               </div>
               <div class="cd-info-item">
-                <span class="cd-info-label">性经验</span>
+                <span class="cd-info-label">ประสบการณ์ทางเพศ</span>
                 <span class="cd-info-value">${this.userData.性经验}</span>
               </div>
             </div>
           </div>
 
           <div class="cd-info-section">
-            <div class="cd-info-title">性格</div>
+            <div class="cd-info-title">บุคลิกภาพ</div>
             <div class="cd-info-text">${this.userData.性格}</div>
           </div>
 
           <div class="cd-info-section">
-            <div class="cd-info-title">外貌</div>
+            <div class="cd-info-title">รูปลักษณ์</div>
             <div class="cd-info-text">${this.userData.外貌描述}</div>
           </div>
 
           <div class="cd-info-section">
-            <div class="cd-info-title">当前着装</div>
+            <div class="cd-info-title">การแต่งกายปัจจุบัน</div>
             <div class="cd-clothing-list">
               ${this.renderClothingItem('头部', this.userData.当前着装.头部, true)}
               ${this.renderClothingItem('耳朵', this.userData.当前着装.耳朵, true)}
@@ -435,7 +435,7 @@ if (typeof window.StatusApp === 'undefined') {
               <span class="cd-clothing-slot">${slot}</span>
               <span class="cd-clothing-name ${isEmpty ? 'cd-empty' : ''}">${displayText}</span>
             </div>
-            ${!isEmpty ? `<button class="cd-clothing-btn cd-remove" data-slot="${slot}">脱下</button>` : ''}
+            ${!isEmpty ? `<button class="cd-clothing-btn cd-remove" data-slot="${slot}">ถอด</button>` : ''}
           </div>
         `;
       } else {
@@ -459,10 +459,11 @@ if (typeof window.StatusApp === 'undefined') {
         `;
       }
 
-      const npcCards = this.npcList.map(npc => {
-        const favorClass = this.getFavorClass(npc.好感度);
+      const npcCards = this.npcList
+        .map(npc => {
+          const favorClass = this.getFavorClass(npc.好感度);
 
-        return `
+          return `
           <div class="cd-npc-card">
             <div class="cd-npc-header" data-npc-id="${npc.id}">
               <div class="cd-npc-avatar">🧑</div>
@@ -476,48 +477,52 @@ if (typeof window.StatusApp === 'undefined') {
               <div class="cd-info-title">💭 内心想法</div>
               <div class="cd-inner-thought">${npc.内心想法 || '暂无想法'}</div>
             </div>
-            ${npc.好友ID ? `<div class="cd-info-section">
+            ${
+              npc.好友ID
+                ? `<div class="cd-info-section">
               <div class="cd-info-title">好友ID</div>
               <div class="cd-friend-id">${npc.好友ID}</div>
-            </div>` : ''}
+            </div>`
+                : ''
+            }
             <div class="cd-info-section">
-              <div class="cd-info-title">基本信息</div>
+              <div class="cd-info-title">ข้อมูลพื้นฐาน</div>
               <div class="cd-info-grid">
                 <div class="cd-info-item">
-                  <span class="cd-info-label">性别</span>
+                  <span class="cd-info-label">เพศ</span>
                   <span class="cd-info-value">${npc.性别}</span>
                 </div>
                 <div class="cd-info-item">
-                  <span class="cd-info-label">年龄</span>
+                  <span class="cd-info-label">อายุ</span>
                   <span class="cd-info-value">${npc.年龄}岁</span>
                 </div>
                 <div class="cd-info-item">
-                  <span class="cd-info-label">身高</span>
+                  <span class="cd-info-label">ส่วนสูง</span>
                   <span class="cd-info-value">${npc.身高}</span>
                 </div>
                 <div class="cd-info-item">
-                  <span class="cd-info-label">体重</span>
+                  <span class="cd-info-label">น้ำหนัก</span>
                   <span class="cd-info-value">${npc.体重}</span>
                 </div>
                 <div class="cd-info-item">
-                  <span class="cd-info-label">性经验</span>
+                  <span class="cd-info-label">ประสบการณ์ทางเพศ</span>
                   <span class="cd-info-value">${npc.性经验}</span>
                 </div>
               </div>
             </div>
 
             <div class="cd-info-section">
-              <div class="cd-info-title">性格</div>
+              <div class="cd-info-title">บุคลิกภาพ</div>
               <div class="cd-info-text">${npc.性格}</div>
             </div>
 
             <div class="cd-info-section">
-              <div class="cd-info-title">外貌</div>
+              <div class="cd-info-title">รูปลักษณ์</div>
               <div class="cd-info-text">${npc.外貌描述}</div>
             </div>
 
             <div class="cd-info-section">
-              <div class="cd-info-title">当前着装</div>
+              <div class="cd-info-title">การแต่งกายปัจจุบัน</div>
               <div class="cd-clothing-list">
                 ${this.renderClothingItem('头部', npc.当前着装.头部, false)}
                 ${this.renderClothingItem('耳朵', npc.当前着装.耳朵, false)}
@@ -530,20 +535,29 @@ if (typeof window.StatusApp === 'undefined') {
               </div>
             </div>
 
-            ${npc.人物记忆.length > 0 ? `
+            ${
+              npc.人物记忆.length > 0
+                ? `
               <div class="cd-info-section">
-                <div class="cd-info-title">人物记忆</div>
+                <div class="cd-info-title">ความทรงจำของตัวละคร</div>
                 <div class="cd-memory-list">
-                  ${npc.人物记忆.map(memory => `
+                  ${npc.人物记忆
+                    .map(
+                      memory => `
                     <div class="cd-memory-item">📝 ${memory}</div>
-                  `).join('')}
+                  `,
+                    )
+                    .join('')}
                 </div>
               </div>
-            ` : ''}
+            `
+                : ''
+            }
             </div>
           </div>
         `;
-      }).join('');
+        })
+        .join('');
 
       return `
         <div class="cd-npc-list">
@@ -649,7 +663,7 @@ if (typeof window.StatusApp === 'undefined') {
         // 1. 脱下装备（清空着装栏）
         await window.Mvu.setMvuVariable(mvuData, `用户.当前着装.${slot}[0]`, '', {
           reason: `脱下${slot}`,
-          is_recursive: false
+          is_recursive: false,
         });
 
         // 2. 放入背包（根据部位类型放入对应分类）
@@ -666,7 +680,7 @@ if (typeof window.StatusApp === 'undefined') {
           const currentCount = newBackpackCategory[clothingItem]['数量']?.[0] || 0;
           newBackpackCategory[clothingItem] = {
             ...newBackpackCategory[clothingItem],
-            数量: [currentCount + 1, newBackpackCategory[clothingItem]['数量']?.[1] || '']
+            数量: [currentCount + 1, newBackpackCategory[clothingItem]['数量']?.[1] || ''],
           };
           console.log('[Status App] 已有物品，增加数量:', clothingItem, '新数量:', currentCount + 1);
         } else {
@@ -675,7 +689,7 @@ if (typeof window.StatusApp === 'undefined') {
             名称: [clothingItem, ''],
             数量: [1, ''],
             效果: [`${slot}装备`, ''],
-            品质: ['普通', '']
+            品质: ['普通', ''],
           };
           console.log('[Status App] 新物品添加到背包:', clothingItem);
         }
@@ -683,7 +697,7 @@ if (typeof window.StatusApp === 'undefined') {
         // 一次性设置整个分类
         await window.Mvu.setMvuVariable(mvuData, backpackPath, newBackpackCategory, {
           reason: `${clothingItem}放入背包`,
-          is_recursive: false
+          is_recursive: false,
         });
 
         // 3. 不再记录历史（由AI生成摘要代替）
@@ -709,24 +723,23 @@ if (typeof window.StatusApp === 'undefined') {
             window.backpackApp.refreshItemsData();
           }
         }, 300);
-
       } catch (error) {
         console.error('[Status App] 脱下装备失败:', error);
-        alert('脱下装备失败: ' + error.message);
+        alert('ถอดอุปกรณ์ล้มเหลว: ' + error.message);
       }
     }
 
     // 映射装备部位到背包分类
     mapSlotToBackpackCategory(slot) {
       const mapping = {
-        '头部': '装备',
-        '耳朵': '装备',
-        '上衣': '装备',
-        '下装': '装备',
-        '内衣': '装备',
-        '内裤': '装备',
-        '袜子': '装备',
-        '鞋子': '装备'
+        头部: '装备',
+        耳朵: '装备',
+        上衣: '装备',
+        下装: '装备',
+        内衣: '装备',
+        内裤: '装备',
+        袜子: '装备',
+        鞋子: '装备',
       };
       return mapping[slot] || '材料';
     }
@@ -766,14 +779,14 @@ window.getStatusAppContent = function () {
 
   if (!window.statusApp) {
     console.error('[Status App] statusApp实例不存在');
-    return '<div class="error-message">状态应用加载失败</div>';
+    return '<div class="error-message">โหลดแอปสถานะล้มเหลว</div>';
   }
 
   try {
     return window.statusApp.getAppContent();
   } catch (error) {
     console.error('[Status App] 获取应用内容失败:', error);
-    return '<div class="error-message">获取内容失败</div>';
+    return '<div class="error-message">ดึงข้อมูลล้มเหลว</div>';
   }
 };
 

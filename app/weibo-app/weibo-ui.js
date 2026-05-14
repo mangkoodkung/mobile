@@ -764,7 +764,7 @@ class WeiboUI {
         <div class="hot-search-section">
           <div class="section-header">
             <i class="fas fa-fire"></i>
-            <span>微博热搜</span>
+            <span>Weibo ยอดนิยม</span>
           </div>
           <div class="hot-search-list">
     `;
@@ -791,7 +791,7 @@ class WeiboUI {
         <div class="posts-section">
           <div class="section-header">
             <i class="fas fa-comments"></i>
-            <span>热搜讨论</span>
+            <span>พูดคุยหัวข้อยอดนิยม</span>
           </div>
           <div class="posts-list">
     `;
@@ -868,7 +868,7 @@ class WeiboUI {
         <div class="posts-section">
           <div class="section-header">
             <i class="fas fa-comments"></i>
-            <span>榜单讨论</span>
+            <span>พูดคุยอันดับ</span>
           </div>
           <div class="posts-list">
     `;
@@ -963,7 +963,7 @@ class WeiboUI {
             <div class="user-details">
               <div class="user-name-container">
                 <div class="profile-name">${currentUsername}</div>
-                <button class="edit-name-btn" title="编辑用户名">
+                <button class="edit-name-btn" title="แก้ไขชื่อผู้ใช้">
                   <i class="fas fa-edit"></i>
                 </button>
               </div>
@@ -975,15 +975,15 @@ class WeiboUI {
           <div class="user-stats">
             <div class="stat-item">
               <div class="stat-number">${stats.posts}</div>
-              <div class="stat-label">微博</div>
+              <div class="stat-label">Weibo</div>
             </div>
             <div class="stat-item">
               <div class="stat-number">${stats.following}</div>
-              <div class="stat-label">关注</div>
+              <div class="stat-label">กำลังติดตาม</div>
             </div>
             <div class="stat-item">
               <div class="stat-number">${stats.fans}</div>
-              <div class="stat-label">粉丝</div>
+              <div class="stat-label">แฟน</div>
             </div>
           </div>
         </div>
@@ -992,7 +992,7 @@ class WeiboUI {
         <div class="posts-section">
           <div class="section-header">
             <i class="fas fa-user"></i>
-            <span>我的微博</span>
+            <span>Weibo ของฉัน</span>
           </div>
           <div class="posts-list">
     `;
@@ -1037,8 +1037,8 @@ class WeiboUI {
       html += `
         <div class="empty-posts">
           <i class="fas fa-edit"></i>
-          <p>还没有发布过微博</p>
-          <p>点击右上角的"发博"按钮开始分享吧！</p>
+          <p>ยังไม่เคยโพสต์ Weibo</p>
+          <p>แตะปุ่ม "โพสต์" ที่มุมขวาบนเพื่อเริ่มแชร์กันเลย!</p>
         </div>
       `;
     }
@@ -1069,7 +1069,7 @@ class WeiboUI {
               <div class="post-time">${post.timestamp}</div>
             </div>
           </div>
-          <button class="delete-btn weibo-delete-btn" data-post-id="${post.id}" title="删除微博">删除</button>
+          <button class="delete-btn weibo-delete-btn" data-post-id="${post.id}" title="ลบ Weibo">ลบ</button>
         </div>
 
         <div class="post-content">
@@ -1108,7 +1108,7 @@ class WeiboUI {
       html += `
         <div class="post-comments">
           <div class="comments-header">
-            <span>评论 ${postComments.length}</span>
+            <span>ความคิดเห็น ${postComments.length}</span>
           </div>
           <div class="comments-list">
       `;
@@ -1160,10 +1160,10 @@ class WeiboUI {
       html += `
         <div class="reply-input-container" style="display: none;">
           <div class="reply-input">
-            <textarea placeholder="写评论..." maxlength="140"></textarea>
+            <textarea placeholder="เขียนความคิดเห็น..." maxlength="140"></textarea>
             <div class="reply-actions">
-              <button class="cancel-reply-btn">取消</button>
-              <button class="send-reply-btn">发送</button>
+              <button class="cancel-reply-btn">ยกเลิก</button>
+              <button class="send-reply-btn">ส่ง</button>
             </div>
           </div>
         </div>
@@ -1304,8 +1304,8 @@ class WeiboUI {
       contentContainer.innerHTML = `
         <div class="empty-state">
           <i class="fas fa-comments"></i>
-          <h3>暂无微博内容</h3>
-          <p>点击右上角的"生成"按钮开始生成微博内容</p>
+          <h3>ยังไม่มีเนื้อหา Weibo</h3>
+          <p>แตะปุ่ม "สร้าง" ที่มุมขวาบนเพื่อเริ่มสร้างเนื้อหา Weibo</p>
         </div>
       `;
     }
@@ -1320,9 +1320,9 @@ class WeiboUI {
       contentContainer.innerHTML = `
         <div class="error-state">
           <i class="fas fa-exclamation-triangle"></i>
-          <h3>加载失败</h3>
+          <h3>โหลดล้มเหลว</h3>
           <p>${message}</p>
-          <button onclick="window.weiboUI.refreshWeiboList()" class="retry-btn">重试</button>
+          <button onclick="window.weiboUI.refreshWeiboList()" class="retry-btn">ลองอีกครั้ง</button>
         </div>
       `;
     }
@@ -1490,12 +1490,12 @@ class WeiboUI {
           const commentElement = document.querySelector(`.comment-item[data-comment-id="${commentId}"]`);
           if (commentElement) {
             const authorName = commentElement.querySelector('.comment-author-name').textContent;
-            textarea.placeholder = `回复 ${authorName}...`;
+            textarea.placeholder = `ตอบกลับ ${authorName}...`;
             textarea.dataset.replyTo = authorName;
             textarea.dataset.commentId = commentId;
           }
         } else {
-          textarea.placeholder = '写评论...';
+          textarea.placeholder = 'เขียนความคิดเห็น...';
           delete textarea.dataset.replyTo;
           delete textarea.dataset.commentId;
         }
@@ -1514,7 +1514,7 @@ class WeiboUI {
       replyContainer.style.display = 'none';
       const textarea = replyContainer.querySelector('textarea');
       textarea.value = '';
-      textarea.placeholder = '写评论...';
+      textarea.placeholder = 'เขียนความคิดเห็น...';
       delete textarea.dataset.replyTo;
       delete textarea.dataset.commentId;
     }
@@ -1533,7 +1533,7 @@ class WeiboUI {
     const content = textarea.value.trim();
 
     if (!content) {
-      this.showNotification('请输入回复内容', 'error');
+      this.showNotification('กรุณาใส่เนื้อหาตอบกลับ', 'error');
       return;
     }
 
@@ -1547,7 +1547,7 @@ class WeiboUI {
     this.hideReplyInput(btn);
 
     // 显示发送中通知
-    this.showNotification('正在发送回复...', 'loading');
+    this.showNotification('กำลังส่งการตอบกลับ...', 'loading');
 
     try {
       // 构建回复格式
@@ -1567,7 +1567,7 @@ class WeiboUI {
         await window.weiboManager.sendReplyToAPI(replyFormat);
 
         // 显示成功通知
-        this.showNotification('回复成功', 'success');
+        this.showNotification('ตอบกลับสำเร็จ', 'success');
 
         // 刷新微博列表
         setTimeout(() => {
@@ -1575,13 +1575,13 @@ class WeiboUI {
         }, 1000);
       } else {
         console.error('[Weibo UI] 微博管理器未找到或方法不存在');
-        this.showNotification('回复失败：微博管理器未就绪', 'error');
+        this.showNotification('ตอบกลับล้มเหลว: ตัวจัดการ Weibo ยังไม่พร้อม', 'error');
         // 恢复输入内容
         this.restoreReplyInput(postId, originalContent, replyTo, commentId);
       }
     } catch (error) {
       console.error('[Weibo UI] 发送回复失败:', error);
-      this.showNotification('回复失败：' + error.message, 'error');
+      this.showNotification('ตอบกลับล้มเหลว: ' + error.message, 'error');
       // 恢复输入内容
       this.restoreReplyInput(postId, originalContent, replyTo, commentId);
     }
@@ -1600,11 +1600,11 @@ class WeiboUI {
         textarea.value = content;
 
         if (replyTo && commentId) {
-          textarea.placeholder = `回复 ${replyTo}...`;
+          textarea.placeholder = `ตอบกลับ ${replyTo}...`;
           textarea.dataset.replyTo = replyTo;
           textarea.dataset.commentId = commentId;
         } else {
-          textarea.placeholder = '写评论...';
+          textarea.placeholder = 'เขียนความคิดเห็น...';
           delete textarea.dataset.replyTo;
           delete textarea.dataset.commentId;
         }
@@ -1721,7 +1721,7 @@ class WeiboUI {
     const currentName = this.getCurrentUsername();
     const accountType = this.getCurrentAccountType();
 
-    const newName = prompt(`编辑${accountType}用户名:`, currentName);
+    const newName = prompt(`แก้ไขชื่อผู้ใช้${accountType}:`, currentName);
     if (newName && newName.trim() && newName.trim() !== currentName) {
       this.updateUsername(newName.trim());
     }
@@ -1759,7 +1759,7 @@ class WeiboUI {
       }
     } catch (error) {
       console.error('[Weibo UI] 更新用户名失败:', error);
-      alert(`更新用户名失败: ${error.message}`);
+      alert(`อัปเดตชื่อผู้ใช้ล้มเหลว: ${error.message}`);
     }
   }
 
@@ -1787,7 +1787,11 @@ class WeiboUI {
 
     try {
       // 显示确认对话框
-      if (!confirm(`确定要删除微博 ID: ${postId} 及其所有评论吗？此操作不可撤销。`)) {
+      if (
+        !confirm(
+          `คุณแน่ใจหรือไม่ว่าต้องการลบ Weibo ID: ${postId} พร้อมความคิดเห็นทั้งหมด? การกระทำนี้ไม่สามารถย้อนกลับได้`,
+        )
+      ) {
         return;
       }
 
@@ -1834,7 +1838,7 @@ class WeiboUI {
       // 重新构建消息内容
       const newContent = content.replace(
         /<!-- WEIBO_CONTENT_START -->[\s\S]*?<!-- WEIBO_CONTENT_END -->/,
-        `<!-- WEIBO_CONTENT_START -->${weiboContent}<!-- WEIBO_CONTENT_END -->`
+        `<!-- WEIBO_CONTENT_START -->${weiboContent}<!-- WEIBO_CONTENT_END -->`,
       );
 
       // 更新消息内容
@@ -1843,16 +1847,15 @@ class WeiboUI {
       console.log('[Weibo UI] ✅ 微博删除成功:', postId);
 
       // 显示成功提示
-      this.showNotification('🗑️ 微博已删除', 'success');
+      this.showNotification('🗑️ ลบ Weibo แล้ว', 'success');
 
       // 刷新微博内容
       setTimeout(() => {
         this.refreshWeiboList();
       }, 500);
-
     } catch (error) {
       console.error('[Weibo UI] 删除微博失败:', error);
-      this.showNotification('❌ 删除失败: ' + error.message, 'error');
+      this.showNotification('❌ ลบล้มเหลว: ' + error.message, 'error');
     }
   }
 }
@@ -1876,15 +1879,15 @@ function getWeiboAppContent() {
         <div class="weibo-tabs">
           <div class="tab-item active" data-page="hot">
             <i class="fas fa-fire"></i>
-            <span>热搜</span>
+            <span>ยอดนิยม</span>
           </div>
           <div class="tab-item" data-page="ranking">
             <i class="fas fa-trophy"></i>
-            <span>榜单</span>
+            <span>อันดับ</span>
           </div>
           <div class="tab-item" data-page="user">
             <i class="fas fa-user"></i>
-            <span>用户</span>
+            <span>ผู้ใช้</span>
           </div>
         </div>
 
@@ -1892,7 +1895,7 @@ function getWeiboAppContent() {
         <div class="weibo-content" id="weibo-content">
           <div class="loading-state">
             <i class="fas fa-spinner fa-spin"></i>
-            <p>正在加载微博内容...</p>
+            <p>กำลังโหลดเนื้อหา Weibo...</p>
           </div>
         </div>
       </div>
@@ -1902,9 +1905,9 @@ function getWeiboAppContent() {
     return `
       <div class="error-placeholder">
         <div class="error-icon">❌</div>
-        <div class="error-text">微博应用加载失败</div>
+        <div class="error-text">โหลดแอป Weibo ล้มเหลว</div>
         <div class="error-detail">${error.message}</div>
-        <button onclick="window.mobilePhone.handleWeiboApp()" class="retry-button">重试</button>
+        <button onclick="window.mobilePhone.handleWeiboApp()" class="retry-button">ลองอีกครั้ง</button>
       </div>
     `;
   }

@@ -40,27 +40,27 @@ class ForumControlApp {
     return `
             <div class="forum-control-app">
                 <div class="control-section">
-                    <h3 class="section-title">📰 论坛设置</h3>
+                    <h3 class="section-title">📰 ตั้งค่าฟอรัม</h3>
 
                     <div class="form-group">
-                        <label class="form-label">选择论坛风格</label>
+                        <label class="form-label">เลือกสไตล์ฟอรัม</label>
                         <select id="forum-style-select" class="form-select">
                             <!-- 风格选项将通过JavaScript动态加载 -->
                         </select>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">自定义前缀</label>
-                        <textarea id="forum-custom-prefix" class="form-textarea" placeholder="在此输入自定义前缀，将添加到风格提示词前面...">${customPrefix}</textarea>
-                        <div class="form-hint">提示: 可以用来添加特殊指令、角色设定或生成要求</div>
+                        <label class="form-label">Prefix ที่กำหนดเอง</label>
+                        <textarea id="forum-custom-prefix" class="form-textarea" placeholder="ใส่ prefix ที่กำหนดเอง จะถูกเพิ่มไว้ด้านหน้าของพรอมต์สไตล์...">${customPrefix}</textarea>
+                        <div class="form-hint">คำแนะนำ: ใช้สำหรับเพิ่มคำสั่งพิเศษ บทบาท หรือข้อกำหนดการสร้าง</div>
                     </div>
 
                     <div class="form-group">
-                        <label class="form-label">消息阈值</label>
+                        <label class="form-label">เกณฑ์ข้อความ</label>
                         <input type="number" id="forum-threshold" class="form-input" value="${
                           currentSettings.threshold
-                        }" min="1" max="100" placeholder="触发论坛生成的消息数量">
-                        <div class="form-hint">当新消息数量达到此值时自动生成论坛内容</div>
+                        }" min="1" max="100" placeholder="จำนวนข้อความที่ทริกเกอร์การสร้างฟอรัม">
+                        <div class="form-hint">เมื่อจำนวนข้อความใหม่ถึงค่านี้ จะสร้างเนื้อหาฟอรัมอัตโนมัติ</div>
                     </div>
 
                     <div class="form-group">
@@ -68,32 +68,32 @@ class ForumControlApp {
                             <input type="checkbox" id="forum-auto-update" ${
                               currentSettings.autoUpdate ? 'checked' : ''
                             }>
-                            <span class="checkbox-label">自动生成论坛内容</span>
+                            <span class="checkbox-label">สร้างเนื้อหาฟอรัมอัตโนมัติ</span>
                         </label>
                     </div>
                 </div>
 
                 <div class="control-section">
-                    <h3 class="section-title">🔧 操作面板</h3>
+                    <h3 class="section-title">🔧 แผงควบคุม</h3>
 
                     <div class="button-group">
                         <button id="generate-forum-now" class="control-btn primary">
                             <span class="btn-icon">🚀</span>
-                            <span>立即生成论坛</span>
+                            <span>สร้างฟอรัมทันที</span>
                         </button>
                         <button id="clear-forum-content" class="control-btn danger">
                             <span class="btn-icon">🗑️</span>
-                            <span>清除论坛内容</span>
+                            <span>ล้างเนื้อหาฟอรัม</span>
                         </button>
                         <button id="forum-settings" class="control-btn secondary">
                             <span class="btn-icon">⚙️</span>
-                            <span>API设置</span>
+                            <span>ตั้งค่า API</span>
                         </button>
                     </div>
                 </div>
 
                 <div class="control-section">
-                    <h3 class="section-title">📊 状态信息</h3>
+                    <h3 class="section-title">📊 ข้อมูลสถานะ</h3>
                     <div id="forum-status" class="status-display">
                         状态: 就绪
                     </div>
@@ -161,7 +161,7 @@ class ForumControlApp {
 
         try {
           generateBtn.disabled = true;
-          generateBtn.textContent = '生成中...';
+          generateBtn.textContent = 'กำลังสร้าง...';
 
           if (window.MobileContext && window.MobileContext.forceGenerateForum) {
             console.log('[Forum Control] 🚀 调用强制生成命令');
@@ -181,15 +181,15 @@ class ForumControlApp {
             }
           } else {
             console.error('[Forum Control] 论坛管理器和控制台命令都未找到');
-            alert('论坛管理器未加载，请刷新页面重试');
+            alert('ตัวจัดการฟอรัมยังไม่โหลด กรุณารีเฟรชหน้าและลองใหม่');
           }
         } catch (error) {
           console.error('[Forum Control] 强制生成出错:', error);
-          alert(`生成失败: ${error.message}`);
+          alert(`สร้างล้มเหลว: ${error.message}`);
         } finally {
           // 恢复按钮状态
           generateBtn.disabled = false;
-          generateBtn.innerHTML = '<span class="btn-icon">🚀</span><span>立即生成论坛</span>';
+          generateBtn.innerHTML = '<span class="btn-icon">🚀</span><span>สร้างฟอรัมทันที</span>';
 
           // 强制重置forumManager状态，防止卡住
           setTimeout(() => {
@@ -207,26 +207,26 @@ class ForumControlApp {
     if (clearBtn) {
       clearBtn.addEventListener('click', async () => {
         try {
-          if (!confirm('确定要清除所有论坛内容吗？此操作不可恢复。')) {
+          if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการล้างเนื้อหาฟอรัมทั้งหมด? การกระทำนี้ไม่สามารถย้อนกลับได้')) {
             return;
           }
 
           clearBtn.disabled = true;
-          clearBtn.textContent = '清除中...';
+          clearBtn.textContent = 'กำลังล้าง...';
 
           if (window.forumManager) {
             await window.forumManager.clearForumContent();
           } else {
             console.error('[Forum Control] forumManager未找到');
-            alert('论坛管理器未加载，请刷新页面重试');
+            alert('ตัวจัดการฟอรัมยังไม่โหลด กรุณารีเฟรชหน้าและลองใหม่');
           }
         } catch (error) {
           console.error('[Forum Control] 清除论坛内容出错:', error);
-          alert(`清除失败: ${error.message}`);
+          alert(`ล้างล้มเหลว: ${error.message}`);
         } finally {
           // 恢复按钮状态
           clearBtn.disabled = false;
-          clearBtn.innerHTML = '<span class="btn-icon">🗑️</span><span>清除论坛内容</span>';
+          clearBtn.innerHTML = '<span class="btn-icon">🗑️</span><span>ล้างเนื้อหาฟอรัม</span>';
 
           // 强制重置forumManager状态，防止卡住
           setTimeout(() => {
@@ -246,7 +246,7 @@ class ForumControlApp {
         if (window.mobileCustomAPIConfig) {
           window.mobileCustomAPIConfig.showAPIPanel();
         } else {
-          alert('API配置模块未加载');
+          alert('โมดูลตั้งค่า API ยังไม่โหลด');
         }
       });
     }
@@ -263,7 +263,7 @@ class ForumControlApp {
         error: '#e74c3c',
       };
 
-      statusEl.textContent = `状态: ${message}`;
+      statusEl.textContent = `สถานะ: ${message}`;
       statusEl.style.color = colors[type] || colors.info;
     }
   }
@@ -321,7 +321,7 @@ class ForumControlApp {
           customStyles.forEach(style => {
             const option = document.createElement('option');
             option.value = style.name;
-            option.textContent = `${style.name} (自定义)`;
+            option.textContent = `${style.name} (กำหนดเอง)`;
             if (style.name === currentStyle) {
               option.selected = true;
             }

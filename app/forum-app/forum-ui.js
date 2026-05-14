@@ -206,15 +206,15 @@ class ForumUI {
                     <div class="dialog-overlay" id="dialog-overlay"></div>
                     <div class="dialog-content">
                         <div class="dialog-header">
-                            <h3>发新帖</h3>
+                            <h3>โพสต์กระทู้ใหม่</h3>
                             <button class="close-btn" id="close-dialog-btn">×</button>
                         </div>
                         <div class="dialog-body">
-                            <input type="text" class="post-title-input" id="post-title" placeholder="请输入帖子标题...">
-                            <textarea class="post-content-input" id="post-content" placeholder="分享你的想法..."></textarea>
+                            <input type="text" class="post-title-input" id="post-title" placeholder="กรุณาใส่หัวข้อกระทู้...">
+                            <textarea class="post-content-input" id="post-content" placeholder="แชร์ความคิดของคุณ..."></textarea>
                         </div>
                         <div class="dialog-footer">
-                            <button class="cancel-btn" id="cancel-post-btn">取消</button>
+                            <button class="cancel-btn" id="cancel-post-btn">ยกเลิก</button>
                             <button class="submit-btn" id="submit-post-btn">✈</button>
                         </div>
                     </div>
@@ -234,8 +234,8 @@ class ForumUI {
       return `
                 <div class="empty-state">
                     <div class="empty-icon">💬</div>
-                    <div class="empty-text">暂无帖子</div>
-                    <div class="empty-hint">点击右上角发帖按钮开始讨论吧～</div>
+                    <div class="empty-text">ยังไม่มีกระทู้</div>
+                    <div class="empty-hint">แตะปุ่มโพสต์ที่มุมขวาบนเพื่อเริ่มพูดคุย~</div>
                 </div>
             `;
     }
@@ -284,7 +284,7 @@ class ForumUI {
                         <div class="author-name">${thread.author}</div>
                     </div>
                     <div class="thread-id">ID: t${thread.id}</div>
-                    <button class="delete-btn forum-delete-btn" data-thread-id="${thread.id}" title="删除帖子">删除</button>
+                    <button class="delete-btn forum-delete-btn" data-thread-id="${thread.id}" title="ลบกระทู้">ลบ</button>
                 </div>
                 <div class="post-content">
                     <h2 class="thread-title">${thread.title}</h2>
@@ -333,7 +333,7 @@ class ForumUI {
     // 实时从消息中提取论坛数据
     const forumData = this.getCurrentForumData();
     const thread = forumData.threads.find(t => t.id === threadId);
-    if (!thread) return '<div class="error">帖子不存在</div>';
+    if (!thread) return '<div class="error">ไม่พบกระทู้</div>';
 
     const replies = forumData.replies[threadId] || [];
 
@@ -363,14 +363,14 @@ class ForumUI {
                 <!-- 回复列表 -->
                 <div class="reply-list">
                     <div class="reply-header">
-                        <h4>全部回复 (${replies.length})</h4>
+                        <h4>การตอบกลับทั้งหมด (${replies.length})</h4>
                     </div>
                     ${this.getRepliesHTML(replies)}
                 </div>
 
                 <!-- 回复输入框 -->
                 <div class="comment-input-bar">
-                    <input type="text" class="reply-input" id="reply-input" placeholder="留下你的想法吧">
+                    <input type="text" class="reply-input" id="reply-input" placeholder="แสดงความคิดเห็นของคุณ">
                     <button class="action-btn submit-reply-btn" id="submit-reply-btn" style="color: var(--accent-pink); font-size: 16px;"><i class="fas fa-paper-plane"></i></button>
                 </div>
             </div>
@@ -385,7 +385,7 @@ class ForumUI {
       return `
                 <div class="no-replies">
                     <div class="no-replies-icon">💭</div>
-                    <div class="no-replies-text">暂无回复，来抢沙发吧～</div>
+                    <div class="no-replies-text">ยังไม่มีการตอบกลับ มาเป็นคนแรกกันเลย~</div>
                 </div>
             `;
     }
@@ -404,21 +404,21 @@ class ForumUI {
                             </div>
                         </div>
                         <div class="reply-meta">
-                            <span class="floor-number">${floorNumber}楼</span>
+                            <span class="floor-number">ชั้น ${floorNumber}</span>
                         </div>
                     </div>
                     <div class="reply-content">${this.formatContent(reply.content)}</div>
                     <div class="reply-actions">
                         <button class="action-btn like-reply" data-reply-id="${reply.id}">
                             <i class="${this.getReplyLikeIconClass(reply.id)} fa-heart"></i> ${this.getReplyLikeCount(
-          reply.id,
-        )}
+                              reply.id,
+                            )}
                         </button>
                         <button class="action-btn reply-to-reply" data-reply-to="${
                           reply.author
                         }" data-floor="${floorNumber}" data-reply-id="${
-          reply.id
-        }"><i class="fas fa-reply"></i> 回复</button>
+                          reply.id
+                        }"><i class="fas fa-reply"></i> ตอบกลับ</button>
                     </div>
 
                     <!-- 楼中楼回复 -->
@@ -427,10 +427,10 @@ class ForumUI {
                     <!-- 楼中楼回复输入框 -->
                     <div class="sub-reply-input-container" id="sub-reply-input-${reply.id}" style="display: none;">
                         <div class="sub-reply-input-box">
-                            <div class="sub-reply-target">回复 ${reply.author}:</div>
-                            <textarea class="sub-reply-input" placeholder="写下你的回复..." rows="2"></textarea>
+                            <div class="sub-reply-target">ตอบกลับ ${reply.author}:</div>
+                            <textarea class="sub-reply-input" placeholder="เขียนการตอบกลับของคุณ..." rows="2"></textarea>
                             <div class="sub-reply-actions">
-                                <button class="cancel-sub-reply-btn" data-reply-id="${reply.id}">取消</button>
+                                <button class="cancel-sub-reply-btn" data-reply-id="${reply.id}">ยกเลิก</button>
                                 <button class="submit-sub-reply-btn" data-reply-id="${
                                   reply.id
                                 }" data-parent-floor="${floorNumber}" data-parent-author="${reply.author}">✈</button>
@@ -454,7 +454,7 @@ class ForumUI {
     return `
             <div class="sub-replies-container">
                 <div class="sub-replies-header">
-                    <span class="sub-replies-count">${subReplies.length} 条回复</span>
+                    <span class="sub-replies-count">${subReplies.length} การตอบกลับ</span>
                 </div>
                 <div class="sub-replies-list">
                     ${subReplies
@@ -471,7 +471,7 @@ class ForumUI {
                                 <button class="action-btn like-sub-reply">👍 ${Math.floor(Math.random() * 5)}</button>
                                 <button class="action-btn reply-to-sub-reply" data-reply-to="${
                                   subReply.author
-                                }" data-parent-floor="${parentFloor}">回复</button>
+                                }" data-parent-floor="${parentFloor}">ตอบกลับ</button>
                             </div>
                         </div>
                     `,
@@ -488,8 +488,6 @@ class ForumUI {
   formatContent(content) {
     // 处理表情包标记
     let formatted = content.replace(/表情:\s*([^,\s]+)/g, '<span class="emoji-placeholder">[$1]</span>');
-
-
 
     // 处理@用户（如果有）
     formatted = formatted.replace(/@([^\s]+)/g, '<span class="mention">@$1</span>');
@@ -740,7 +738,7 @@ class ForumUI {
 
     const content = input.value.trim();
     if (!content) {
-      alert('请输入回复内容');
+      alert('กรุณาใส่เนื้อหาการตอบกลับ');
       return;
     }
 
@@ -749,7 +747,7 @@ class ForumUI {
     const currentThread = forumData.threads.find(t => t.id === this.currentThreadId);
 
     if (!currentThread) {
-      alert('无法找到当前帖子信息');
+      alert('ไม่พบข้อมูลกระทู้ปัจจุบัน');
       return;
     }
 
@@ -769,11 +767,11 @@ class ForumUI {
 
     // 显示发送成功提示
     if (window.showMobileToast) {
-      window.showMobileToast('📤 回复已发送', 'success');
+      window.showMobileToast('📤 ส่งการตอบกลับแล้ว', 'success');
     } else {
       // 如果没有toast功能，使用简单的alert
       setTimeout(() => {
-        alert('回复已发送');
+        alert('ส่งการตอบกลับแล้ว');
       }, 100);
     }
 
@@ -794,16 +792,16 @@ class ForumUI {
         .catch(error => {
           console.error('[Forum UI] API发送回复失败:', error);
           if (window.showMobileToast) {
-            window.showMobileToast('❌ 发送回复失败，请重试', 'error');
+            window.showMobileToast('❌ ส่งการตอบกลับล้มเหลว กรุณาลองใหม่', 'error');
           } else {
-            alert('发送回复失败，请重试');
+            alert('ส่งการตอบกลับล้มเหลว กรุณาลองใหม่');
           }
         });
     } else {
       if (window.showMobileToast) {
-        window.showMobileToast('❌ 回复功能不可用', 'error');
+        window.showMobileToast('❌ ฟังก์ชันตอบกลับใช้งานไม่ได้', 'error');
       } else {
-        alert('回复功能不可用，请检查论坛管理器配置');
+        alert('ฟังก์ชันตอบกลับใช้งานไม่ได้ กรุณาตรวจสอบการตั้งค่าตัวจัดการฟอรัม');
       }
     }
   }
@@ -889,7 +887,7 @@ class ForumUI {
 
     const content = textarea.value.trim();
     if (!content) {
-      alert('请输入回复内容');
+      alert('กรุณาใส่เนื้อหาการตอบกลับ');
       return;
     }
 
@@ -907,7 +905,7 @@ class ForumUI {
     }
 
     if (!parentReply) {
-      alert('无法找到被回复的评论信息');
+      alert('ไม่พบข้อมูลความคิดเห็นที่ถูกตอบกลับ');
       return;
     }
 
@@ -965,7 +963,7 @@ class ForumUI {
     const content = document.getElementById('post-content').value.trim();
 
     if (!title || !content) {
-      alert('请填写标题和内容');
+      alert('กรุณาใส่หัวข้อและเนื้อหา');
       return;
     }
 
@@ -973,7 +971,7 @@ class ForumUI {
     this.hidePostDialog();
 
     if (!window.forumManager) {
-      alert('论坛管理器未初始化，请稍后再试');
+      alert('ตัวจัดการฟอรัมยังไม่พร้อมใช้งาน กรุณาลองใหม่ภายหลัง');
       return;
     }
 
@@ -986,11 +984,11 @@ class ForumUI {
     // 直接发布帖子，无需确认
     // 显示发布成功提示
     if (window.showMobileToast) {
-      window.showMobileToast('📝 帖子已发布', 'success');
+      window.showMobileToast('📝 โพสต์กระทู้แล้ว', 'success');
     } else {
       // 如果没有toast功能，使用简单的alert
       setTimeout(() => {
-        alert('帖子已发布');
+        alert('โพสต์กระทู้แล้ว');
       }, 100);
     }
 
@@ -1008,16 +1006,16 @@ class ForumUI {
         .catch(error => {
           console.error('[Forum UI] 发帖失败:', error);
           if (window.showMobileToast) {
-            window.showMobileToast('❌ 发帖失败，请重试', 'error');
+            window.showMobileToast('❌ โพสต์ล้มเหลว กรุณาลองใหม่', 'error');
           } else {
-            alert('发帖失败，请重试');
+            alert('โพสต์ล้มเหลว กรุณาลองใหม่');
           }
         });
     } else {
       if (window.showMobileToast) {
-        window.showMobileToast('❌ 发帖功能不可用', 'error');
+        window.showMobileToast('❌ ฟังก์ชันโพสต์ใช้งานไม่ได้', 'error');
       } else {
-        alert('发帖功能不可用，请检查论坛管理器配置');
+        alert('ฟังก์ชันโพสต์ใช้งานไม่ได้ กรุณาตรวจสอบการตั้งค่าตัวจัดการฟอรัม');
       }
       console.error('[Forum UI] sendPostToAPI方法不存在');
     }
@@ -1031,7 +1029,7 @@ class ForumUI {
 
     const content = document.getElementById('reply-input').value.trim();
     if (!content) {
-      alert('请输入回复内容');
+      alert('กรุณาใส่เนื้อหาการตอบกลับ');
       return;
     }
 
@@ -1043,7 +1041,7 @@ class ForumUI {
     const currentThread = forumData.threads.find(t => t.id === this.currentThreadId);
 
     if (!currentThread) {
-      alert('无法找到当前帖子信息');
+      alert('ไม่พบข้อมูลกระทู้ปัจจุบัน');
       return;
     }
 
@@ -1070,7 +1068,7 @@ class ForumUI {
    */
   sendReplyToForum(replyData) {
     if (!window.forumManager) {
-      alert('论坛管理器未初始化，请稍后再试');
+      alert('ตัวจัดการฟอรัมยังไม่พร้อมใช้งาน กรุณาลองใหม่ภายหลัง');
       return;
     }
 
@@ -1079,11 +1077,11 @@ class ForumUI {
     // 直接发送回复，无需确认
     // 显示发送成功提示
     if (window.showMobileToast) {
-      window.showMobileToast('📤 回复已发送', 'success');
+      window.showMobileToast('📤 ส่งการตอบกลับแล้ว', 'success');
     } else {
       // 如果没有toast功能，使用简单的alert
       setTimeout(() => {
-        alert('回复已发送');
+        alert('ส่งการตอบกลับแล้ว');
       }, 100);
     }
 
@@ -1105,9 +1103,9 @@ class ForumUI {
         .catch(error => {
           console.error('[Forum UI] API发送回复失败:', error);
           if (window.showMobileToast) {
-            window.showMobileToast('❌ 发送回复失败，请重试', 'error');
+            window.showMobileToast('❌ ส่งการตอบกลับล้มเหลว กรุณาลองใหม่', 'error');
           } else {
-            alert('发送回复失败，请重试');
+            alert('ส่งการตอบกลับล้มเหลว กรุณาลองใหม่');
           }
         });
     } else {
@@ -1126,16 +1124,16 @@ class ForumUI {
           .catch(error => {
             console.error('[Forum UI] 插入回复失败:', error);
             if (window.showMobileToast) {
-              window.showMobileToast('❌ 发送回复失败，请重试', 'error');
+              window.showMobileToast('❌ ส่งการตอบกลับล้มเหลว กรุณาลองใหม่', 'error');
             } else {
-              alert('发送回复失败，请重试');
+              alert('ส่งการตอบกลับล้มเหลว กรุณาลองใหม่');
             }
           });
       } else {
         if (window.showMobileToast) {
-          window.showMobileToast('❌ 回复功能不可用', 'error');
+          window.showMobileToast('❌ ฟังก์ชันตอบกลับใช้งานไม่ได้', 'error');
         } else {
-          alert('回复功能需要通过论坛管理器重新生成论坛内容来实现。请使用论坛管理器功能。');
+          alert('ฟังก์ชันตอบกลับต้องสร้างเนื้อหาฟอรัมใหม่ผ่านตัวจัดการฟอรัม กรุณาใช้ฟังก์ชันของตัวจัดการฟอรัม');
         }
         console.log('[Forum UI] 用户尝试回复:', replyData);
       }
@@ -1174,7 +1172,7 @@ class ForumUI {
       });
     } else {
       console.warn('[Forum UI] 论坛管理器未找到');
-      alert('论坛管理器未初始化，请稍后再试');
+      alert('ตัวจัดการฟอรัมยังไม่พร้อมใช้งาน กรุณาลองใหม่ภายหลัง');
     }
   }
 
@@ -1472,7 +1470,11 @@ class ForumUI {
 
     try {
       // 显示确认对话框
-      if (!confirm(`确定要删除帖子 ID: t${threadId} 及其所有回复吗？此操作不可撤销。`)) {
+      if (
+        !confirm(
+          `คุณแน่ใจหรือไม่ว่าต้องการลบกระทู้ ID: t${threadId} พร้อมการตอบกลับทั้งหมด? การกระทำนี้ไม่สามารถย้อนกลับได้`,
+        )
+      ) {
         return;
       }
 
@@ -1523,7 +1525,7 @@ class ForumUI {
       // 重新构建消息内容
       const newContent = content.replace(
         /<!-- FORUM_CONTENT_START -->[\s\S]*?<!-- FORUM_CONTENT_END -->/,
-        `<!-- FORUM_CONTENT_START -->${forumContent}<!-- FORUM_CONTENT_END -->`
+        `<!-- FORUM_CONTENT_START -->${forumContent}<!-- FORUM_CONTENT_END -->`,
       );
 
       // 更新消息内容
@@ -1533,22 +1535,21 @@ class ForumUI {
 
       // 显示成功提示
       if (window.showMobileToast) {
-        window.showMobileToast('🗑️ 帖子已删除', 'success');
+        window.showMobileToast('🗑️ ลบกระทู้แล้ว', 'success');
       } else {
-        alert('帖子已删除');
+        alert('ลบกระทู้แล้ว');
       }
 
       // 刷新论坛内容
       setTimeout(() => {
         this.refreshThreadList();
       }, 500);
-
     } catch (error) {
       console.error('[Forum UI] 删除帖子失败:', error);
       if (window.showMobileToast) {
-        window.showMobileToast('❌ 删除失败: ' + error.message, 'error');
+        window.showMobileToast('❌ ลบล้มเหลว: ' + error.message, 'error');
       } else {
-        alert('删除失败: ' + error.message);
+        alert('ลบล้มเหลว: ' + error.message);
       }
     }
   }

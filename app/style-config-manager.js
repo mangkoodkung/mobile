@@ -593,11 +593,11 @@ ${selector} {
          background-position: center !important;
          background-repeat: no-repeat !important;`
         : config.homeScreen.backgroundImageUrl
-        ? `background-image: url(${formatImageUrl(config.homeScreen.backgroundImageUrl)}) !important;
+          ? `background-image: url(${formatImageUrl(config.homeScreen.backgroundImageUrl)}) !important;
          background-size: cover !important;
          background-position: center !important;
          background-repeat: no-repeat !important;`
-        : `background: `
+          : `background: `
     }
 }
 
@@ -609,11 +609,11 @@ ${selector} {
          background-position: center !important;
          background-repeat: no-repeat !important;`
         : config.messageDetailApp.backgroundImageUrl
-        ? `background-image: url(${formatImageUrl(config.messageDetailApp.backgroundImageUrl)}) !important;
+          ? `background-image: url(${formatImageUrl(config.messageDetailApp.backgroundImageUrl)}) !important;
          background-size: cover !important;
          background-position: center !important;
          background-repeat: no-repeat !important;`
-        : `background: #;`
+          : `background: #;`
     }
 }
 
@@ -625,11 +625,11 @@ ${selector} {
          background-position: ${config.messagesApp.backgroundPosition || 'center center'} !important;
          background-repeat: no-repeat !important;`
         : config.messagesApp.backgroundImageUrl
-        ? `background-image: url(${formatImageUrl(config.messagesApp.backgroundImageUrl)}) !important;
+          ? `background-image: url(${formatImageUrl(config.messagesApp.backgroundImageUrl)}) !important;
          background-size: cover !important;
          background-position: ${config.messagesApp.backgroundPosition || 'center center'} !important;
          background-repeat: no-repeat !important;`
-        : `background: #;`
+          : `background: #;`
     }
 }
 
@@ -994,8 +994,8 @@ ${
       if (configs.length === 0) {
         configListHTML = `
                 <div class="no-configs">
-                    <p>暂无保存的配置</p>
-                    <small>保存当前配置后将在此显示</small>
+                    <p>ยังไม่มีการตั้งค่าที่บันทึกไว้</p>
+                    <small>หลังบันทึกการตั้งค่าปัจจุบันจะแสดงที่นี่</small>
                 </div>
             `;
       } else {
@@ -1061,16 +1061,16 @@ ${
       return `
             <div class="config-list-section">
                 <div class="section-header">
-                    <h3>📋 已保存的配置</h3>
-                    <p>管理你保存的样式配置文件</p>
+                    <h3>📋 การตั้งค่าที่บันทึกไว้</h3>
+                    <p>จัดการไฟล์การตั้งค่าสไตล์ที่คุณบันทึกไว้</p>
                 </div>
 
                 <div class="save-new-config">
                     <div class="save-config-input">
-                        <input type="text" id="new-config-name" placeholder="输入配置名称..." maxlength="50">
+                        <input type="text" id="new-config-name" placeholder="ใส่ชื่อการตั้งค่า..." maxlength="50">
                         <button id="save-new-config-btn" class="config-btn save-btn">
                             <span class="btn-icon">💾</span>
-                            <span>另存为</span>
+                            <span>บันทึกเป็น</span>
                         </button>
                     </div>
                 </div>
@@ -1082,7 +1082,7 @@ ${
                 <div class="config-list-actions">
                     <button id="refresh-config-list" class="config-btn">
                         <span class="btn-icon">🔄</span>
-                        <span>刷新列表</span>
+                        <span>รีเฟรชรายการ</span>
                     </button>
                 </div>
             </div>
@@ -2618,8 +2618,8 @@ ${
         if (configs.length === 0) {
           configListHTML = `
                     <div class="no-configs">
-                        <p>暂无保存的配置</p>
-                        <small>保存当前配置后将在此显示</small>
+                        <p>ยังไม่มีการตั้งค่าที่บันทึกไว้</p>
+                        <small>หลังบันทึกการตั้งค่าปัจจุบันจะแสดงที่นี่</small>
                     </div>
                 `;
         } else {
@@ -2697,8 +2697,8 @@ ${
         if (configListContainer) {
           configListContainer.innerHTML = `
                     <div class="error-configs">
-                        <p>❌ 加载配置列表失败</p>
-                        <small>请点击刷新按钮重试</small>
+                        <p>❌ โหลดรายการการตั้งค่าล้มเหลว</p>
+                        <small>กรุณาคลิกปุ่มรีเฟรชเพื่อลองใหม่</small>
                     </div>
                 `;
         }
@@ -3141,7 +3141,7 @@ ${
                                        accept="image/*">
                                 <button class="upload-btn" onclick="this.previousElementSibling.click()">
                                     <span>📁</span>
-                                    <span>选择图片</span>
+                                    <span>เลือกรูปภาพ</span>
                                 </button>
                                 ${
                                   backgroundImage
@@ -3290,7 +3290,7 @@ ${
                                        accept="image/*">
                                 <button class="upload-btn" onclick="this.previousElementSibling.click()">
                                     <span>📁</span>
-                                    <span>选择图片</span>
+                                    <span>เลือกรูปภาพ</span>
                                 </button>
                                 ${
                                   backgroundImage
@@ -3420,7 +3420,7 @@ ${
         return;
       }
 
-      if (confirm('确定要删除这个头像配置吗？')) {
+      if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบการตั้งค่าอวาตาร์นี้?')) {
         config.messageReceivedAvatars.splice(index, 1);
         this.updateConfig('messageReceivedAvatars', null, config.messageReceivedAvatars);
 
@@ -3465,7 +3465,7 @@ ${
         return;
       }
 
-      if (confirm('确定要删除这个好友背景配置吗？')) {
+      if (confirm('คุณแน่ใจหรือไม่ว่าต้องการลบการตั้งค่าพื้นหลังเพื่อนนี้?')) {
         config.friendBackgrounds.splice(index, 1);
         this.updateConfig('friendBackgrounds', null, config.friendBackgrounds);
 
@@ -3665,7 +3665,7 @@ ${
 
     // 处理保存新配置（带弹窗提示）
     async handleSaveNewConfigWithPrompt() {
-      const configName = prompt('请输入配置名称：', '');
+      const configName = prompt('กรุณาใส่ชื่อการตั้งค่า:', '');
 
       if (!configName) {
         this.updateStatus('已取消保存', 'info');
@@ -3764,7 +3764,7 @@ ${
     async handleDeleteConfig(fileName) {
       if (!fileName) return;
 
-      if (!confirm(`确定要删除配置"${fileName}"吗？此操作无法撤销。`)) {
+      if (!confirm(`คุณแน่ใจหรือไม่ว่าต้องการลบการตั้งค่า "${fileName}"? การกระทำนี้ไม่สามารถย้อนกลับได้`)) {
         return;
       }
 
@@ -3874,7 +3874,7 @@ ${
           }
         } else if (importChoice === 'named') {
           // 保存为具名配置
-          const configName = prompt('请输入配置名称：', '导入的配置');
+          const configName = prompt('กรุณาใส่ชื่อการตั้งค่า:', 'การตั้งค่าที่นำเข้า');
           if (configName && configName.trim()) {
             this.updateStatus('正在保存具名配置...', 'loading');
 
@@ -5339,7 +5339,7 @@ ${
 
     // 重置样式
     resetStyles() {
-      if (confirm('确定要重置为默认样式吗？这将清除所有自定义配置。')) {
+      if (confirm('คุณแน่ใจหรือไม่ว่าต้องการรีเซ็ตเป็นสไตล์เริ่มต้น? การกระทำนี้จะล้างการตั้งค่าที่กำหนดเองทั้งหมด')) {
         this.resetToDefault();
 
         // 更新界面输入框

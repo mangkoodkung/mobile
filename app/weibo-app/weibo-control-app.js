@@ -66,7 +66,7 @@ class WeiboControlApp {
         <div class="weibo-dialog-overlay">
           <div class="weibo-dialog">
             <div class="dialog-header">
-              <h3>发微博</h3>
+              <h3>โพสต์ Weibo</h3>
               <button class="close-btn" onclick="window.weiboControlApp.closeDialog()">
                 <i class="fas fa-times"></i>
               </button>
@@ -86,7 +86,7 @@ class WeiboControlApp {
               <div class="post-input-section">
                 <textarea
                   id="weibo-post-content"
-                  placeholder="分享新鲜事..."
+                  placeholder="แชร์เรื่องราวใหม่ๆ..."
                   maxlength="140"
                   rows="4"
                 ></textarea>
@@ -98,15 +98,15 @@ class WeiboControlApp {
               <div class="post-options">
                 <div class="option-item">
                   <i class="fas fa-map-marker-alt"></i>
-                  <span>添加位置</span>
+                  <span>เพิ่มตำแหน่ง</span>
                 </div>
                 <div class="option-item">
                   <i class="fas fa-hashtag"></i>
-                  <span>添加话题</span>
+                  <span>เพิ่มหัวข้อ</span>
                 </div>
                 <div class="option-item">
                   <i class="fas fa-at"></i>
-                  <span>@好友</span>
+                  <span>@เพื่อน</span>
                 </div>
               </div>
             </div>
@@ -127,7 +127,7 @@ class WeiboControlApp {
       this.bindPostDialogEvents();
     } catch (error) {
       console.error('[Weibo Control] 显示发博弹窗失败:', error);
-      this.showErrorToast('显示发博弹窗失败');
+      this.showErrorToast('แสดงป๊อปอัปโพสต์ล้มเหลว');
     }
   }
 
@@ -285,12 +285,12 @@ class WeiboControlApp {
 
     const content = textarea.value.trim();
     if (!content) {
-      this.showErrorToast('请输入微博内容');
+      this.showErrorToast('กรุณาใส่เนื้อหา Weibo');
       return;
     }
 
     if (content.length > 140) {
-      this.showErrorToast('微博内容不能超过140字');
+      this.showErrorToast('เนื้อหา Weibo ต้องไม่เกิน 140 ตัวอักษร');
       return;
     }
 
@@ -301,7 +301,7 @@ class WeiboControlApp {
       const postBtn = document.querySelector('.dialog-footer .post-btn');
       if (postBtn) {
         postBtn.disabled = true;
-        postBtn.textContent = '发布中...';
+        postBtn.textContent = 'กำลังโพสต์...';
       }
 
       console.log('[Weibo Control] 提交博文:', content);
@@ -311,7 +311,7 @@ class WeiboControlApp {
         const result = await window.weiboManager.sendPostToAPI(content);
 
         if (result) {
-          this.showSuccessToast('微博发布成功');
+          this.showSuccessToast('โพสต์ Weibo สำเร็จ');
           this.closeDialog();
 
           // 等待一下让内容被处理，然后刷新微博列表
@@ -328,13 +328,13 @@ class WeiboControlApp {
       }
     } catch (error) {
       console.error('[Weibo Control] 提交博文失败:', error);
-      this.showErrorToast(`发布失败: ${error.message}`);
+      this.showErrorToast(`โพสต์ล้มเหลว: ${error.message}`);
 
       // 恢复按钮状态
       const postBtn = document.querySelector('.dialog-footer .post-btn');
       if (postBtn) {
         postBtn.disabled = false;
-        postBtn.textContent = '发布';
+        postBtn.textContent = 'โพสต์';
       }
     } finally {
       this.isProcessing = false;

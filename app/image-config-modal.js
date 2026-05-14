@@ -121,7 +121,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
         <div class="modal-backdrop"></div>
         <div class="modal-content">
           <div class="modal-header">
-            <h3 class="modal-title">图片设置</h3>
+            <h3 class="modal-title">ตั้งค่ารูปภาพ</h3>
             <button class="modal-close-btn" type="button">✕</button>
           </div>
           
@@ -148,7 +148,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
           </div>
           
           <div class="modal-footer">
-            <button class="save-btn" type="button">保存设置</button>
+            <button class="save-btn" type="button">บันทึกการตั้งค่า</button>
           </div>
         </div>
       `;
@@ -161,15 +161,15 @@ if (typeof window.ImageConfigModal === 'undefined') {
           <div class="upload-section">
             <div class="upload-controls">
               <input type="file" id="avatar-file-input" accept="image/*" style="display: none;">
-              <button class="upload-btn" data-target="avatar-file-input">选择图片</button>
-              <input type="url" class="url-input" placeholder="或输入图片链接..." data-type="avatar">
+              <button class="upload-btn" data-target="avatar-file-input">เลือกรูปภาพ</button>
+              <input type="url" class="url-input" placeholder="หรือใส่ลิงก์รูปภาพ..." data-type="avatar">
             </div>
           </div>
           
           <div class="preview-section">
             <div class="preview-container avatar-preview">
               <div class="preview-image" id="avatar-preview"></div>
-              <div class="drag-hint">拖拽调整位置</div>
+              <div class="drag-hint">ลากเพื่อปรับตำแหน่ง</div>
             </div>
           </div>
           
@@ -196,15 +196,15 @@ if (typeof window.ImageConfigModal === 'undefined') {
           <div class="upload-section">
             <div class="upload-controls">
               <input type="file" id="background-file-input" accept="image/*" style="display: none;">
-              <button class="upload-btn" data-target="background-file-input">选择图片</button>
-              <input type="url" class="url-input" placeholder="或输入图片链接..." data-type="background">
+              <button class="upload-btn" data-target="background-file-input">เลือกรูปภาพ</button>
+              <input type="url" class="url-input" placeholder="หรือใส่ลิงก์รูปภาพ..." data-type="background">
             </div>
           </div>
           
           <div class="preview-section">
             <div class="preview-container background-preview">
               <div class="preview-image" id="background-preview"></div>
-              <div class="drag-hint">拖拽调整位置</div>
+              <div class="drag-hint">ลากเพื่อปรับตำแหน่ง</div>
             </div>
           </div>
           
@@ -483,7 +483,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
       } catch (error) {
         console.error('[Image Config Modal] 文件上传失败:', error);
         if (window.MobilePhone && window.MobilePhone.showToast) {
-          window.MobilePhone.showToast('图片上传失败', 'error');
+          window.MobilePhone.showToast('อัปโหลดรูปภาพล้มเหลว', 'error');
         }
       }
     }
@@ -670,7 +670,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
       if (!window.styleConfigManager || !window.styleConfigManager.isReady) {
         console.error('[Image Config Modal] StyleConfigManager未就绪');
         if (window.MobilePhone && window.MobilePhone.showToast) {
-          window.MobilePhone.showToast('配置管理器未就绪', 'error');
+          window.MobilePhone.showToast('ตัวจัดการการตั้งค่ายังไม่พร้อม', 'error');
         }
         return;
       }
@@ -738,7 +738,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
         if (success) {
           console.log('[Image Config Modal] 配置保存成功');
           if (window.MobilePhone && window.MobilePhone.showToast) {
-            window.MobilePhone.showToast('设置已保存', 'success');
+            window.MobilePhone.showToast('บันทึกการตั้งค่าแล้ว', 'success');
           }
           this.hide();
         } else {
@@ -747,7 +747,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
       } catch (error) {
         console.error('[Image Config Modal] 保存配置失败:', error);
         if (window.MobilePhone && window.MobilePhone.showToast) {
-          window.MobilePhone.showToast('保存失败，请重试', 'error');
+          window.MobilePhone.showToast('บันทึกล้มเหลว กรุณาลองใหม่', 'error');
         }
       }
     }
@@ -936,7 +936,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
           </div>
 
           <div class="modal-footer">
-            <button class="save-btn" type="button">保存设置</button>
+            <button class="save-btn" type="button">บันทึกการตั้งค่า</button>
           </div>
         </div>
       `;
@@ -959,8 +959,8 @@ if (typeof window.ImageConfigModal === 'undefined') {
           <div class="upload-section">
             <div class="upload-controls">
               <input type="file" id="friend-avatar-file-input" accept="image/*" style="display: none;">
-              <button class="upload-btn" data-target="friend-avatar-file-input">选择图片</button>
-              <input type="url" class="url-input" placeholder="或输入图片链接..." data-type="avatar" value="${
+              <button class="upload-btn" data-target="friend-avatar-file-input">เลือกรูปภาพ</button>
+              <input type="url" class="url-input" placeholder="หรือใส่ลิงก์รูปภาพ..." data-type="avatar" value="${
                 config.image
               }">
             </div>
@@ -969,7 +969,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
           <div class="preview-section">
             <div class="preview-container avatar-preview">
               <div class="preview-image" id="avatar-preview"></div>
-              <div class="drag-hint">拖拽调整位置</div>
+              <div class="drag-hint">ลากเพื่อปรับตำแหน่ง</div>
             </div>
           </div>
 
@@ -1001,8 +1001,8 @@ if (typeof window.ImageConfigModal === 'undefined') {
           <div class="upload-section">
             <div class="upload-controls">
               <input type="file" id="friend-background-file-input" accept="image/*" style="display: none;">
-              <button class="upload-btn" data-target="friend-background-file-input">选择图片</button>
-              <input type="url" class="url-input" placeholder="或输入图片链接..." data-type="background" value="${
+              <button class="upload-btn" data-target="friend-background-file-input">เลือกรูปภาพ</button>
+              <input type="url" class="url-input" placeholder="หรือใส่ลิงก์รูปภาพ..." data-type="background" value="${
                 config.image
               }">
             </div>
@@ -1011,7 +1011,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
           <div class="preview-section">
             <div class="preview-container background-preview">
               <div class="preview-image" id="background-preview"></div>
-              <div class="drag-hint">拖拽调整位置</div>
+              <div class="drag-hint">ลากเพื่อปรับตำแหน่ง</div>
             </div>
           </div>
 
@@ -1144,7 +1144,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
         } catch (error) {
           console.error('[Friend Image Config Modal] 文件上传失败:', error);
           if (window.MobilePhone && window.MobilePhone.showToast) {
-            window.MobilePhone.showToast('图片上传失败', 'error');
+            window.MobilePhone.showToast('อัปโหลดรูปภาพล้มเหลว', 'error');
           }
         }
       }
@@ -1388,7 +1388,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
         if (!window.styleConfigManager || !window.styleConfigManager.isReady) {
           console.error('[Friend Image Config Modal] StyleConfigManager未就绪');
           if (window.MobilePhone && window.MobilePhone.showToast) {
-            window.MobilePhone.showToast('配置管理器未就绪', 'error');
+            window.MobilePhone.showToast('ตัวจัดการการตั้งค่ายังไม่พร้อม', 'error');
           }
           return;
         }
@@ -1509,7 +1509,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
 
           // 显示成功消息
           if (window.MobilePhone && window.MobilePhone.showToast) {
-            window.MobilePhone.showToast('配置保存成功', 'success');
+            window.MobilePhone.showToast('บันทึกการตั้งค่าสำเร็จ', 'success');
           }
 
           // 关闭弹窗
@@ -1517,7 +1517,7 @@ if (typeof window.ImageConfigModal === 'undefined') {
         } catch (error) {
           console.error('[Friend Image Config Modal] 保存配置失败:', error);
           if (window.MobilePhone && window.MobilePhone.showToast) {
-            window.MobilePhone.showToast('保存失败，请重试', 'error');
+            window.MobilePhone.showToast('บันทึกล้มเหลว กรุณาลองใหม่', 'error');
           }
         }
       }

@@ -145,7 +145,7 @@ if (typeof window.MessageSender === 'undefined') {
         console.log('[Message Sender] 已追加消息到输入框:', {
           原有内容: existingValue,
           新增内容: message,
-          最终内容: newValue
+          最终内容: newValue,
         });
 
         // 触发输入事件
@@ -159,7 +159,6 @@ if (typeof window.MessageSender === 'undefined') {
           sendButton.click();
           console.log('[Message Sender] 已延迟点击发送按钮');
         } else {
-
         }
 
         return true;
@@ -604,11 +603,11 @@ if (typeof window.MessageSender === 'undefined') {
         if (isSending) {
           sendButton.classList.add('sending');
           sendButton.disabled = true;
-          sendButton.textContent = '发送中...';
+          sendButton.textContent = 'กำลังส่ง...';
         } else {
           sendButton.classList.remove('sending');
           sendButton.disabled = false;
-          sendButton.textContent = '发送';
+          sendButton.textContent = 'ส่ง';
         }
       }
 

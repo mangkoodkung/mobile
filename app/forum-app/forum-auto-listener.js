@@ -1046,12 +1046,12 @@ class ForumAutoListener {
         statusContainer.innerHTML = `
                     <div class="forum-status-header">
                         <span class="forum-status-icon">🤖</span>
-                        <span class="forum-status-title">论坛自动监听器</span>
+                        <span class="forum-status-title">ตัวฟังอัตโนมัติฟอรัม</span>
                     </div>
                     <div class="forum-status-content">
                         <div class="forum-status-line">
-                            <span class="forum-status-label">状态:</span>
-                            <span class="forum-status-value" id="forum-listener-status">初始化中</span>
+                            <span class="forum-status-label">สถานะ:</span>
+                            <span class="forum-status-value" id="forum-listener-status">กำลังเริ่มต้น</span>
                             <span class="forum-status-indicator" id="forum-listener-indicator"></span>
                         </div>
                         <div class="forum-status-line">
@@ -1059,8 +1059,8 @@ class ForumAutoListener {
                             <span class="forum-status-value" id="forum-listener-count">0</span>
                         </div>
                         <div class="forum-status-line">
-                            <span class="forum-status-label">最后生成:</span>
-                            <span class="forum-status-value" id="forum-listener-time">从未</span>
+                            <span class="forum-status-label">สร้างล่าสุด:</span>
+                            <span class="forum-status-value" id="forum-listener-time">ไม่เคย</span>
                         </div>
                     </div>
                 `;

@@ -160,20 +160,20 @@ class ForumManager {
 
     panel.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-                <h2 style="margin: 0; color: #667eea;">📰 论坛管理器</h2>
+                <h2 style="margin: 0; color: #667eea;">📰 ตัวจัดการฟอรัม</h2>
                 <button id="close-forum-panel" style="background: none; border: none; color: #ccc; font-size: 24px; cursor: pointer;">×</button>
             </div>
 
             <div style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 10px; color: #333;">选择论坛风格:</label>
+                <label style="display: block; margin-bottom: 10px; color: #333;">เลือกสไตล์ฟอรัม:</label>
                 <select id="forum-style-select" style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #444; background: #eee; color: #333;">
                     <!-- 风格选项将通过JavaScript动态加载 -->
                 </select>
             </div>
 
             <div style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 10px; color: #333;">自定义前缀 (发送给模型的额外提示词):</label>
-                <textarea id="forum-custom-prefix" placeholder="在此输入自定义前缀，将添加到风格提示词前面..."
+                <label style="display: block; margin-bottom: 10px; color: #333;">Prefix ที่กำหนดเอง (พรอมต์เพิ่มเติมที่ส่งให้โมเดล):</label>
+                <textarea id="forum-custom-prefix" placeholder="ใส่ prefix ที่กำหนดเอง จะถูกเพิ่มไว้ด้านหน้าของพรอมต์สไตล์..."
                           style="width: 100%; height: 80px; padding: 10px; border-radius: 5px; border: 1px solid #444; background: #eee; color: #333; resize: vertical; font-family: monospace; font-size: 16px;"></textarea>
                 <div style="margin-top: 5px; font-size: 16px; color: #333;">
                     提示: 可以用来添加特殊指令、角色设定或生成要求
@@ -181,7 +181,7 @@ class ForumManager {
             </div>
 
             <div style="margin-bottom: 20px;">
-                <label style="display: block; margin-bottom: 10px; color: #333;">消息阈值 (触发论坛生成):</label>
+                <label style="display: block; margin-bottom: 10px; color: #333;">เกณฑ์ข้อความ (ทริกเกอร์การสร้างฟอรัม):</label>
                 <input type="number" id="forum-threshold" value="${this.currentSettings.threshold}" min="1" max="100"
                        style="width: 100%; padding: 10px; border-radius: 5px; border: 1px solid #444; background: #eee; color: #333;">
             </div>
@@ -211,12 +211,12 @@ class ForumManager {
             </div>
 
             <div id="forum-queue-status" style="margin-top: 10px; padding: 8px; background: #34495e; border-radius: 5px; font-size: 11px; color: #ecf0f1;">
-                <div style="font-weight: bold; margin-bottom: 5px;">🔄 生成状态监控</div>
-                <div>SillyTavern生成状态: <span id="generation-status">检查中...</span></div>
-                <div>待插入队列: <span id="queue-count">0</span> 项</div>
+                <div style="font-weight: bold; margin-bottom: 5px;">🔄 ตรวจสอบสถานะการสร้าง</div>
+                <div>สถานะการสร้าง SillyTavern: <span id="generation-status">กำลังตรวจสอบ...</span></div>
+                <div>คิวรอแทรก: <span id="queue-count">0</span> รายการ</div>
                 <div style="margin-top: 5px;">
-                    <button id="clear-queue-btn" style="background: #e67e22; color: #fff; border: none; padding: 3px 8px; border-radius: 3px; font-size: 10px; cursor: pointer;">清空队列</button>
-                    <button id="refresh-status-btn" style="background: #3498db; color: #fff; border: none; padding: 3px 8px; border-radius: 3px; font-size: 10px; cursor: pointer; margin-left: 5px;">刷新状态</button>
+                    <button id="clear-queue-btn" style="background: #e67e22; color: #fff; border: none; padding: 3px 8px; border-radius: 3px; font-size: 10px; cursor: pointer;">ล้างคิว</button>
+                    <button id="refresh-status-btn" style="background: #3498db; color: #fff; border: none; padding: 3px 8px; border-radius: 3px; font-size: 10px; cursor: pointer; margin-left: 5px;">รีเฟรชสถานะ</button>
                 </div>
             </div>
         `;
@@ -275,7 +275,7 @@ class ForumManager {
           customStyles.forEach(style => {
             const option = document.createElement('option');
             option.value = style.name;
-            option.textContent = `${style.name} (自定义)`;
+            option.textContent = `${style.name} (กำหนดเอง)`;
             customGroup.appendChild(option);
           });
 
@@ -506,7 +506,7 @@ class ForumManager {
 
       // 显示错误提示
       if (window.showMobileToast) {
-        window.showMobileToast(`❌ 论坛生成失败: ${error.message}`, 'error');
+        window.showMobileToast(`❌ สร้างฟอรัมล้มเหลว: ${error.message}`, 'error');
       }
 
       return false;
@@ -1607,7 +1607,7 @@ ${replyFormat}
         error: '#e74c3c',
       };
 
-      statusEl.textContent = `状态: ${message}`;
+      statusEl.textContent = `สถานะ: ${message}`;
       statusEl.style.color = colors[type] || colors.info;
     }
 
@@ -1990,9 +1990,9 @@ ${replyFormat}
 
       // 显示结果提示
       if (result && window.showMobileToast) {
-        window.showMobileToast('✅ 论坛内容已成功插入到第1楼层', 'success');
+        window.showMobileToast('✅ แทรกเนื้อหาฟอรัมไปยังชั้น 1 สำเร็จ', 'success');
       } else if (!result && window.showMobileToast) {
-        window.showMobileToast('❌ 论坛内容插入失败', 'error');
+        window.showMobileToast('❌ แทรกเนื้อหาฟอรัมล้มเหลว', 'error');
       }
 
       return result;
